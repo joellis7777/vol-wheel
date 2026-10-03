@@ -1,7 +1,9 @@
 """Daily scan: fetch data, compute signals, pick strikes, write docs/data/latest.json.
 
-    python -m vol_wheel.scan                      # full run (appends IV history)
-    python -m vol_wheel.scan --symbols SPY,NVDA --no-append --out /tmp/x.json
+    python -m vol_wheel.scan                      # mode from the ET clock (post-close appends IV history)
+    python -m vol_wheel.scan --mode intraday      # update latest.json + alerts only
+    python -m vol_wheel.scan --mode auto --schedule "30 14 * * 1-5"   # what the workflow runs
+    python -m vol_wheel.scan --symbols SPY,NVDA --no-append --no-alerts --out /tmp/x.json
 
 One ticker failing never fails the run; it shows up as an ERROR card with a note.
 """
@@ -19,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import data, ivhistory, signals, strikes
+from . import alerts, data, ivhistory, schedule, signals, strikes
 from .config import ROOT, load_rules, universe
 
 log = logging.getLogger("vol_wheel")
@@ -266,7 +268,20 @@ def load_index_hists(rules: dict) -> tuple[dict, list[str]]:
     return out, notes
 
 
-def run(rules: dict, symbols: list[str] | None = None, append: bool = True) -> dict:
+def coverage(rules: dict, results: list[dict], symbols: list[str] | None = None) -> dict:
+    """Check that every universe ticker made it into the output, and why any failed."""
+    expected = [t["symbol"] for t in universe(rules) if not symbols or t["symbol"] in symbols]
+    present = {r["symbol"] for r in results}
+    failed = {r["symbol"]: (r.get("reasons") or ["unknown"])[0] for r in results
+              if r["action"] in ("ERROR", "NO_DATA")}
+    no_chain = sorted(r["symbol"] for r in results
+                      if any("option chain unavailable" in n or "no option quotes" in n for n in r.get("notes", [])))
+    return {"expected": len(expected), "present": len(present & set(expected)),
+            "missing": [s for s in expected if s not in present], "failed": failed, "no_chain": no_chain}
+
+
+def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode: str = "close",
+        slot: str | None = None) -> dict:
     started = datetime.now(timezone.utc)
     notes: list[str] = []
     uni = universe(rules)
@@ -318,19 +333,25 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True) -> d
     partial = [r["symbol"] for r in results if r.get("ivr_source") == "partial"]
     if partial:
         notes.append(f"IVR uses partial (<{rules['iv_rank']['full_history_days']}d) IV history for {', '.join(partial)}")
-    errs = [r["symbol"] for r in results if r["action"] == "ERROR"]
-    if errs:
-        notes.append(f"Failed: {', '.join(errs)}")
+    cov = coverage(rules, results, symbols)
+    if cov["missing"]:
+        notes.append(f"Missing from output: {', '.join(cov['missing'])}")
+    for sym, why in cov["failed"].items():
+        notes.append(f"Failed: {sym} ({why})")
     for r in results:
+        if r["action"] == "ERROR":
+            continue  # already reported as "Failed: SYM (reason)"
         for nn in r.get("notes", []):
             if any(w in nn for w in ("unavailable", "failed", "short", "missing")):
                 notes.append(f"{r['symbol']}: {nn}")
-    notes.append("Quotes are CBOE delayed (~15 min) end-of-day snapshots")
+    notes.append("Quotes are CBOE delayed (~15 min) " + ("intraday snapshots; IV history is only "
+                 "appended after the close" if mode == "intraday" else "end-of-day snapshots"))
 
     buckets = [{"name": b, "cap": s["cap"], "core": s.get("core") or [], "opportunistic": s.get("opportunistic") or []}
                for b, s in rules["universe"].items()]
     return clean({
         "generated_at": started.isoformat(timespec="seconds"),
+        "scan_mode": mode, "scan_slot": slot, "coverage": cov,
         "scan_date": max((r.get("asof") or "" for r in results), default=date.today().isoformat()),
         "bull_gate": gate, "spy_regime": spy_regime, "notes": notes,
         "ivr_sources": {s: srcs.count(s) for s in set(srcs) if s},
@@ -348,11 +369,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", default=str(ROOT / "docs" / "data" / "latest.json"))
     ap.add_argument("--symbols", default=None, help="comma-separated subset")
     ap.add_argument("--no-append", action="store_true", help="don't write IV history")
+    ap.add_argument("--mode", default="auto", choices=["auto", "close", "intraday"],
+                    help="close appends IV history; intraday only updates latest.json and alerts")
+    ap.add_argument("--schedule", default="", help="cron string of the scheduled run (github.event.schedule)")
+    ap.add_argument("--no-alerts", action="store_true", help="don't send ntfy alerts")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     rules = load_rules(a.rules)
     syms = [s.strip().upper() for s in a.symbols.split(",")] if a.symbols else None
-    result = run(rules, syms, append=not a.no_append)
+    m = schedule.resolve_mode(a.mode, a.schedule or None, None, rules.get("schedule", {}))
+    log.info("mode %s (%s, %s ET)", m["mode"], m["reason"], m["et"])
+    if m["mode"] == "skip":
+        return 0
+    result = run(rules, syms, append=(m["mode"] == "close" and not a.no_append), mode=m["mode"], slot=m["slot"])
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     with open(a.out, "w") as f:
         json.dump(result, f, indent=1, allow_nan=False)
@@ -363,6 +392,16 @@ def main(argv: list[str] | None = None) -> int:
                  r.get("ivr"), r.get("ivr_source"), r.get("regime"))
     for nn in result["notes"]:
         log.info("note: %s", nn)
+    cov = result["coverage"]
+    log.info("coverage: %d/%d universe tickers present; missing %s; failed %s; no chain %s",
+             cov["present"], cov["expected"], cov["missing"] or "none", cov["failed"] or "none",
+             cov["no_chain"] or "none")
+    if not a.no_alerts:
+        try:
+            summary = alerts.process(result, m["mode"], rules)
+            log.info("alerts: %s", summary)
+        except Exception as e:  # noqa: BLE001 - alerting must never fail the scan
+            log.error("alerts failed: %s\n%s", e, traceback.format_exc())
     # Fail the job only if nothing at all came back.
     return 0 if ok else 1
 

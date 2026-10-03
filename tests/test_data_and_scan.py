@@ -125,3 +125,14 @@ def test_scan_ticker_no_append(rules, tmp_path, monkeypatch):
     t = {"symbol": "TST", "bucket": "Test", "role": "opportunistic", "cap": 10}
     r = scan.scan_ticker(t, rules, {"on": False}, {}, append=False, chain=ch, hist=hist)
     assert r["iv_history_days"] == 1 and not (tmp_path / "TST.csv").exists()
+
+
+def test_coverage_reports_missing_and_failed(rules):
+    results = [{"symbol": "SPY", "action": "WATCH", "notes": []},
+               {"symbol": "HOOD", "action": "ERROR", "reasons": ["CBOE history failed: 403"], "notes": []},
+               {"symbol": "CEG", "action": "NO_SHORT", "notes": ["option chain unavailable: timeout"]}]
+    cov = scan.coverage(rules, results)
+    assert cov["expected"] == 13 and cov["present"] == 3
+    assert "GLD" in cov["missing"] and "SPY" not in cov["missing"]
+    assert cov["failed"] == {"HOOD": "CBOE history failed: 403"}
+    assert cov["no_chain"] == ["CEG"]

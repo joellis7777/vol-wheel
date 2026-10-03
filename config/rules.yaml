@@ -142,3 +142,28 @@ data:
   timeout_s: 30
   retries: 3
   history_min_days: 220     # fall back to yfinance if CBOE gives fewer daily bars than this
+
+schedule:
+  timezone: America/New_York
+  close_cron: "35 21 * * 1-5"   # must match the post-close cron in .github/workflows/scan.yml
+  intraday_slots: ["10:30", "15:30"]   # ET; each has two UTC crons (EDT and EST), the script keeps the one that matches
+  slot_window_before_min: 20    # a scheduled run counts for a slot from 20 min before ...
+  slot_window_after_min: 55     # ... to 55 min after it (GitHub cron can start late)
+  market_open: "09:30"
+  market_close: "16:00"
+
+alerts:
+  enabled: true
+  ntfy_server: https://ntfy.sh  # topic comes from the NTFY_TOPIC repo secret, never from here
+  dashboard_url: https://joellis7777.github.io/vol-wheel/
+  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL]
+  sizing_tier: 500000           # CSP eligibility in the message is shown for this account size
+  max_rungs: 3                  # re-alert when price reaches rung 2 and 3 (1 and 2 expected moves past the last alerted strike)
+  daily_digest: true            # one low-priority post-close message listing WATCH names
+  priority: {trigger: high, upgrade_from_watch: default, digest: low}
+  tags:
+    SELL_PUT: chart_with_downwards_trend
+    SELL_CALL: chart_with_upwards_trend
+    PAIR_CALL: chart_with_upwards_trend
+    LEAP_BUY: seedling
+    DIGEST: eyes

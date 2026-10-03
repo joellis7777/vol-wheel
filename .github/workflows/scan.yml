@@ -2,8 +2,26 @@ name: scan
 
 on:
   schedule:
-    - cron: "35 21 * * 1-5"   # weekdays 21:35 UTC (after the 4pm ET close + CBOE delay)
+    # Post-close: 21:35 UTC = 17:35 EDT / 16:35 EST. Appends IV history.
+    # Keep in sync with schedule.close_cron in config/rules.yaml.
+    - cron: "35 21 * * 1-5"
+    # Intraday 10:30 ET and 15:30 ET. GitHub cron is UTC-only, so each slot has an EDT and an EST
+    # twin; vol_wheel.schedule keeps the one that lands on the slot and the other exits early.
+    - cron: "30 14 * * 1-5"   # 10:30 EDT
+    - cron: "30 15 * * 1-5"   # 10:30 EST
+    - cron: "30 19 * * 1-5"   # 15:30 EDT
+    - cron: "30 20 * * 1-5"   # 15:30 EST
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto = intraday during market hours, post-close otherwise"
+        type: choice
+        options: [auto, close, intraday]
+        default: auto
+      alerts:
+        description: "Send ntfy alerts"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -28,18 +46,28 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Scan
-        run: python -m vol_wheel.scan
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          MODE: ${{ inputs.mode || 'auto' }}
+          SCHEDULE: ${{ github.event.schedule }}
+          ALERTS: ${{ github.event_name == 'schedule' && 'true' || inputs.alerts }}
+        run: |
+          args=(--mode "$MODE" --schedule "$SCHEDULE")
+          if [ "$ALERTS" != "true" ]; then args+=(--no-alerts); fi
+          python -m vol_wheel.scan "${args[@]}"
 
-      - name: Commit IV history and dashboard data
+      - name: Commit IV history, alert state and dashboard data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/iv_history docs/data
+          [ -f data/alert_state.json ] && git add data/alert_state.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "scan: $(date -u +%Y-%m-%d) data"
+          mode=$(python -c "import json; print(json.load(open('docs/data/latest.json')).get('scan_mode','scan'))")
+          git commit -m "scan ($mode): $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do
             git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
             sleep $((i * 5))
