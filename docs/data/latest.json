@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T16:17:32+00:00",
+ "generated_at": "2026-10-03T16:20:00+00:00",
  "scan_date": "2026-10-02",
  "bull_gate": {
   "on": true,
@@ -17,9 +17,9 @@
   "Quotes are CBOE delayed (~15 min) end-of-day snapshots"
  ],
  "ivr_sources": {
-  "VXN": 1,
   "VIX": 1,
-  "proxy": 11
+  "proxy": 11,
+  "VXN": 1
  },
  "sizing": {
   "tiers": [
