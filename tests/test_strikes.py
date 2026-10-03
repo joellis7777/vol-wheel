@@ -166,3 +166,28 @@ def test_nice_step():
     assert strikes.nice_step(600) == 50
     assert strikes.nice_step(180) == 10
     assert strikes.nice_step(25) == 2
+
+
+def test_top_picks_are_spaced(rules):
+    """$1 strikes on a $100 stock: picks must be >= min_strike_gap_pct of price apart."""
+    sc = {**rules["strikes"], "min_strike_gap_pct": 2.0}
+    ch = data.parse_chain(make_chain_payload(price=100.0, atm_iv=0.30))
+    o = ch["options"]
+    e, dte, _ = strikes.choose_expiry(o, sc)
+    ctx = {"price": 100.0, "iv30": 0.30, "hv20": 0.25, "hist": None, "expiry": e, "dte": dte,
+           "poly": strikes.skew_fit(o[o["expiry"] == e], 100.0), "levels": [], "anchors": []}
+    ks = sorted(c["strike"] for c in strikes.select_strikes(o, "P", 20, ctx, sc)["candidates"])
+    assert len(ks) >= 2 and all(b - a >= 2.0 for a, b in zip(ks, ks[1:]))
+
+
+def test_skew_fit_ignores_wings():
+    """Steep far-OTM wings must not lift the fit in the tradeable zone."""
+    ch = data.parse_chain(make_chain_payload(price=100.0, atm_iv=0.30, skew=-0.15, smile=0.4))
+    o = ch["options"]
+    e = third_friday(2026, 11)
+    eo = o[o["expiry"] == e].copy()
+    wing = eo["delta"].abs() < 0.03
+    eo.loc[wing, "iv"] = eo.loc[wing, "iv"] + 0.5   # absurd wing IVs
+    poly = strikes.skew_fit(eo, 100.0)
+    row = eo[(eo["type"] == "P") & (eo["strike"] == 90.0)].iloc[0]
+    assert abs(strikes.skew_residual(poly, 90.0, row["iv"], 100.0)) < 0.005

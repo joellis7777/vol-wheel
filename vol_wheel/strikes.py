@@ -64,9 +64,15 @@ def choose_expiry(opts: pd.DataFrame, cfg: dict) -> tuple[date | None, int | Non
 
 # ---------------------------------------------------------------- skew
 
-def skew_fit(exp_opts: pd.DataFrame, price: float):
-    """Quadratic fit of IV vs log-moneyness on OTM quotes of one expiry. Returns poly or None."""
+def skew_fit(exp_opts: pd.DataFrame, price: float, delta_min: float = 5, delta_max: float = 60):
+    """Quadratic fit of IV vs log-moneyness on OTM quotes of one expiry. Returns poly or None.
+
+    Only quotes between delta_min and delta_max (absolute delta points) are used: the far wings
+    curve faster than a quadratic and would drag the fit above the 10-30 delta zone we trade.
+    """
     o = exp_opts[(exp_opts["iv"] > 0) & (exp_opts["bid"] > 0)]
+    dabs = o["delta"].abs() * 100
+    o = o[(dabs >= delta_min) & (dabs <= delta_max)]
     otm = o[((o["type"] == "P") & (o["strike"] <= price)) | ((o["type"] == "C") & (o["strike"] >= price))]
     if len(otm) < 5:
         return None
@@ -312,7 +318,16 @@ def select_strikes(opts: pd.DataFrame, side: str, target_delta: float, ctx: dict
                         + w["assignment"] * row["f_assignment"])
         row["reason"] = reason(row, side)
     rows.sort(key=lambda x: (-x["score"], -x["annualized"]))
-    res["candidates"] = [_clean(x) for x in rows[:top_n]]
+    # Top N, skipping strikes within min_strike_gap_pct of one already picked (SPY's $1 strikes
+    # would otherwise give three near-identical picks).
+    gap = cfg.get("min_strike_gap_pct", 0) / 100.0 * price
+    picked: list[dict] = []
+    for x in rows:
+        if all(abs(x["strike"] - p["strike"]) >= gap - 1e-9 for p in picked):
+            picked.append(x)
+        if len(picked) == top_n:
+            break
+    res["candidates"] = [_clean(x) for x in picked]
     return res
 
 
@@ -323,7 +338,7 @@ def reason(row: dict, side: str) -> str:
         label = LEVEL_LABELS.get(lv["kind"], lv["kind"])
         if lv["kind"] == "round":
             label = f"round {lv['value']:g}"
-        parts.append(f"{d:.1f}% {'under' if side == 'P' else 'over'} {label}")
+        parts.append(f"at {label}" if d < 0.05 else f"{d:.1f}% {'under' if side == 'P' else 'over'} {label}")
     else:
         parts.append("no nearby " + ("support" if side == "P" else "resistance"))
     rp = row.get("iv_resid_pts")

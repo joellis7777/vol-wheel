@@ -46,6 +46,9 @@ one line per ticker (action, IVR, source, regime) and all data-quality notes.
 
 ## Data sources
 
+Shapes below were verified on the first Actions run (2026-10-03): all 13 tickers plus `_VIX`/`_VXN`
+parsed from CBOE with no fallback needed; history goes back to ~2004 for most names.
+
 - Chains: `https://cdn.cboe.com/api/global/delayed_quotes/options/{SYM}.json`
   - `timestamp` (ET, fetch time), `data.current_price`, `data.iv30` (vol points, e.g. 15.2),
     `data.open/high/low/close/prev_day_close`, `data.options[]` with `option` (OCC symbol,
@@ -102,11 +105,13 @@ one line per ticker (action, IVR, source, regime) and all data-quality notes.
     Each level type has a `strength` multiplier. Score 1 at 0.5–3% beyond the level, ramp 0.5→1
     inside 0.5%, fade to 0 at 8%; −0.5×strength penalty if within 2% on the wrong side of a level.
   - Richness: 50% skew residual (IV minus quadratic fit of IV vs ln(K/S) on OTM quotes of that
-    expiry, −2..+3 pts → 0..1) + 50% IV/HV20 (0.8..1.5 → 0..1).
+    expiry between 5Δ and 60Δ, −2..+3 pts → 0..1) + 50% IV/HV20 (0.8..1.5 → 0..1). The delta
+    limits matter: fitting the far wings biased every tradeable strike ~3–5 pts "cheap".
   - ROC: annualized mid/strike (calls: mid/price), ranked within the band (best = 1).
   - Cushion: puts (price − BE)/move, calls (K − price)/move, move = price·iv30·√(DTE/365); full at 1.5.
   - Assignment fit: puts BE ≤ SMA200 or a 252d swing low (+1%, fading to 0 at +10%); calls K > price.
-- Top 3 per side with a one-line reason.
+- Top 3 per side with a one-line reason, at least `min_strike_gap_pct` (0.5%) of price apart so
+  SPY/QQQ's $1 strikes don't yield three near-identical picks.
 - LEAP: 365–548 DTE calls, 70–80Δ, liquid if possible; lowest extrinsic % of price.
 - Ladder: rung 1 = top put; rungs 2–3 = 1 and 2 forty-five-day expected moves lower, snapped down
   to a listed strike. IBIT/MSTR use max(iv30, HV20) for the move (weekend gaps).

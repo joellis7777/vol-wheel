@@ -198,7 +198,8 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         out["notes"].append(f"no usable expiry ({exp_note})")
     else:
         exp_opts = opts[opts["expiry"] == expiry]
-        poly = strikes.skew_fit(exp_opts, price)
+        rc = sc["richness"]
+        poly = strikes.skew_fit(exp_opts, price, rc.get("fit_delta_min", 5), rc.get("fit_delta_max", 60))
         ac = sc["assignment"]
         recent = hist.iloc[-ac.get("swing_lookback_days", 252):]
         anchors = [signals.sma(close, 200)] + [v for v in signals.swing_points(

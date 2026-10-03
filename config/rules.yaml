@@ -89,6 +89,7 @@ strikes:
   put_min_credit_pct_low_delta: 0.3    # puts < 20 delta need mid >= 0.3% of strike
   put_high_delta_cutoff: 20
   top_n: 3
+  min_strike_gap_pct: 0.5   # top picks must be at least 0.5% of price apart
 
   weights:
     support: 0.30
@@ -117,6 +118,8 @@ strikes:
     iv_hv_floor: 0.8        # IV / HV20 mapped to 0..1
     iv_hv_cap: 1.5
     resid_weight: 0.5       # share of richness from the skew residual (rest from IV/HV)
+    fit_delta_min: 5        # skew curve is fit on OTM quotes between these deltas
+    fit_delta_max: 60
 
   cushion:
     full_score_moves: 1.5
