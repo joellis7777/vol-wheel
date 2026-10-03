@@ -1,5 +1,14 @@
 {
- "generated_at": "2026-10-03T16:20:00+00:00",
+ "generated_at": "2026-10-03T16:47:49+00:00",
+ "scan_mode": "intraday",
+ "scan_slot": null,
+ "coverage": {
+  "expected": 13,
+  "present": 13,
+  "missing": [],
+  "failed": {},
+  "no_chain": []
+ },
  "scan_date": "2026-10-02",
  "bull_gate": {
   "on": true,
@@ -14,12 +23,12 @@
  },
  "notes": [
   "IVR is a realized-vol proxy for 11 names until 60 days of IV history are stored",
-  "Quotes are CBOE delayed (~15 min) end-of-day snapshots"
+  "Quotes are CBOE delayed (~15 min) intraday snapshots; IV history is only appended after the close"
  ],
  "ivr_sources": {
   "VIX": 1,
-  "proxy": 11,
-  "VXN": 1
+  "VXN": 1,
+  "proxy": 11
  },
  "sizing": {
   "tiers": [
