@@ -228,7 +228,10 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     var spy = d.spy_regime ? '<span class="pill">SPY regime: ' + esc(d.spy_regime.regime) + " (" + num(d.spy_regime.extension_pct) + "th pct)</span>" : "";
     var sma = g.spy_sma200 ? '<span class="pill">SPY ' + num(g.spy_close, 2) + (g.spy_above_sma200 ? " > " : " < ") + "SMA200 " + num(g.spy_sma200, 2) + "</span>" : "";
     var mode = !g.bull_mode ? '<span class="pill off">bull_mode off in config</span>' : "";
-    $("status").innerHTML = gate + spy + sma + mode;
+    var scan = d.scan_mode === "intraday"
+      ? '<span class="pill">Intraday' + (d.scan_slot ? " " + esc(d.scan_slot) + " ET" : "") + "</span>"
+      : '<span class="pill">Post-close</span>';
+    $("status").innerHTML = scan + gate + spy + sma + mode;
     var notes = d.notes || [];
     if (notes.length) {
       $("notes").hidden = false;

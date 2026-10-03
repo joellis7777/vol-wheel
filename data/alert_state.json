@@ -1,0 +1,69 @@
+{
+ "tickers": {
+  "AMZN": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "CEG": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "GLD": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "GOOG": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "HOOD": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "IBIT": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "MRVL": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "MSTR": {
+   "action": "WATCH",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "NVDA": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "QQQ": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "SOFI": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "SPY": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-02"
+  },
+  "TSLA": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-02"
+  }
+ }
+}

@@ -21,13 +21,18 @@ vol_wheel/
   ivhistory.py             data/iv_history/{SYM}.csv upsert/load
   strikes.py               expiry choice, skew fit, support/resistance levels, filters, 5-factor
                            scoring, reasons, LEAP candidate, ladder
-  scan.py                  orchestration, action decision, JSON output; `python -m vol_wheel.scan`
-data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date
+  scan.py                  orchestration, action decision, coverage check, JSON output, then alerts;
+                           `python -m vol_wheel.scan`
+  schedule.py              resolve_mode(): post-close / intraday / skip from the cron string + ET clock
+  alerts.py                ntfy messages, dedup against data/alert_state.json, digest, test alert
+data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
+data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
 docs/index.html            static phone-first dashboard (vanilla JS, light/dark) -> data/latest.json
 docs/data/latest.json      written by the scan workflow (do not hand-edit)
 docs/.nojekyll             serve docs/ as-is on GitHub Pages
 tests/                     pytest; conftest.py builds synthetic histories + Black-Scholes chains
-.github/workflows/scan.yml weekdays 21:35 UTC + manual: scan, commit data, push (GITHUB_TOKEN)
+.github/workflows/scan.yml post-close 21:35 UTC + intraday 10:30/15:30 ET + manual; commits data
+.github/workflows/alert-test.yml  manual "send test alert" to the NTFY_TOPIC phone topic
 .github/workflows/tests.yml pytest on push/PR
 ```
 
@@ -36,9 +41,50 @@ tests/                     pytest; conftest.py builds synthetic histories + Blac
 ```
 pip install -r requirements-dev.txt
 python -m pytest -q
-python -m vol_wheel.scan                                   # full run, appends IV history
-python -m vol_wheel.scan --symbols SPY,NVDA --no-append --out /tmp/x.json
+python -m vol_wheel.scan                                   # mode from the ET clock
+python -m vol_wheel.scan --mode close                      # post-close: appends IV history
+python -m vol_wheel.scan --mode intraday                   # latest.json + alerts only
+python -m vol_wheel.scan --symbols SPY,NVDA --no-append --no-alerts --out /tmp/x.json
+NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
 ```
+
+## Schedule and modes (`schedule.py`)
+
+- GitHub cron is UTC-only. Post-close is `35 21 * * 1-5` (16:35 EST / 17:35 EDT; must equal
+  `schedule.close_cron` in rules.yaml). Each intraday slot (10:30, 15:30 ET) has two crons, one for
+  EDT (14:30/19:30 UTC) and one for EST (15:30/20:30 UTC). `resolve_mode("auto", cron, now)` keeps
+  the twin whose ET time is within −20/+55 min of a slot and returns `skip` for the other, so
+  exactly one intraday scan runs per slot year-round, even when GitHub starts a cron late.
+- Manual runs (`workflow_dispatch`, input `mode`): `auto` = intraday during 09:30–16:00 ET on a
+  weekday, post-close otherwise; `close` / `intraday` force it.
+- Only `close` appends IV history. Intraday runs rewrite `latest.json` (`scan_mode`, `scan_slot`,
+  shown as a header pill) and send alerts. The commit message names the mode.
+
+## Alerts (`alerts.py`, config `alerts:`)
+
+- After every scan: POST `https://ntfy.sh/$NTFY_TOPIC`. The topic comes only from the
+  `NTFY_TOPIC` repo secret (env var); never put it in the repo or logs. Missing secret = skip
+  silently and record nothing, so triggers still alert once it's added. Alerting errors never fail
+  the scan.
+- Title/priority/tags/click are sent as query params (ntfy treats them like headers and they carry
+  UTF-8 like "·" and "Δ" safely). Click opens the dashboard.
+- Triggers: SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL (Mid regime + IVR ≥ 70 10Δ call add-on).
+  Priority high; default when the previous scan saw WATCH ("Upgraded from WATCH"). Tags:
+  chart_with_downwards_trend (puts), chart_with_upwards_trend (calls), seedling (LEAPs).
+- Dedup in `data/alert_state.json` per ticker + trigger: alert when there is no record or the
+  record is inactive from an earlier day; while active, re-alert only at the next ladder rung
+  (price one 45-day expected move past the last alerted strike; LEAPs: past the last alerted
+  price), up to `max_rungs`. A trigger that lapses and returns the same day is reactivated
+  silently. ERROR/NO_DATA cards don't touch state. A failed send isn't recorded (retried next scan).
+- Body: price/change, regime, IVR (+source), top-scored strike with expiry, delta, mid, annualized,
+  the value reason, and CSP eligibility at `alerts.sizing_tier` ($500k).
+- `alerts.daily_digest`: one low-priority post-close message listing WATCH names, once per day.
+
+## Coverage check
+
+`scan.coverage()` compares the output with the universe: `latest.json.coverage` has
+`expected/present/missing/failed{sym: reason}/no_chain`, failures also appear as header notes
+("Failed: SYM (reason)"), and the job log prints a `coverage:` line.
 
 The Claude Code cloud sandbox cannot reach cdn.cboe.com or Yahoo (proxy 403), so real-data checks
 happen on the Actions runner: trigger `scan` (workflow_dispatch) and read the job log, which prints
