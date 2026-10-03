@@ -1,0 +1,5259 @@
+{
+ "generated_at": "2026-10-03T16:17:32+00:00",
+ "scan_date": "2026-10-02",
+ "bull_gate": {
+  "on": true,
+  "bull_mode": true,
+  "spy_close": 769.64,
+  "spy_sma200": 720.471,
+  "spy_above_sma200": true
+ },
+ "spy_regime": {
+  "regime": "Mid",
+  "extension_pct": 33.9947
+ },
+ "notes": [
+  "IVR is a realized-vol proxy for 11 names until 60 days of IV history are stored",
+  "Quotes are CBOE delayed (~15 min) end-of-day snapshots"
+ ],
+ "ivr_sources": {
+  "VXN": 1,
+  "VIX": 1,
+  "proxy": 11
+ },
+ "sizing": {
+  "tiers": [
+   25000,
+   50000,
+   150000,
+   500000,
+   1000000
+  ],
+  "default_tier": 500000,
+  "entry_pct": 5,
+  "ladder_rungs": 3,
+  "ladder_dte": 45
+ },
+ "buckets": [
+  {
+   "name": "Index",
+   "cap": 25,
+   "core": [
+    "QQQ",
+    "SPY"
+   ],
+   "opportunistic": []
+  },
+  {
+   "name": "Crypto",
+   "cap": 20,
+   "core": [
+    "IBIT"
+   ],
+   "opportunistic": [
+    "MSTR"
+   ]
+  },
+  {
+   "name": "AI semis",
+   "cap": 15,
+   "core": [
+    "NVDA"
+   ],
+   "opportunistic": [
+    "MRVL"
+   ]
+  },
+  {
+   "name": "Platform",
+   "cap": 15,
+   "core": [
+    "GOOG"
+   ],
+   "opportunistic": [
+    "AMZN"
+   ]
+  },
+  {
+   "name": "High-beta",
+   "cap": 15,
+   "core": [
+    "TSLA"
+   ],
+   "opportunistic": [
+    "HOOD",
+    "SOFI"
+   ]
+  },
+  {
+   "name": "Power",
+   "cap": 10,
+   "core": [
+    "CEG"
+   ],
+   "opportunistic": []
+  },
+  {
+   "name": "Hard asset",
+   "cap": 10,
+   "core": [
+    "GLD"
+   ],
+   "opportunistic": []
+  }
+ ],
+ "total_deployed_cap": 80,
+ "per_name_cap": 15,
+ "per_name_cap_index": 25,
+ "momentum_names": [
+  "TSLA",
+  "MSTR",
+  "HOOD",
+  "NVDA",
+  "IBIT"
+ ],
+ "thresholds": {
+  "ivr_no_short": 30,
+  "ivr_sell": 50,
+  "ivr_both_sides": 70,
+  "both_sides_call_delta": 10,
+  "spike_sigma": 1.5,
+  "spike_max_days": 3,
+  "spike_hv_window": 20
+ },
+ "tickers": [
+  {
+   "symbol": "MSTR",
+   "bucket": "Crypto",
+   "role": "opportunistic",
+   "asof": "2026-10-02",
+   "action": "WATCH",
+   "label": "WATCH",
+   "priority": 3,
+   "reasons": [
+    "IVR 73 \u2265 50, no 1.5\u03c3 spike yet",
+    "Opportunistic name: spikes only"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": false,
+    "core_name": false
+   },
+   "price": 160.1765,
+   "prev_close": 160.5,
+   "iv30": 0.6258,
+   "hv20": 0.7903,
+   "iv_hv": 0.7919,
+   "ivr": 72.619,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Mid",
+   "extension_pct": 45.2381,
+   "price_to_sma200": 1.1778,
+   "spike": {
+    "dir": "up",
+    "size": 0.5407,
+    "k": 2,
+    "down": 0.0331,
+    "up": 0.5407,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 63.0952,
+   "range_pos": 0.8657,
+   "sma50": 123.6101,
+   "sma200": 135.9921,
+   "history_days": 5725,
+   "history_source": "cboe",
+   "notes": [
+    "Momentum name: cover at most 50% with calls"
+   ],
+   "change_pct": -0.2016,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 123.02,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 123.33,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 123.61,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 130.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 135.99,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 140.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 150.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 156.11,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 160.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 160.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 170.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 171.19,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 180.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 183.25,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 190.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 197.0,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 200.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 200.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 3,
+    "passed": 3,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 135.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.198,
+      "bid": 4.6,
+      "ask": 4.85,
+      "mid": 4.725,
+      "iv": 0.6537,
+      "oi": 1329,
+      "annualized": 0.2661,
+      "breakeven": 130.28,
+      "cushion_moves": 0.8226,
+      "iv_resid_pts": -0.6289,
+      "level": {
+       "value": 135.99,
+       "kind": "sma200",
+       "label": "200-day avg"
+      },
+      "level_dist_pct": 0.7296,
+      "f_support": 1.0,
+      "f_richness": 0.1565,
+      "f_cushion": 0.5484,
+      "f_assignment": 1.0,
+      "collateral": 13500.0,
+      "f_roc": 0.5,
+      "score": 0.6214,
+      "reason": "0.7% under 200-day avg \u00b7 IV 0.6 pts cheap \u00b7 27% annualized \u00b7 BE 0.8 moves away"
+     },
+     {
+      "strike": 140.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.242,
+      "bid": 6.05,
+      "ask": 6.35,
+      "mid": 6.2,
+      "iv": 0.6537,
+      "oi": 1611,
+      "annualized": 0.3368,
+      "breakeven": 133.8,
+      "cushion_moves": 0.7256,
+      "iv_resid_pts": -0.1969,
+      "level": {
+       "value": 140.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 0.0,
+      "f_support": 0.35,
+      "f_richness": 0.1997,
+      "f_cushion": 0.4837,
+      "f_assignment": 1.0,
+      "collateral": 14000.0,
+      "f_roc": 1.0,
+      "score": 0.5275,
+      "reason": "at round 140 \u00b7 IV 0.2 pts cheap \u00b7 34% annualized \u00b7 BE 0.7 moves away"
+     },
+     {
+      "strike": 130.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.159,
+      "bid": 3.5,
+      "ask": 3.75,
+      "mid": 3.625,
+      "iv": 0.6622,
+      "oi": 2062,
+      "annualized": 0.212,
+      "breakeven": 126.38,
+      "cushion_moves": 0.9299,
+      "iv_resid_pts": -0.3751,
+      "level": {
+       "value": 135.99,
+       "kind": "sma200",
+       "label": "200-day avg"
+      },
+      "level_dist_pct": 4.4062,
+      "f_support": 0.7188,
+      "f_richness": 0.1896,
+      "f_cushion": 0.6199,
+      "f_assignment": 1.0,
+      "collateral": 13000.0,
+      "f_roc": 0.0,
+      "score": 0.456,
+      "reason": "4.4% under 200-day avg \u00b7 IV 0.4 pts cheap \u00b7 21% annualized \u00b7 BE 0.9 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 7,
+    "passed": 7,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 200.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.236,
+      "bid": 4.8,
+      "ask": 4.95,
+      "mid": 4.875,
+      "iv": 0.6914,
+      "oi": 3866,
+      "annualized": 0.2314,
+      "breakeven": 204.88,
+      "cushion_moves": 1.0955,
+      "iv_resid_pts": 0.3977,
+      "level": {
+       "value": 197.0,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 1.5228,
+      "f_support": 1.0,
+      "f_richness": 0.2932,
+      "f_cushion": 0.7304,
+      "f_assignment": 1.0,
+      "collateral": 20000.0,
+      "f_roc": 0.8333,
+      "score": 0.7495,
+      "reason": "1.5% over swing high \u00b7 IV 0.4 pts rich \u00b7 23% annualized \u00b7 1.1 moves OTM"
+     },
+     {
+      "strike": 205.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.211,
+      "bid": 4.15,
+      "ask": 4.35,
+      "mid": 4.25,
+      "iv": 0.6976,
+      "oi": 1094,
+      "annualized": 0.2018,
+      "breakeven": 209.25,
+      "cushion_moves": 1.2331,
+      "iv_resid_pts": 0.2999,
+      "level": {
+       "value": 200.0,
+       "kind": "oi_wall_call",
+       "label": "call-OI wall"
+      },
+      "level_dist_pct": 2.5,
+      "f_support": 0.9,
+      "f_richness": 0.2891,
+      "f_cushion": 0.8221,
+      "f_assignment": 1.0,
+      "collateral": 20500.0,
+      "f_roc": 0.6667,
+      "score": 0.6989,
+      "reason": "2.5% over call-OI wall \u00b7 IV 0.3 pts rich \u00b7 20% annualized \u00b7 1.2 moves OTM"
+     },
+     {
+      "strike": 210.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.189,
+      "bid": 3.65,
+      "ask": 3.8,
+      "mid": 3.725,
+      "iv": 0.7059,
+      "oi": 832,
+      "annualized": 0.1768,
+      "breakeven": 213.72,
+      "cushion_moves": 1.3706,
+      "iv_resid_pts": 0.3673,
+      "level": {
+       "value": 200.0,
+       "kind": "oi_wall_call",
+       "label": "call-OI wall"
+      },
+      "level_dist_pct": 5.0,
+      "f_support": 0.54,
+      "f_richness": 0.3033,
+      "f_cushion": 0.9138,
+      "f_assignment": 1.0,
+      "collateral": 21000.0,
+      "f_roc": 0.5,
+      "score": 0.5749,
+      "reason": "5.0% over call-OI wall \u00b7 IV 0.4 pts rich \u00b7 18% annualized \u00b7 1.4 moves OTM"
+     }
+    ]
+   },
+   "em45": 44.4479,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 135.0,
+     "target": 135.0,
+     "collateral": 13500.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 44.45
+    },
+    {
+     "rung": 2,
+     "strike": 90.0,
+     "target": 90.55,
+     "collateral": 9000.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 44.45
+    },
+    {
+     "rung": 3,
+     "strike": 45.0,
+     "target": 46.1,
+     "collateral": 4500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 44.45
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 125.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.79,
+    "bid": 64.0,
+    "ask": 70.2,
+    "mid": 67.1,
+    "iv": 0.7119,
+    "oi": 147,
+    "extrinsic": 31.92,
+    "extrinsic_pct": 19.93,
+    "cost": 6710.0,
+    "exposure": 12662.0,
+    "breakeven": 192.1
+   }
+  },
+  {
+   "symbol": "TSLA",
+   "bucket": "High-beta",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NEUTRAL",
+   "label": "WAIT",
+   "priority": 4,
+   "reasons": [
+    "IVR 30 between 30 and 50: wait"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": false,
+    "core_name": true
+   },
+   "price": 371.43,
+   "prev_close": 354.11,
+   "iv30": 0.4301,
+   "hv20": 0.3935,
+   "iv_hv": 1.093,
+   "ivr": 30.1587,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Mid",
+   "extension_pct": 30.6878,
+   "price_to_sma200": 0.9447,
+   "spike": {
+    "dir": "up",
+    "size": 1.9313,
+    "k": 1,
+    "down": 0.0,
+    "up": 1.9313,
+    "is_spike": true
+   },
+   "consolidation": false,
+   "bb_pct": 15.0794,
+   "range_pos": 0.8278,
+   "sma50": 347.6004,
+   "sma200": 393.1862,
+   "history_days": 4092,
+   "history_source": "cboe",
+   "notes": [
+    "Momentum name: cover at most 50% with calls"
+   ],
+   "change_pct": 4.8911,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 280.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 297.38,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 300.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 320.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 340.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 347.6,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 350.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 354.05,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 360.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 364.02,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 368.6,
+     "kind": "swing",
+     "label": "swing low"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 376.28,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 380.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 384.04,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 386.83,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 393.19,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 400.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 400.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 420.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 432.86,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 440.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 445.6,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 453.4,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 460.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 5,
+    "passed": 5,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 340.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.253,
+      "bid": 9.1,
+      "ask": 9.25,
+      "mid": 9.175,
+      "iv": 0.4173,
+      "oi": 3449,
+      "annualized": 0.2052,
+      "breakeven": 330.82,
+      "cushion_moves": 0.7009,
+      "iv_resid_pts": -0.292,
+      "level": {
+       "value": 347.6,
+       "kind": "sma50",
+       "label": "50-day avg"
+      },
+      "level_dist_pct": 2.1865,
+      "f_support": 0.9,
+      "f_richness": 0.3568,
+      "f_cushion": 0.4673,
+      "f_assignment": 1.0,
+      "collateral": 34000.0,
+      "f_roc": 1.0,
+      "score": 0.7293,
+      "reason": "2.2% under 50-day avg \u00b7 IV 0.3 pts cheap \u00b7 21% annualized \u00b7 BE 0.7 moves away"
+     },
+     {
+      "strike": 335.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.224,
+      "bid": 7.75,
+      "ask": 7.9,
+      "mid": 7.825,
+      "iv": 0.4191,
+      "oi": 3395,
+      "annualized": 0.1776,
+      "breakeven": 327.18,
+      "cushion_moves": 0.7639,
+      "iv_resid_pts": -0.3562,
+      "level": {
+       "value": 347.6,
+       "kind": "sma50",
+       "label": "50-day avg"
+      },
+      "level_dist_pct": 3.625,
+      "f_support": 0.7875,
+      "f_richness": 0.3537,
+      "f_cushion": 0.5093,
+      "f_assignment": 1.0,
+      "collateral": 33500.0,
+      "f_roc": 0.75,
+      "score": 0.6511,
+      "reason": "3.6% under 50-day avg \u00b7 IV 0.4 pts cheap \u00b7 18% annualized \u00b7 BE 0.8 moves away"
+     },
+     {
+      "strike": 330.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.197,
+      "bid": 6.6,
+      "ask": 6.75,
+      "mid": 6.675,
+      "iv": 0.4222,
+      "oi": 7920,
+      "annualized": 0.1538,
+      "breakeven": 323.32,
+      "cushion_moves": 0.8303,
+      "iv_resid_pts": -0.3231,
+      "level": {
+       "value": 340.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 2.9412,
+      "f_support": 0.7,
+      "f_richness": 0.3626,
+      "f_cushion": 0.5536,
+      "f_assignment": 1.0,
+      "collateral": 33000.0,
+      "f_roc": 0.5,
+      "score": 0.5837,
+      "reason": "2.9% under round 340 \u00b7 IV 0.3 pts cheap \u00b7 15% annualized \u00b7 BE 0.8 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 8,
+    "passed": 8,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 420.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.242,
+      "bid": 7.4,
+      "ask": 7.55,
+      "mid": 7.475,
+      "iv": 0.4174,
+      "oi": 3748,
+      "annualized": 0.153,
+      "breakeven": 427.48,
+      "cushion_moves": 0.8384,
+      "iv_resid_pts": 0.119,
+      "level": {
+       "value": 400.0,
+       "kind": "oi_wall_call",
+       "label": "call-OI wall"
+      },
+      "level_dist_pct": 5.0,
+      "f_support": 0.54,
+      "f_richness": 0.3981,
+      "f_cushion": 0.5589,
+      "f_assignment": 1.0,
+      "collateral": 42000.0,
+      "f_roc": 0.8571,
+      "score": 0.6168,
+      "reason": "5.0% over call-OI wall \u00b7 IV 0.1 pts rich \u00b7 15% annualized \u00b7 0.8 moves OTM"
+     },
+     {
+      "strike": 415.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.267,
+      "bid": 8.4,
+      "ask": 8.55,
+      "mid": 8.475,
+      "iv": 0.4168,
+      "oi": 2436,
+      "annualized": 0.1735,
+      "breakeven": 423.48,
+      "cushion_moves": 0.7521,
+      "iv_resid_pts": 0.1902,
+      "level": {
+       "value": 400.0,
+       "kind": "oi_wall_call",
+       "label": "call-OI wall"
+      },
+      "level_dist_pct": 3.75,
+      "f_support": 0.415,
+      "f_richness": 0.4041,
+      "f_cushion": 0.5014,
+      "f_assignment": 1.0,
+      "collateral": 41500.0,
+      "f_roc": 1.0,
+      "score": 0.6007,
+      "reason": "3.8% over call-OI wall \u00b7 IV 0.2 pts rich \u00b7 17% annualized \u00b7 0.8 moves OTM"
+     },
+     {
+      "strike": 435.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.179,
+      "bid": 5.05,
+      "ask": 5.2,
+      "mid": 5.125,
+      "iv": 0.4211,
+      "oi": 1927,
+      "annualized": 0.1049,
+      "breakeven": 440.12,
+      "cushion_moves": 1.0973,
+      "iv_resid_pts": -0.0022,
+      "level": {
+       "value": 432.86,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 0.4944,
+      "f_support": 0.6444,
+      "f_richness": 0.3927,
+      "f_cushion": 0.7315,
+      "f_assignment": 1.0,
+      "collateral": 43500.0,
+      "f_roc": 0.4286,
+      "score": 0.5869,
+      "reason": "0.5% over swing high \u00b7 IV on the skew curve \u00b7 10% annualized \u00b7 1.1 moves OTM"
+     }
+    ]
+   },
+   "em45": 56.094,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 340.0,
+     "target": 340.0,
+     "collateral": 34000.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 56.09
+    },
+    {
+     "rung": 2,
+     "strike": 280.0,
+     "target": 283.91,
+     "collateral": 28000.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 56.09
+    },
+    {
+     "rung": 3,
+     "strike": 225.0,
+     "target": 227.81,
+     "collateral": 22500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 56.09
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 300.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.789,
+    "bid": 118.55,
+    "ask": 120.55,
+    "mid": 119.55,
+    "iv": 0.4629,
+    "oi": 5358,
+    "extrinsic": 48.12,
+    "extrinsic_pct": 12.96,
+    "cost": 11955.0,
+    "exposure": 29313.0,
+    "breakeven": 419.55
+   }
+  },
+  {
+   "symbol": "GOOG",
+   "bucket": "Platform",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NEUTRAL",
+   "label": "WAIT",
+   "priority": 4,
+   "reasons": [
+    "IVR 41 between 30 and 50: wait"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": false,
+    "core_name": true
+   },
+   "price": 340.0514,
+   "prev_close": 334.93,
+   "iv30": 0.3453,
+   "hv20": 0.2508,
+   "iv_hv": 1.3769,
+   "ivr": 40.873,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Low",
+   "extension_pct": 14.418,
+   "price_to_sma200": 1.0079,
+   "spike": {
+    "dir": "up",
+    "size": 0.966,
+    "k": 1,
+    "down": 0.0933,
+    "up": 0.966,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 9.9206,
+   "range_pos": 0.3507,
+   "sma50": 341.7686,
+   "sma200": 337.3872,
+   "history_days": 5220,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": 1.5291,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 260.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 280.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 300.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 314.89,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 320.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 320.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 325.63,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 333.69,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 337.39,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 340.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 341.77,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 348.08,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 352.71,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 359.98,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 360.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 370.89,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 373.6,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 374.35,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 380.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 380.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 381.81,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 400.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 404.47,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 420.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 30,
+    "band": [
+     23,
+     37
+    ],
+    "in_band": 4,
+    "passed": 4,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 330.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.365,
+      "bid": 10.95,
+      "ask": 11.2,
+      "mid": 11.075,
+      "iv": 0.3347,
+      "oi": 4242,
+      "annualized": 0.2552,
+      "breakeven": 318.93,
+      "cushion_moves": 0.4961,
+      "iv_resid_pts": -0.1285,
+      "level": {
+       "value": 337.39,
+       "kind": "sma200",
+       "label": "200-day avg"
+      },
+      "level_dist_pct": 2.1895,
+      "f_support": 0.5,
+      "f_richness": 0.569,
+      "f_cushion": 0.3307,
+      "f_assignment": 1.0,
+      "collateral": 33000.0,
+      "f_roc": 1.0,
+      "score": 0.6419,
+      "reason": "2.2% under 200-day avg \u00b7 IV 0.1 pts cheap \u00b7 26% annualized \u00b7 BE 0.5 moves away"
+     },
+     {
+      "strike": 325.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.32,
+      "bid": 9.15,
+      "ask": 9.45,
+      "mid": 9.3,
+      "iv": 0.3376,
+      "oi": 1398,
+      "annualized": 0.2176,
+      "breakeven": 315.7,
+      "cushion_moves": 0.5719,
+      "iv_resid_pts": 0.0085,
+      "level": {
+       "value": 333.69,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 2.6042,
+      "f_support": 0.55,
+      "f_richness": 0.5909,
+      "f_cushion": 0.3812,
+      "f_assignment": 1.0,
+      "collateral": 32500.0,
+      "f_roc": 0.6667,
+      "score": 0.6032,
+      "reason": "2.6% under swing low \u00b7 IV on the skew curve \u00b7 22% annualized \u00b7 BE 0.6 moves away"
+     },
+     {
+      "strike": 320.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.277,
+      "bid": 7.45,
+      "ask": 7.75,
+      "mid": 7.6,
+      "iv": 0.3381,
+      "oi": 6218,
+      "annualized": 0.1806,
+      "breakeven": 312.4,
+      "cushion_moves": 0.6493,
+      "iv_resid_pts": -0.129,
+      "level": {
+       "value": 325.63,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 1.729,
+      "f_support": 0.5,
+      "f_richness": 0.5786,
+      "f_cushion": 0.4329,
+      "f_assignment": 1.0,
+      "collateral": 32000.0,
+      "f_roc": 0.3333,
+      "score": 0.5262,
+      "reason": "1.7% under swing low \u00b7 IV 0.1 pts cheap \u00b7 18% annualized \u00b7 BE 0.6 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 10,
+    "band": [
+     3,
+     17
+    ],
+    "in_band": 12,
+    "passed": 3,
+    "rejected": {
+     "spread": 9
+    },
+    "candidates": [
+     {
+      "strike": 390.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.163,
+      "bid": 3.3,
+      "ask": 3.45,
+      "mid": 3.375,
+      "iv": 0.3378,
+      "oi": 4581,
+      "annualized": 0.0755,
+      "breakeven": 393.38,
+      "cushion_moves": 1.173,
+      "iv_resid_pts": -0.1949,
+      "level": {
+       "value": 381.81,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 2.145,
+      "f_support": 1.0,
+      "f_richness": 0.5711,
+      "f_cushion": 0.782,
+      "f_assignment": 1.0,
+      "collateral": 39000.0,
+      "f_roc": 1.0,
+      "score": 0.8601,
+      "reason": "2.1% over swing high \u00b7 IV 0.2 pts cheap \u00b7 8% annualized \u00b7 1.2 moves OTM"
+     },
+     {
+      "strike": 420.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.066,
+      "bid": 1.12,
+      "ask": 1.22,
+      "mid": 1.17,
+      "iv": 0.3525,
+      "oi": 7328,
+      "annualized": 0.0262,
+      "breakeven": 421.17,
+      "cushion_moves": 1.8775,
+      "iv_resid_pts": -0.0952,
+      "level": {
+       "value": 404.47,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 3.8396,
+      "f_support": 0.8321,
+      "f_richness": 0.623,
+      "f_cushion": 1.0,
+      "f_assignment": 1.0,
+      "collateral": 42000.0,
+      "f_roc": 0.0,
+      "score": 0.6554,
+      "reason": "3.8% over swing high \u00b7 IV 0.1 pts cheap \u00b7 3% annualized \u00b7 1.9 moves OTM"
+     },
+     {
+      "strike": 400.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.12,
+      "bid": 2.31,
+      "ask": 2.42,
+      "mid": 2.365,
+      "iv": 0.3421,
+      "oi": 6165,
+      "annualized": 0.0529,
+      "breakeven": 402.37,
+      "cushion_moves": 1.4078,
+      "iv_resid_pts": -0.1499,
+      "level": {
+       "value": 381.81,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 4.7641,
+      "f_support": 0.1472,
+      "f_richness": 0.5879,
+      "f_cushion": 0.9385,
+      "f_assignment": 1.0,
+      "collateral": 40000.0,
+      "f_roc": 0.5,
+      "score": 0.5319,
+      "reason": "4.8% over swing high \u00b7 IV 0.1 pts cheap \u00b7 5% annualized \u00b7 1.4 moves OTM"
+     }
+    ]
+   },
+   "em45": 41.2312,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 330.0,
+     "target": 330.0,
+     "collateral": 33000.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 41.23
+    },
+    {
+     "rung": 2,
+     "strike": 285.0,
+     "target": 288.77,
+     "collateral": 28500.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 41.23
+    },
+    {
+     "rung": 3,
+     "strike": 245.0,
+     "target": 247.54,
+     "collateral": 24500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 41.23
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 285.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.793,
+    "bid": 90.75,
+    "ask": 94.0,
+    "mid": 92.38,
+    "iv": 0.3628,
+    "oi": 143,
+    "extrinsic": 37.32,
+    "extrinsic_pct": 10.98,
+    "cost": 9238.0,
+    "exposure": 26956.0,
+    "breakeven": 377.38
+   }
+  },
+  {
+   "symbol": "MRVL",
+   "bucket": "AI semis",
+   "role": "opportunistic",
+   "asof": "2026-10-02",
+   "action": "NEUTRAL",
+   "label": "WAIT",
+   "priority": 4,
+   "reasons": [
+    "IVR 32 between 30 and 50: wait",
+    "Opportunistic name: spikes only"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": false,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": false,
+    "core_name": false
+   },
+   "price": 273.04,
+   "prev_close": 268.08,
+   "iv30": 0.6114,
+   "hv20": 0.5476,
+   "iv_hv": 1.1164,
+   "ivr": 32.1429,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "High",
+   "extension_pct": 91.1376,
+   "price_to_sma200": 1.6358,
+   "spike": {
+    "dir": "up",
+    "size": 0.6713,
+    "k": 2,
+    "down": 0.0,
+    "up": 0.6713,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 53.9683,
+   "range_pos": 0.9406,
+   "sma50": 226.7414,
+   "sma200": 166.9167,
+   "history_days": 5725,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": 1.8502,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 220.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 220.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 226.74,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 232.65,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 240.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 244.0,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 260.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 280.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 300.0,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 300.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 300.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 320.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 324.2,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 329.88,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 340.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 10,
+    "band": [
+     3,
+     17
+    ],
+    "in_band": 7,
+    "passed": 5,
+    "rejected": {
+     "spread": 2
+    },
+    "candidates": [
+     {
+      "strike": 220.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.14,
+      "bid": 4.7,
+      "ask": 4.9,
+      "mid": 4.8,
+      "iv": 0.6138,
+      "oi": 4225,
+      "annualized": 0.1659,
+      "breakeven": 215.2,
+      "cushion_moves": 0.9555,
+      "iv_resid_pts": -0.2729,
+      "level": {
+       "value": 226.74,
+       "kind": "sma50",
+       "label": "50-day avg"
+      },
+      "level_dist_pct": 2.9732,
+      "f_support": 0.9,
+      "f_richness": 0.4019,
+      "f_cushion": 0.637,
+      "f_assignment": 1.0,
+      "collateral": 22000.0,
+      "f_roc": 1.0,
+      "score": 0.766,
+      "reason": "3.0% under 50-day avg \u00b7 IV 0.3 pts cheap \u00b7 17% annualized \u00b7 BE 1.0 moves away"
+     },
+     {
+      "strike": 210.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.101,
+      "bid": 3.15,
+      "ask": 3.35,
+      "mid": 3.25,
+      "iv": 0.6212,
+      "oi": 2544,
+      "annualized": 0.1177,
+      "breakeven": 206.75,
+      "cushion_moves": 1.095,
+      "iv_resid_pts": 0.0555,
+      "level": {
+       "value": 220.0,
+       "kind": "oi_wall",
+       "label": "put-OI wall"
+      },
+      "level_dist_pct": 4.5455,
+      "f_support": 0.6218,
+      "f_richness": 0.4444,
+      "f_cushion": 0.73,
+      "f_assignment": 1.0,
+      "collateral": 21000.0,
+      "f_roc": 0.75,
+      "score": 0.6571,
+      "reason": "4.5% under put-OI wall \u00b7 IV 0.1 pts rich \u00b7 12% annualized \u00b7 BE 1.1 moves away"
+     },
+     {
+      "strike": 200.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.071,
+      "bid": 2.05,
+      "ask": 2.16,
+      "mid": 2.105,
+      "iv": 0.6278,
+      "oi": 5189,
+      "annualized": 0.08,
+      "breakeven": 197.9,
+      "cushion_moves": 1.2413,
+      "iv_resid_pts": 0.149,
+      "level": null,
+      "level_dist_pct": null,
+      "f_support": 0.0,
+      "f_richness": 0.4623,
+      "f_cushion": 0.8275,
+      "f_assignment": 1.0,
+      "collateral": 20000.0,
+      "f_roc": 0.5,
+      "score": 0.4397,
+      "reason": "no nearby support \u00b7 IV 0.1 pts rich \u00b7 8% annualized \u00b7 BE 1.2 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 30,
+    "band": [
+     23,
+     37
+    ],
+    "in_band": 3,
+    "passed": 3,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 310.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.337,
+      "bid": 12.15,
+      "ask": 12.45,
+      "mid": 12.3,
+      "iv": 0.6254,
+      "oi": 8892,
+      "annualized": 0.3426,
+      "breakeven": 322.3,
+      "cushion_moves": 0.6105,
+      "iv_resid_pts": 0.0515,
+      "level": {
+       "value": 300.0,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 3.3333,
+      "f_support": 0.9333,
+      "f_richness": 0.4495,
+      "f_cushion": 0.407,
+      "f_assignment": 1.0,
+      "collateral": 31000.0,
+      "f_roc": 1.0,
+      "score": 0.7534,
+      "reason": "3.3% over swing high \u00b7 IV 0.1 pts rich \u00b7 34% annualized \u00b7 0.6 moves OTM"
+     },
+     {
+      "strike": 330.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.249,
+      "bid": 8.2,
+      "ask": 8.35,
+      "mid": 8.275,
+      "iv": 0.6334,
+      "oi": 987,
+      "annualized": 0.2305,
+      "breakeven": 338.27,
+      "cushion_moves": 0.9409,
+      "iv_resid_pts": -0.0353,
+      "level": {
+       "value": 324.2,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 1.789,
+      "f_support": 1.0,
+      "f_richness": 0.4512,
+      "f_cushion": 0.6273,
+      "f_assignment": 1.0,
+      "collateral": 33000.0,
+      "f_roc": 0.0,
+      "score": 0.6069,
+      "reason": "1.8% over swing high \u00b7 IV on the skew curve \u00b7 23% annualized \u00b7 0.9 moves OTM"
+     },
+     {
+      "strike": 320.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.29,
+      "bid": 10.0,
+      "ask": 10.25,
+      "mid": 10.125,
+      "iv": 0.6304,
+      "oi": 6015,
+      "annualized": 0.282,
+      "breakeven": 330.12,
+      "cushion_moves": 0.7757,
+      "iv_resid_pts": 0.1295,
+      "level": {
+       "value": 320.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 0.0,
+      "f_support": 0.0,
+      "f_richness": 0.4638,
+      "f_cushion": 0.5172,
+      "f_assignment": 1.0,
+      "collateral": 32000.0,
+      "f_roc": 0.5,
+      "score": 0.3935,
+      "reason": "at round 320 \u00b7 IV 0.1 pts rich \u00b7 28% annualized \u00b7 0.8 moves OTM"
+     }
+    ]
+   },
+   "em45": 58.6144,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 220.0,
+     "target": 220.0,
+     "collateral": 22000.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 58.61
+    },
+    {
+     "rung": 2,
+     "strike": 160.0,
+     "target": 161.39,
+     "collateral": 16000.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 58.61
+    },
+    {
+     "rung": 3,
+     "strike": 100.0,
+     "target": 102.77,
+     "collateral": 10000.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 58.61
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 210.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.794,
+    "bid": 109.0,
+    "ask": 111.1,
+    "mid": 110.05,
+    "iv": 0.6561,
+    "oi": 280,
+    "extrinsic": 47.01,
+    "extrinsic_pct": 17.22,
+    "cost": 11005.0,
+    "exposure": 21668.0,
+    "breakeven": 320.05
+   }
+  },
+  {
+   "symbol": "IBIT",
+   "bucket": "Crypto",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NEUTRAL",
+   "label": "WAIT",
+   "priority": 4,
+   "reasons": [
+    "IVR 38 between 30 and 50: wait"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": false,
+    "core_name": true
+   },
+   "price": 47.83,
+   "prev_close": 47.96,
+   "iv30": 0.3462,
+   "hv20": 0.3878,
+   "iv_hv": 0.8926,
+   "ivr": 37.6984,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Mid",
+   "extension_pct": 61.1111,
+   "price_to_sma200": 1.141,
+   "spike": {
+    "dir": "up",
+    "size": 0.2684,
+    "k": 2,
+    "down": 0.0992,
+    "up": 0.2684,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 61.9048,
+   "range_pos": 0.8894,
+   "sma50": 41.967,
+   "sma200": 41.9192,
+   "history_days": 1022,
+   "history_source": "cboe",
+   "notes": [
+    "Momentum name: cover at most 50% with calls"
+   ],
+   "change_pct": -0.2711,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 37.5,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 39.96,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 40.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 40.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 41.92,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 41.97,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 42.37,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 42.44,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 42.5,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 43.23,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 45.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 47.5,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 49.22,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 50.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 50.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 52.5,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 55.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 57.5,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 4,
+    "passed": 4,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 41.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.13,
+      "bid": 0.48,
+      "ask": 0.5,
+      "mid": 0.49,
+      "iv": 0.4084,
+      "oi": 12239,
+      "annualized": 0.0909,
+      "breakeven": 40.51,
+      "cushion_moves": 1.2191,
+      "iv_resid_pts": -0.407,
+      "level": {
+       "value": 41.92,
+       "kind": "sma200",
+       "label": "200-day avg"
+      },
+      "level_dist_pct": 2.1928,
+      "f_support": 1.0,
+      "f_richness": 0.34,
+      "f_cushion": 0.8127,
+      "f_assignment": 1.0,
+      "collateral": 4100.0,
+      "f_roc": 0.0,
+      "score": 0.6069,
+      "reason": "2.2% under 200-day avg \u00b7 IV 0.4 pts cheap \u00b7 9% annualized \u00b7 BE 1.2 moves away"
+     },
+     {
+      "strike": 43.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.2,
+      "bid": 0.8,
+      "ask": 0.81,
+      "mid": 0.805,
+      "iv": 0.3889,
+      "oi": 19231,
+      "annualized": 0.1424,
+      "breakeven": 42.2,
+      "cushion_moves": 0.9384,
+      "iv_resid_pts": -0.222,
+      "level": {
+       "value": 43.23,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.532,
+      "f_support": 0.5,
+      "f_richness": 0.3226,
+      "f_cushion": 0.6256,
+      "f_assignment": 1.0,
+      "collateral": 4300.0,
+      "f_roc": 0.6667,
+      "score": 0.5578,
+      "reason": "0.5% under swing low \u00b7 IV 0.2 pts cheap \u00b7 14% annualized \u00b7 BE 0.9 moves away"
+     },
+     {
+      "strike": 44.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.245,
+      "bid": 1.03,
+      "ask": 1.05,
+      "mid": 1.04,
+      "iv": 0.3833,
+      "oi": 20786,
+      "annualized": 0.1797,
+      "breakeven": 42.96,
+      "cushion_moves": 0.811,
+      "iv_resid_pts": 0.0311,
+      "level": {
+       "value": 45.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 2.2222,
+      "f_support": 0.2,
+      "f_richness": 0.3376,
+      "f_cushion": 0.5407,
+      "f_assignment": 1.0,
+      "collateral": 4400.0,
+      "f_roc": 1.0,
+      "score": 0.5255,
+      "reason": "2.2% under round 45 \u00b7 IV on the skew curve \u00b7 18% annualized \u00b7 BE 0.8 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 5,
+    "passed": 5,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 53.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.258,
+      "bid": 0.92,
+      "ask": 0.94,
+      "mid": 0.93,
+      "iv": 0.3685,
+      "oi": 33163,
+      "annualized": 0.1479,
+      "breakeven": 53.93,
+      "cushion_moves": 0.861,
+      "iv_resid_pts": -0.0781,
+      "level": {
+       "value": 52.5,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 0.9524,
+      "f_support": 0.7,
+      "f_richness": 0.2994,
+      "f_cushion": 0.574,
+      "f_assignment": 1.0,
+      "collateral": 5300.0,
+      "f_roc": 1.0,
+      "score": 0.671,
+      "reason": "1.0% over round 52.5 \u00b7 IV 0.1 pts cheap \u00b7 15% annualized \u00b7 0.9 moves OTM"
+     },
+     {
+      "strike": 56.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.155,
+      "bid": 0.49,
+      "ask": 0.51,
+      "mid": 0.5,
+      "iv": 0.3812,
+      "oi": 6544,
+      "annualized": 0.0795,
+      "breakeven": 56.5,
+      "cushion_moves": 1.3606,
+      "iv_resid_pts": -0.1808,
+      "level": {
+       "value": 55.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 1.8182,
+      "f_support": 0.7,
+      "f_richness": 0.3126,
+      "f_cushion": 0.9071,
+      "f_assignment": 1.0,
+      "collateral": 5600.0,
+      "f_roc": 0.25,
+      "score": 0.5742,
+      "reason": "1.8% over round 55 \u00b7 IV 0.2 pts cheap \u00b7 8% annualized \u00b7 1.4 moves OTM"
+     },
+     {
+      "strike": 55.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.184,
+      "bid": 0.61,
+      "ask": 0.63,
+      "mid": 0.62,
+      "iv": 0.378,
+      "oi": 15668,
+      "annualized": 0.0986,
+      "breakeven": 55.62,
+      "cushion_moves": 1.1941,
+      "iv_resid_pts": 0.0378,
+      "level": {
+       "value": 52.5,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 4.7619,
+      "f_support": 0.4533,
+      "f_richness": 0.3285,
+      "f_cushion": 0.796,
+      "f_assignment": 1.0,
+      "collateral": 5500.0,
+      "f_roc": 0.5,
+      "score": 0.5375,
+      "reason": "4.8% over round 52.5 \u00b7 IV on the skew curve \u00b7 10% annualized \u00b7 1.2 moves OTM"
+     }
+    ]
+   },
+   "em45": 6.5134,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 41.0,
+     "target": 41.0,
+     "collateral": 4100.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 6.51
+    },
+    {
+     "rung": 2,
+     "strike": 34.0,
+     "target": 34.49,
+     "collateral": 3400.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 6.51
+    },
+    {
+     "rung": 3,
+     "strike": 27.0,
+     "target": 27.97,
+     "collateral": 2700.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 6.51
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 39.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.788,
+    "bid": 14.7,
+    "ask": 15.3,
+    "mid": 15.0,
+    "iv": 0.4475,
+    "oi": 649,
+    "extrinsic": 6.17,
+    "extrinsic_pct": 12.9,
+    "cost": 1500.0,
+    "exposure": 3770.0,
+    "breakeven": 54.0
+   }
+  },
+  {
+   "symbol": "SPY",
+   "bucket": "Index",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 10 < 30: no new short premium"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": true,
+    "bottom_third": false,
+    "ivr_low": true,
+    "core_name": true
+   },
+   "price": 769.64,
+   "prev_close": 763.99,
+   "iv30": 0.1244,
+   "hv20": 0.1032,
+   "iv_hv": 1.2048,
+   "ivr": 10.4664,
+   "ivr_source": "VIX",
+   "iv_history_days": 1,
+   "index_level": 15.31,
+   "regime": "Mid",
+   "extension_pct": 33.9947,
+   "price_to_sma200": 1.0682,
+   "spike": {
+    "dir": "up",
+    "size": 1.1003,
+    "k": 1,
+    "down": 0.0,
+    "up": 1.1003,
+    "is_spike": false
+   },
+   "consolidation": true,
+   "bb_pct": 13.0952,
+   "range_pos": 0.8064,
+   "sma50": 763.7022,
+   "sma200": 720.471,
+   "history_days": 5726,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": 0.7395,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 600.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 650.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 700.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 716.58,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 720.47,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 722.59,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 725.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 729.1,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 731.53,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 739.51,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 749.6,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 750.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 754.38,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 759.48,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 762.04,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 763.7,
+     "kind": "sma50",
+     "label": "50-day avg"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 775.14,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 775.3,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 776.85,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 779.37,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 785.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 800.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 850.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 900.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 950.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 32,
+    "passed": 19,
+    "rejected": {
+     "credit": 13
+    },
+    "candidates": [
+     {
+      "strike": 735.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.197,
+      "bid": 5.31,
+      "ask": 5.34,
+      "mid": 5.325,
+      "iv": 0.1704,
+      "oi": 9526,
+      "annualized": 0.0551,
+      "breakeven": 729.67,
+      "cushion_moves": 1.1514,
+      "iv_resid_pts": 0.1891,
+      "level": {
+       "value": 739.51,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.6099,
+      "f_support": 0.5,
+      "f_richness": 0.7189,
+      "f_cushion": 0.7676,
+      "f_assignment": 1.0,
+      "collateral": 73500.0,
+      "f_roc": 1.0,
+      "score": 0.7449,
+      "reason": "0.6% under swing low \u00b7 IV 0.2 pts rich \u00b7 6% annualized \u00b7 BE 1.2 moves away"
+     },
+     {
+      "strike": 731.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.179,
+      "bid": 4.83,
+      "ask": 4.86,
+      "mid": 4.845,
+      "iv": 0.1748,
+      "oi": 387,
+      "annualized": 0.0504,
+      "breakeven": 726.15,
+      "cushion_moves": 1.2528,
+      "iv_resid_pts": 0.2113,
+      "level": {
+       "value": 739.51,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 1.1508,
+      "f_support": 0.5,
+      "f_richness": 0.7211,
+      "f_cushion": 0.8352,
+      "f_assignment": 1.0,
+      "collateral": 73100.0,
+      "f_roc": 0.7778,
+      "score": 0.7111,
+      "reason": "1.2% under swing low \u00b7 IV 0.2 pts rich \u00b7 5% annualized \u00b7 BE 1.3 moves away"
+     },
+     {
+      "strike": 727.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.163,
+      "bid": 4.4,
+      "ask": 4.43,
+      "mid": 4.415,
+      "iv": 0.1791,
+      "oi": 8331,
+      "annualized": 0.0462,
+      "breakeven": 722.59,
+      "cushion_moves": 1.3557,
+      "iv_resid_pts": 0.2104,
+      "level": {
+       "value": 731.53,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.6193,
+      "f_support": 0.5,
+      "f_richness": 0.721,
+      "f_cushion": 0.9038,
+      "f_assignment": 1.0,
+      "collateral": 72700.0,
+      "f_roc": 0.5556,
+      "score": 0.6769,
+      "reason": "0.6% under swing low \u00b7 IV 0.2 pts rich \u00b7 5% annualized \u00b7 BE 1.4 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 6,
+    "passed": 6,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 797.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.264,
+      "bid": 5.19,
+      "ask": 5.23,
+      "mid": 5.21,
+      "iv": 0.1185,
+      "oi": 477,
+      "annualized": 0.0515,
+      "breakeven": 802.21,
+      "cushion_moves": 0.7883,
+      "iv_resid_pts": -0.0752,
+      "level": {
+       "value": 775.14,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 2.8201,
+      "f_support": 0.65,
+      "f_richness": 0.4411,
+      "f_cushion": 0.5255,
+      "f_assignment": 1.0,
+      "collateral": 79700.0,
+      "f_roc": 1.0,
+      "score": 0.6841,
+      "reason": "2.8% over swing high \u00b7 IV 0.1 pts cheap \u00b7 5% annualized \u00b7 0.8 moves OTM"
+     },
+     {
+      "strike": 805.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.19,
+      "bid": 3.3,
+      "ask": 3.32,
+      "mid": 3.31,
+      "iv": 0.116,
+      "oi": 5787,
+      "annualized": 0.0327,
+      "breakeven": 808.31,
+      "cushion_moves": 1.0188,
+      "iv_resid_pts": 0.117,
+      "level": {
+       "value": 779.37,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 3.2886,
+      "f_support": 0.9423,
+      "f_richness": 0.443,
+      "f_cushion": 0.6792,
+      "f_assignment": 1.0,
+      "collateral": 80500.0,
+      "f_roc": 0.2,
+      "score": 0.6353,
+      "reason": "3.3% over swing high \u00b7 IV 0.1 pts rich \u00b7 3% annualized \u00b7 1.0 moves OTM"
+     },
+     {
+      "strike": 810.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.151,
+      "bid": 2.44,
+      "ask": 2.46,
+      "mid": 2.45,
+      "iv": 0.1148,
+      "oi": 27936,
+      "annualized": 0.0242,
+      "breakeven": 812.45,
+      "cushion_moves": 1.1628,
+      "iv_resid_pts": 0.2529,
+      "level": {
+       "value": 785.0,
+       "kind": "oi_wall_call",
+       "label": "call-OI wall"
+      },
+      "level_dist_pct": 3.1847,
+      "f_support": 0.8668,
+      "f_richness": 0.4483,
+      "f_cushion": 0.7752,
+      "f_assignment": 1.0,
+      "collateral": 81000.0,
+      "f_roc": 0.0,
+      "score": 0.5884,
+      "reason": "3.2% over call-OI wall \u00b7 IV 0.3 pts rich \u00b7 2% annualized \u00b7 1.2 moves OTM"
+     }
+    ]
+   },
+   "em45": 33.6069,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 735.0,
+     "target": 735.0,
+     "collateral": 73500.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 33.61
+    },
+    {
+     "rung": 2,
+     "strike": 701.0,
+     "target": 701.39,
+     "collateral": 70100.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 33.61
+    },
+    {
+     "rung": 3,
+     "strike": 665.0,
+     "target": 667.79,
+     "collateral": 66500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 33.61
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 690.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.793,
+    "bid": 134.69,
+    "ask": 137.0,
+    "mid": 135.84,
+    "iv": 0.2054,
+    "oi": 1106,
+    "extrinsic": 56.21,
+    "extrinsic_pct": 7.3,
+    "cost": 13584.0,
+    "exposure": 61032.0,
+    "breakeven": 825.85
+   }
+  },
+  {
+   "symbol": "QQQ",
+   "bucket": "Index",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 24 < 30: no new short premium"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": true,
+    "core_name": true
+   },
+   "price": 749.55,
+   "prev_close": 742.03,
+   "iv30": 0.1865,
+   "hv20": 0.1498,
+   "iv_hv": 1.2451,
+   "ivr": 24.4798,
+   "ivr_source": "VXN",
+   "iv_history_days": 1,
+   "index_level": 21.2,
+   "regime": "Mid",
+   "extension_pct": 68.9153,
+   "price_to_sma200": 1.1211,
+   "spike": {
+    "dir": "up",
+    "size": 1.0647,
+    "k": 1,
+    "down": 0.0,
+    "up": 1.0647,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 66.2698,
+   "range_pos": 0.9466,
+   "sma50": 716.8164,
+   "sma200": 668.6039,
+   "history_days": 5725,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": 1.0134,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 600.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 650.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 661.14,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 668.6,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 686.37,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 695.25,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 700.0,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 700.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 700.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 700.91,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 702.7,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 702.81,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 704.66,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 716.82,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 717.78,
+     "kind": "sma100",
+     "label": "100-day avg"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 750.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 760.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 800.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 850.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 900.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 38,
+    "passed": 32,
+    "rejected": {
+     "open interest": 6
+    },
+    "candidates": [
+     {
+      "strike": 686.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.145,
+      "bid": 5.29,
+      "ask": 5.35,
+      "mid": 5.32,
+      "iv": 0.2524,
+      "oi": 154,
+      "annualized": 0.059,
+      "breakeven": 680.68,
+      "cushion_moves": 1.3587,
+      "iv_resid_pts": 0.1853,
+      "level": {
+       "value": 695.25,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 1.3305,
+      "f_support": 1.0,
+      "f_richness": 0.7185,
+      "f_cushion": 0.9058,
+      "f_assignment": 1.0,
+      "collateral": 68600.0,
+      "f_roc": 0.1613,
+      "score": 0.7478,
+      "reason": "1.3% under swing low \u00b7 IV 0.2 pts rich \u00b7 6% annualized \u00b7 BE 1.4 moves away"
+     },
+     {
+      "strike": 682.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.135,
+      "bid": 4.89,
+      "ask": 4.95,
+      "mid": 4.92,
+      "iv": 0.2564,
+      "oi": 204,
+      "annualized": 0.0549,
+      "breakeven": 677.08,
+      "cushion_moves": 1.4297,
+      "iv_resid_pts": 0.1705,
+      "level": {
+       "value": 686.37,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.6367,
+      "f_support": 1.0,
+      "f_richness": 0.7171,
+      "f_cushion": 0.9531,
+      "f_assignment": 1.0,
+      "collateral": 68200.0,
+      "f_roc": 0.0323,
+      "score": 0.7287,
+      "reason": "0.6% under swing low \u00b7 IV 0.2 pts rich \u00b7 5% annualized \u00b7 BE 1.4 moves away"
+     },
+     {
+      "strike": 714.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.247,
+      "bid": 9.37,
+      "ask": 9.44,
+      "mid": 9.405,
+      "iv": 0.2266,
+      "oi": 239,
+      "annualized": 0.1002,
+      "breakeven": 704.6,
+      "cushion_moves": 0.8869,
+      "iv_resid_pts": 0.1809,
+      "level": {
+       "value": 717.78,
+       "kind": "sma100",
+       "label": "100-day avg"
+      },
+      "level_dist_pct": 0.5269,
+      "f_support": 0.4,
+      "f_richness": 0.7181,
+      "f_cushion": 0.5913,
+      "f_assignment": 1.0,
+      "collateral": 71400.0,
+      "f_roc": 0.9032,
+      "score": 0.6689,
+      "reason": "0.5% under 100-day avg \u00b7 IV 0.2 pts rich \u00b7 10% annualized \u00b7 BE 0.9 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 15,
+    "passed": 15,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 788.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.264,
+      "bid": 7.55,
+      "ask": 7.65,
+      "mid": 7.6,
+      "iv": 0.1793,
+      "oi": 1159,
+      "annualized": 0.0771,
+      "breakeven": 795.6,
+      "cushion_moves": 0.7586,
+      "iv_resid_pts": -0.1505,
+      "level": {
+       "value": 760.0,
+       "kind": "oi_wall_call",
+       "label": "call-OI wall"
+      },
+      "level_dist_pct": 3.6842,
+      "f_support": 0.4268,
+      "f_richness": 0.4687,
+      "f_cushion": 0.5057,
+      "f_assignment": 1.0,
+      "collateral": 78800.0,
+      "f_roc": 1.0,
+      "score": 0.6211,
+      "reason": "3.7% over call-OI wall \u00b7 IV 0.2 pts cheap \u00b7 8% annualized \u00b7 0.8 moves OTM"
+     },
+     {
+      "strike": 805.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.166,
+      "bid": 4.04,
+      "ask": 4.1,
+      "mid": 4.07,
+      "iv": 0.1759,
+      "oi": 2492,
+      "annualized": 0.0413,
+      "breakeven": 809.07,
+      "cushion_moves": 1.0939,
+      "iv_resid_pts": 0.0963,
+      "level": {
+       "value": 800.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 0.625,
+      "f_support": 0.7,
+      "f_richness": 0.4771,
+      "f_cushion": 0.7293,
+      "f_assignment": 1.0,
+      "collateral": 80500.0,
+      "f_roc": 0.0714,
+      "score": 0.553,
+      "reason": "0.6% over round 800 \u00b7 IV 0.1 pts rich \u00b7 4% annualized \u00b7 1.1 moves OTM"
+     },
+     {
+      "strike": 810.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.142,
+      "bid": 3.32,
+      "ask": 3.39,
+      "mid": 3.355,
+      "iv": 0.1755,
+      "oi": 4473,
+      "annualized": 0.034,
+      "breakeven": 813.36,
+      "cushion_moves": 1.1926,
+      "iv_resid_pts": 0.2022,
+      "level": {
+       "value": 800.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 1.25,
+      "f_support": 0.7,
+      "f_richness": 0.4858,
+      "f_cushion": 0.7951,
+      "f_assignment": 1.0,
+      "collateral": 81000.0,
+      "f_roc": 0.0,
+      "score": 0.5507,
+      "reason": "1.2% over round 800 \u00b7 IV 0.2 pts rich \u00b7 3% annualized \u00b7 1.2 moves OTM"
+     }
+    ]
+   },
+   "em45": 49.0787,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 686.0,
+     "target": 686.0,
+     "collateral": 68600.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 49.08
+    },
+    {
+     "rung": 2,
+     "strike": 635.0,
+     "target": 636.92,
+     "collateral": 63500.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 49.08
+    },
+    {
+     "rung": 3,
+     "strike": 585.0,
+     "target": 587.84,
+     "collateral": 58500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 49.08
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 650.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.796,
+    "bid": 161.8,
+    "ask": 166.5,
+    "mid": 164.15,
+    "iv": 0.2664,
+    "oi": 1531,
+    "extrinsic": 64.6,
+    "extrinsic_pct": 8.62,
+    "cost": 16415.0,
+    "exposure": 59657.0,
+    "breakeven": 814.15
+   }
+  },
+  {
+   "symbol": "NVDA",
+   "bucket": "AI semis",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 1 < 30: no new short premium"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": false,
+    "ivr_low": true,
+    "core_name": true
+   },
+   "price": 234.22,
+   "prev_close": 230.86,
+   "iv30": 0.2885,
+   "hv20": 0.2488,
+   "iv_hv": 1.1595,
+   "ivr": 0.7937,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Mid",
+   "extension_pct": 40.7407,
+   "price_to_sma200": 1.1669,
+   "spike": {
+    "dir": "up",
+    "size": 1.0564,
+    "k": 2,
+    "down": 0.0,
+    "up": 1.0564,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 30.5556,
+   "range_pos": 0.9235,
+   "sma50": 218.2836,
+   "sma200": 200.716,
+   "history_days": 5725,
+   "history_source": "cboe",
+   "notes": [
+    "Momentum name: cover at most 50% with calls"
+   ],
+   "change_pct": 1.4554,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 180.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 189.8,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 190.01,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 194.74,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 197.97,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 199.34,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 200.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 200.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 200.72,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 207.25,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 208.78,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 208.93,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 213.87,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 218.28,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 220.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 234.76,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 236.54,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 240.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 245.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 260.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 280.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 3,
+    "passed": 3,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 205.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.148,
+      "bid": 2.59,
+      "ask": 2.64,
+      "mid": 2.615,
+      "iv": 0.3811,
+      "oi": 12506,
+      "annualized": 0.097,
+      "breakeven": 202.38,
+      "cushion_moves": 1.2992,
+      "iv_resid_pts": -0.0933,
+      "level": {
+       "value": 207.25,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 1.0856,
+      "f_support": 1.0,
+      "f_richness": 0.6907,
+      "f_cushion": 0.8662,
+      "f_assignment": 1.0,
+      "collateral": 20500.0,
+      "f_roc": 0.0,
+      "score": 0.7026,
+      "reason": "1.1% under swing low \u00b7 IV 0.1 pts cheap \u00b7 10% annualized \u00b7 BE 1.3 moves away"
+     },
+     {
+      "strike": 215.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.232,
+      "bid": 4.4,
+      "ask": 4.5,
+      "mid": 4.45,
+      "iv": 0.3634,
+      "oi": 21772,
+      "annualized": 0.1574,
+      "breakeven": 210.55,
+      "cushion_moves": 0.966,
+      "iv_resid_pts": -0.1018,
+      "level": {
+       "value": 218.28,
+       "kind": "sma50",
+       "label": "50-day avg"
+      },
+      "level_dist_pct": 1.5043,
+      "f_support": 0.45,
+      "f_richness": 0.6617,
+      "f_cushion": 0.644,
+      "f_assignment": 1.0,
+      "collateral": 21500.0,
+      "f_roc": 1.0,
+      "score": 0.697,
+      "reason": "1.5% under 50-day avg \u00b7 IV 0.1 pts cheap \u00b7 16% annualized \u00b7 BE 1.0 moves away"
+     },
+     {
+      "strike": 210.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.186,
+      "bid": 3.35,
+      "ask": 3.45,
+      "mid": 3.4,
+      "iv": 0.3719,
+      "oi": 26640,
+      "annualized": 0.1231,
+      "breakeven": 206.6,
+      "cushion_moves": 1.1272,
+      "iv_resid_pts": -0.0775,
+      "level": {
+       "value": 213.87,
+       "kind": "sma100",
+       "label": "100-day avg"
+      },
+      "level_dist_pct": 1.8111,
+      "f_support": 0.4,
+      "f_richness": 0.6886,
+      "f_cushion": 0.7515,
+      "f_assignment": 1.0,
+      "collateral": 21000.0,
+      "f_roc": 0.5,
+      "score": 0.6049,
+      "reason": "1.8% under 100-day avg \u00b7 IV 0.1 pts cheap \u00b7 12% annualized \u00b7 BE 1.1 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 3,
+    "passed": 3,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 265.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.179,
+      "bid": 2.53,
+      "ask": 2.59,
+      "mid": 2.56,
+      "iv": 0.3281,
+      "oi": 14236,
+      "annualized": 0.0831,
+      "breakeven": 267.56,
+      "cushion_moves": 1.2562,
+      "iv_resid_pts": -0.1189,
+      "level": {
+       "value": 260.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 1.9231,
+      "f_support": 0.7,
+      "f_richness": 0.5587,
+      "f_cushion": 0.8375,
+      "f_assignment": 1.0,
+      "collateral": 26500.0,
+      "f_roc": 0.5,
+      "score": 0.6753,
+      "reason": "1.9% over round 260 \u00b7 IV 0.1 pts cheap \u00b7 8% annualized \u00b7 1.3 moves OTM"
+     },
+     {
+      "strike": 260.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.223,
+      "bid": 3.35,
+      "ask": 3.45,
+      "mid": 3.4,
+      "iv": 0.3291,
+      "oi": 25358,
+      "annualized": 0.1104,
+      "breakeven": 263.4,
+      "cushion_moves": 1.0521,
+      "iv_resid_pts": -0.0543,
+      "level": {
+       "value": 260.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 0.0,
+      "f_support": 0.35,
+      "f_richness": 0.568,
+      "f_cushion": 0.7014,
+      "f_assignment": 1.0,
+      "collateral": 26000.0,
+      "f_roc": 1.0,
+      "score": 0.6522,
+      "reason": "at round 260 \u00b7 IV 0.1 pts cheap \u00b7 11% annualized \u00b7 1.1 moves OTM"
+     },
+     {
+      "strike": 270.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.141,
+      "bid": 1.88,
+      "ask": 1.93,
+      "mid": 1.905,
+      "iv": 0.3284,
+      "oi": 26912,
+      "annualized": 0.0618,
+      "breakeven": 271.9,
+      "cushion_moves": 1.4602,
+      "iv_resid_pts": -0.1096,
+      "level": {
+       "value": 260.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 3.8462,
+      "f_support": 0.5815,
+      "f_richness": 0.5605,
+      "f_cushion": 0.9735,
+      "f_assignment": 1.0,
+      "collateral": 27000.0,
+      "f_roc": 0.0,
+      "score": 0.5606,
+      "reason": "3.8% over round 260 \u00b7 IV 0.1 pts cheap \u00b7 6% annualized \u00b7 1.5 moves OTM"
+     }
+    ]
+   },
+   "em45": 23.7246,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 205.0,
+     "target": 205.0,
+     "collateral": 20500.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 23.72
+    },
+    {
+     "rung": 2,
+     "strike": 180.0,
+     "target": 181.28,
+     "collateral": 18000.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 23.72
+    },
+    {
+     "rung": 3,
+     "strike": 155.0,
+     "target": 157.55,
+     "collateral": 15500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 23.72
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 190.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.799,
+    "bid": 67.85,
+    "ask": 69.8,
+    "mid": 68.82,
+    "iv": 0.3927,
+    "oi": 6759,
+    "extrinsic": 24.6,
+    "extrinsic_pct": 10.51,
+    "cost": 6882.0,
+    "exposure": 18726.0,
+    "breakeven": 258.82
+   }
+  },
+  {
+   "symbol": "AMZN",
+   "bucket": "Platform",
+   "role": "opportunistic",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 10 < 30: no new short premium",
+    "Opportunistic name: spikes only"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": true,
+    "bottom_third": false,
+    "ivr_low": true,
+    "core_name": false
+   },
+   "price": 251.39,
+   "prev_close": 248.23,
+   "iv30": 0.3813,
+   "hv20": 0.2133,
+   "iv_hv": 1.7879,
+   "ivr": 9.5238,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Mid",
+   "extension_pct": 26.8519,
+   "price_to_sma200": 1.0415,
+   "spike": {
+    "dir": "up",
+    "size": 0.9367,
+    "k": 1,
+    "down": 0.0,
+    "up": 0.9367,
+    "is_spike": false
+   },
+   "consolidation": true,
+   "bb_pct": 3.9683,
+   "range_pos": 0.4133,
+   "sma50": 256.5412,
+   "sma200": 241.3622,
+   "history_days": 5725,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": 1.273,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 200.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 220.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 225.55,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 226.16,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 240.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 241.36,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 244.3,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 250.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 253.22,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 256.54,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 258.08,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 259.49,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 260.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 260.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 267.56,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 274.75,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 278.56,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 280.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 287.2,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 300.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 3,
+    "passed": 3,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 225.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.183,
+      "bid": 3.6,
+      "ask": 3.75,
+      "mid": 3.675,
+      "iv": 0.378,
+      "oi": 7873,
+      "annualized": 0.1242,
+      "breakeven": 221.32,
+      "cushion_moves": 0.865,
+      "iv_resid_pts": -0.2018,
+      "level": {
+       "value": 226.16,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.5129,
+      "f_support": 1.0,
+      "f_richness": 0.6798,
+      "f_cushion": 0.5766,
+      "f_assignment": 1.0,
+      "collateral": 22500.0,
+      "f_roc": 0.5,
+      "score": 0.7565,
+      "reason": "0.5% under swing low \u00b7 IV 0.2 pts cheap \u00b7 12% annualized \u00b7 BE 0.9 moves away"
+     },
+     {
+      "strike": 220.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.147,
+      "bid": 2.71,
+      "ask": 2.86,
+      "mid": 2.785,
+      "iv": 0.3826,
+      "oi": 9664,
+      "annualized": 0.0963,
+      "breakeven": 217.22,
+      "cushion_moves": 0.9832,
+      "iv_resid_pts": -0.2872,
+      "level": {
+       "value": 225.55,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 2.4607,
+      "f_support": 1.0,
+      "f_richness": 0.6713,
+      "f_cushion": 0.6555,
+      "f_assignment": 1.0,
+      "collateral": 22000.0,
+      "f_roc": 0.0,
+      "score": 0.6661,
+      "reason": "2.5% under swing low \u00b7 IV 0.3 pts cheap \u00b7 10% annualized \u00b7 BE 1.0 moves away"
+     },
+     {
+      "strike": 230.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.226,
+      "bid": 4.7,
+      "ask": 4.85,
+      "mid": 4.775,
+      "iv": 0.3736,
+      "oi": 13281,
+      "annualized": 0.1579,
+      "breakeven": 225.22,
+      "cushion_moves": 0.7528,
+      "iv_resid_pts": -0.1682,
+      "level": {
+       "value": 241.36,
+       "kind": "sma200",
+       "label": "200-day avg"
+      },
+      "level_dist_pct": 4.7076,
+      "f_support": 0.1585,
+      "f_richness": 0.6832,
+      "f_cushion": 0.5018,
+      "f_assignment": 1.0,
+      "collateral": 23000.0,
+      "f_roc": 1.0,
+      "score": 0.5936,
+      "reason": "4.7% under 200-day avg \u00b7 IV 0.2 pts cheap \u00b7 16% annualized \u00b7 BE 0.8 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 4,
+    "passed": 4,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 280.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.242,
+      "bid": 4.4,
+      "ask": 4.5,
+      "mid": 4.45,
+      "iv": 0.3613,
+      "oi": 14408,
+      "annualized": 0.1346,
+      "breakeven": 284.45,
+      "cushion_moves": 0.8231,
+      "iv_resid_pts": 0.2083,
+      "level": {
+       "value": 274.75,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 1.9108,
+      "f_support": 1.0,
+      "f_richness": 0.7208,
+      "f_cushion": 0.5487,
+      "f_assignment": 1.0,
+      "collateral": 28000.0,
+      "f_roc": 1.0,
+      "score": 0.8625,
+      "reason": "1.9% over swing high \u00b7 IV 0.2 pts rich \u00b7 13% annualized \u00b7 0.8 moves OTM"
+     },
+     {
+      "strike": 290.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.168,
+      "bid": 2.78,
+      "ask": 2.85,
+      "mid": 2.815,
+      "iv": 0.3627,
+      "oi": 18669,
+      "annualized": 0.0851,
+      "breakeven": 292.81,
+      "cushion_moves": 1.1108,
+      "iv_resid_pts": 0.1371,
+      "level": {
+       "value": 287.2,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 0.9749,
+      "f_support": 1.0,
+      "f_richness": 0.7137,
+      "f_cushion": 0.7405,
+      "f_assignment": 1.0,
+      "collateral": 29000.0,
+      "f_roc": 0.3333,
+      "score": 0.7562,
+      "reason": "1.0% over swing high \u00b7 IV 0.1 pts rich \u00b7 9% annualized \u00b7 1.1 moves OTM"
+     },
+     {
+      "strike": 285.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.203,
+      "bid": 3.45,
+      "ask": 3.6,
+      "mid": 3.525,
+      "iv": 0.3609,
+      "oi": 7416,
+      "annualized": 0.1066,
+      "breakeven": 288.52,
+      "cushion_moves": 0.9669,
+      "iv_resid_pts": 0.0806,
+      "level": {
+       "value": 278.56,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 2.3119,
+      "f_support": 0.5,
+      "f_richness": 0.7081,
+      "f_cushion": 0.6446,
+      "f_assignment": 1.0,
+      "collateral": 28500.0,
+      "f_roc": 0.6667,
+      "score": 0.657,
+      "reason": "2.3% over swing high \u00b7 IV 0.1 pts rich \u00b7 11% annualized \u00b7 1.0 moves OTM"
+     }
+    ]
+   },
+   "em45": 33.6552,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 225.0,
+     "target": 225.0,
+     "collateral": 22500.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 33.66
+    },
+    {
+     "rung": 2,
+     "strike": 190.0,
+     "target": 191.34,
+     "collateral": 19000.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 33.66
+    },
+    {
+     "rung": 3,
+     "strike": 155.0,
+     "target": 157.69,
+     "collateral": 15500.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 33.66
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 210.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.794,
+    "bid": 67.8,
+    "ask": 70.4,
+    "mid": 69.1,
+    "iv": 0.3619,
+    "oi": 1567,
+    "extrinsic": 27.71,
+    "extrinsic_pct": 11.02,
+    "cost": 6910.0,
+    "exposure": 19970.0,
+    "breakeven": 279.1
+   }
+  },
+  {
+   "symbol": "CEG",
+   "bucket": "Power",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 27 < 30: no new short premium"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": true,
+    "ivr_low": false,
+    "core_name": true
+   },
+   "price": 258.0,
+   "prev_close": 258.92,
+   "iv30": 0.4412,
+   "hv20": 0.4163,
+   "iv_hv": 1.0598,
+   "ivr": 26.5873,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Low",
+   "extension_pct": 16.1376,
+   "price_to_sma200": 0.8965,
+   "spike": {
+    "dir": "down",
+    "size": 0.5423,
+    "k": 3,
+    "down": 0.5423,
+    "up": 0.4057,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 75.0,
+   "range_pos": 0.1843,
+   "sma50": 271.4846,
+   "sma200": 287.7942,
+   "history_days": 2731,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": -0.3553,
+   "expiry": "2026-11-20",
+   "dte": 49,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 200.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 220.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 225.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 228.63,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 240.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 240.51,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 244.95,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 250.55,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 256.1,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 256.16,
+     "kind": "swing",
+     "label": "swing low"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 260.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 266.0,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 267.8,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 271.48,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 279.6,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 280.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 282.77,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 287.0,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 287.79,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 300.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 300.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 305.8,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 310.45,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 320.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 30,
+    "band": [
+     23,
+     37
+    ],
+    "in_band": 1,
+    "passed": 0,
+    "rejected": {
+     "spread": 1
+    },
+    "candidates": []
+   },
+   "calls": {
+    "side": "C",
+    "target": 10,
+    "band": [
+     3,
+     17
+    ],
+    "in_band": 7,
+    "passed": 0,
+    "rejected": {
+     "spread": 5,
+     "no bid": 2
+    },
+    "candidates": []
+   },
+   "em45": 39.9682,
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 210.0,
+    "expiry": "2028-01-21",
+    "dte": 476,
+    "delta": 0.777,
+    "bid": 79.5,
+    "ask": 83.4,
+    "mid": 81.45,
+    "iv": 0.4562,
+    "oi": 27,
+    "extrinsic": 33.45,
+    "extrinsic_pct": 12.97,
+    "cost": 8145.0,
+    "exposure": 20052.0,
+    "breakeven": 291.45
+   }
+  },
+  {
+   "symbol": "GLD",
+   "bucket": "Hard asset",
+   "role": "core",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 27 < 30: no new short premium"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": true,
+    "ivr_low": false,
+    "core_name": true
+   },
+   "price": 380.14,
+   "prev_close": 382.76,
+   "iv30": 0.2063,
+   "hv20": 0.2132,
+   "iv_hv": 0.9677,
+   "ivr": 26.5873,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Low",
+   "extension_pct": 3.1746,
+   "price_to_sma200": 0.9135,
+   "spike": {
+    "dir": "down",
+    "size": 0.4793,
+    "k": 1,
+    "down": 0.4793,
+    "up": 0.0,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 30.1587,
+   "range_pos": 0.2164,
+   "sma50": 396.2926,
+   "sma200": 416.1553,
+   "history_days": 5504,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": -0.6845,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 300.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 320.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 340.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 345.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 360.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 363.32,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 363.6,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 366.53,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 371.88,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 380.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 382.22,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 383.6,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 393.81,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 396.29,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 400.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 402.04,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 416.16,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 420.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 421.82,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 429.42,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 437.42,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 440.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 460.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 460.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 30,
+    "band": [
+     23,
+     37
+    ],
+    "in_band": 12,
+    "passed": 4,
+    "rejected": {
+     "open interest": 8
+    },
+    "candidates": [
+     {
+      "strike": 370.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.337,
+      "bid": 6.9,
+      "ask": 7.1,
+      "mid": 7.0,
+      "iv": 0.2183,
+      "oi": 2912,
+      "annualized": 0.1439,
+      "breakeven": 363.0,
+      "cushion_moves": 0.6027,
+      "iv_resid_pts": -0.014,
+      "level": {
+       "value": 371.88,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.5055,
+      "f_support": 0.5,
+      "f_richness": 0.3586,
+      "f_cushion": 0.4018,
+      "f_assignment": 1.0,
+      "collateral": 37000.0,
+      "f_roc": 1.0,
+      "score": 0.5999,
+      "reason": "0.5% under swing low \u00b7 IV on the skew curve \u00b7 14% annualized \u00b7 BE 0.6 moves away"
+     },
+     {
+      "strike": 365.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.279,
+      "bid": 5.35,
+      "ask": 5.55,
+      "mid": 5.45,
+      "iv": 0.2204,
+      "oi": 4553,
+      "annualized": 0.1135,
+      "breakeven": 359.55,
+      "cushion_moves": 0.724,
+      "iv_resid_pts": -0.0469,
+      "level": {
+       "value": 371.88,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 1.8501,
+      "f_support": 0.5,
+      "f_richness": 0.3623,
+      "f_cushion": 0.4826,
+      "f_assignment": 1.0,
+      "collateral": 36500.0,
+      "f_roc": 0.6667,
+      "score": 0.5463,
+      "reason": "1.9% under swing low \u00b7 IV on the skew curve \u00b7 11% annualized \u00b7 BE 0.7 moves away"
+     },
+     {
+      "strike": 361.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.236,
+      "bid": 4.35,
+      "ask": 4.5,
+      "mid": 4.425,
+      "iv": 0.2231,
+      "oi": 329,
+      "annualized": 0.0932,
+      "breakeven": 356.57,
+      "cushion_moves": 0.8286,
+      "iv_resid_pts": -0.0255,
+      "level": {
+       "value": 363.32,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.6386,
+      "f_support": 0.65,
+      "f_richness": 0.3735,
+      "f_cushion": 0.5524,
+      "f_assignment": 1.0,
+      "collateral": 36100.0,
+      "f_roc": 0.0,
+      "score": 0.4712,
+      "reason": "0.6% under swing low \u00b7 IV on the skew curve \u00b7 9% annualized \u00b7 BE 0.8 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 10,
+    "band": [
+     3,
+     17
+    ],
+    "in_band": 38,
+    "passed": 10,
+    "rejected": {
+     "open interest": 28
+    },
+    "candidates": [
+     {
+      "strike": 440.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.068,
+      "bid": 0.95,
+      "ask": 0.99,
+      "mid": 0.97,
+      "iv": 0.2489,
+      "oi": 7895,
+      "annualized": 0.0194,
+      "breakeven": 440.97,
+      "cushion_moves": 2.1047,
+      "iv_resid_pts": -0.0521,
+      "level": {
+       "value": 429.42,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 2.4638,
+      "f_support": 1.0,
+      "f_richness": 0.4573,
+      "f_cushion": 1.0,
+      "f_assignment": 1.0,
+      "collateral": 44000.0,
+      "f_roc": 0.5556,
+      "score": 0.7754,
+      "reason": "2.5% over swing high \u00b7 IV 0.1 pts cheap \u00b7 2% annualized \u00b7 2.1 moves OTM"
+     },
+     {
+      "strike": 445.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.057,
+      "bid": 0.8,
+      "ask": 0.83,
+      "mid": 0.815,
+      "iv": 0.2547,
+      "oi": 16284,
+      "annualized": 0.0163,
+      "breakeven": 445.81,
+      "cushion_moves": 2.2805,
+      "iv_resid_pts": -0.0729,
+      "level": {
+       "value": 437.42,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 1.7329,
+      "f_support": 1.0,
+      "f_richness": 0.4746,
+      "f_cushion": 1.0,
+      "f_assignment": 1.0,
+      "collateral": 44500.0,
+      "f_roc": 0.4444,
+      "score": 0.7575,
+      "reason": "1.7% over swing high \u00b7 IV 0.1 pts cheap \u00b7 2% annualized \u00b7 2.3 moves OTM"
+     },
+     {
+      "strike": 450.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.049,
+      "bid": 0.67,
+      "ask": 0.7,
+      "mid": 0.685,
+      "iv": 0.2606,
+      "oi": 16468,
+      "annualized": 0.0137,
+      "breakeven": 450.69,
+      "cushion_moves": 2.4564,
+      "iv_resid_pts": -0.1251,
+      "level": {
+       "value": 437.42,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 2.876,
+      "f_support": 1.0,
+      "f_richness": 0.4892,
+      "f_cushion": 1.0,
+      "f_assignment": 1.0,
+      "collateral": 45000.0,
+      "f_roc": 0.3333,
+      "score": 0.739,
+      "reason": "2.9% over swing high \u00b7 IV 0.1 pts cheap \u00b7 1% annualized \u00b7 2.5 moves OTM"
+     }
+    ]
+   },
+   "em45": 27.5374,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 370.0,
+     "target": 370.0,
+     "collateral": 37000.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 27.54
+    },
+    {
+     "rung": 2,
+     "strike": 340.0,
+     "target": 342.46,
+     "collateral": 34000.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 27.54
+    },
+    {
+     "rung": 3,
+     "strike": 310.0,
+     "target": 314.93,
+     "collateral": 31000.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 27.54
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 335.0,
+    "expiry": "2028-01-21",
+    "dte": 475,
+    "delta": 0.796,
+    "bid": 77.0,
+    "ask": 79.55,
+    "mid": 78.28,
+    "iv": 0.2344,
+    "oi": 120,
+    "extrinsic": 33.14,
+    "extrinsic_pct": 8.72,
+    "cost": 7828.0,
+    "exposure": 30244.0,
+    "breakeven": 413.27
+   }
+  },
+  {
+   "symbol": "HOOD",
+   "bucket": "High-beta",
+   "role": "opportunistic",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 8 < 30: no new short premium",
+    "Opportunistic name: spikes only"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": true,
+    "bottom_third": false,
+    "ivr_low": true,
+    "core_name": false
+   },
+   "price": 112.8559,
+   "prev_close": 111.15,
+   "iv30": 0.6141,
+   "hv20": 0.52,
+   "iv_hv": 1.181,
+   "ivr": 7.5397,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Mid",
+   "extension_pct": 36.7725,
+   "price_to_sma200": 1.1964,
+   "spike": {
+    "dir": "down",
+    "size": 0.3485,
+    "k": 3,
+    "down": 0.3485,
+    "up": 0.3186,
+    "is_spike": false
+   },
+   "consolidation": true,
+   "bb_pct": 12.6984,
+   "range_pos": 0.6776,
+   "sma50": 105.3981,
+   "sma200": 94.3262,
+   "history_days": 1302,
+   "history_source": "cboe",
+   "notes": [
+    "Momentum name: cover at most 50% with calls"
+   ],
+   "change_pct": 1.5348,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 90.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 90.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 91.44,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 92.8,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 94.33,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 100.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 100.2,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 100.68,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 101.7,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 105.4,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 110.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 120.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 120.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 120.05,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 125.25,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 126.74,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 130.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 140.0,
+     "kind": "round",
+     "label": "round number"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 3,
+    "passed": 3,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 100.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.253,
+      "bid": 4.2,
+      "ask": 4.3,
+      "mid": 4.25,
+      "iv": 0.6095,
+      "oi": 4210,
+      "annualized": 0.3232,
+      "breakeven": 95.75,
+      "cushion_moves": 0.6806,
+      "iv_resid_pts": 0.093,
+      "level": {
+       "value": 100.68,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 0.6754,
+      "f_support": 1.0,
+      "f_richness": 0.475,
+      "f_cushion": 0.4537,
+      "f_assignment": 1.0,
+      "collateral": 10000.0,
+      "f_roc": 1.0,
+      "score": 0.7868,
+      "reason": "0.7% under swing low \u00b7 IV 0.1 pts rich \u00b7 32% annualized \u00b7 BE 0.7 moves away"
+     },
+     {
+      "strike": 90.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.132,
+      "bid": 1.83,
+      "ask": 1.88,
+      "mid": 1.855,
+      "iv": 0.6214,
+      "oi": 5669,
+      "annualized": 0.1567,
+      "breakeven": 88.14,
+      "cushion_moves": 0.9831,
+      "iv_resid_pts": -0.0974,
+      "level": {
+       "value": 91.44,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 1.5748,
+      "f_support": 1.0,
+      "f_richness": 0.4723,
+      "f_cushion": 0.6554,
+      "f_assignment": 1.0,
+      "collateral": 9000.0,
+      "f_roc": 0.0,
+      "score": 0.6164,
+      "reason": "1.6% under swing low \u00b7 IV 0.1 pts cheap \u00b7 16% annualized \u00b7 BE 1.0 moves away"
+     },
+     {
+      "strike": 95.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.187,
+      "bid": 2.83,
+      "ask": 2.89,
+      "mid": 2.86,
+      "iv": 0.6136,
+      "oi": 2094,
+      "annualized": 0.2289,
+      "breakeven": 92.14,
+      "cushion_moves": 0.8242,
+      "iv_resid_pts": -0.0592,
+      "level": {
+       "value": 100.2,
+       "kind": "sma100",
+       "label": "100-day avg"
+      },
+      "level_dist_pct": 5.1854,
+      "f_support": 0.0066,
+      "f_richness": 0.4654,
+      "f_cushion": 0.5495,
+      "f_assignment": 1.0,
+      "collateral": 9500.0,
+      "f_roc": 0.5,
+      "score": 0.4008,
+      "reason": "5.2% under 100-day avg \u00b7 IV 0.1 pts cheap \u00b7 23% annualized \u00b7 BE 0.8 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 20,
+    "band": [
+     13,
+     27
+    ],
+    "in_band": 4,
+    "passed": 4,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 135.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.257,
+      "bid": 3.45,
+      "ask": 3.55,
+      "mid": 3.5,
+      "iv": 0.6151,
+      "oi": 2442,
+      "annualized": 0.2358,
+      "breakeven": 138.5,
+      "cushion_moves": 0.881,
+      "iv_resid_pts": -0.2332,
+      "level": {
+       "value": 130.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 3.8462,
+      "f_support": 0.5815,
+      "f_richness": 0.4501,
+      "f_cushion": 0.5873,
+      "f_assignment": 1.0,
+      "collateral": 13500.0,
+      "f_roc": 1.0,
+      "score": 0.6751,
+      "reason": "3.8% over round 130 \u00b7 IV 0.2 pts cheap \u00b7 24% annualized \u00b7 0.9 moves OTM"
+     },
+     {
+      "strike": 145.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.172,
+      "bid": 2.09,
+      "ask": 2.18,
+      "mid": 2.135,
+      "iv": 0.6289,
+      "oi": 1949,
+      "annualized": 0.1439,
+      "breakeven": 147.13,
+      "cushion_moves": 1.2789,
+      "iv_resid_pts": -0.1155,
+      "level": {
+       "value": 140.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 3.5714,
+      "f_support": 0.62,
+      "f_richness": 0.4808,
+      "f_cushion": 0.8526,
+      "f_assignment": 1.0,
+      "collateral": 14500.0,
+      "f_roc": 0.3333,
+      "score": 0.6008,
+      "reason": "3.6% over round 140 \u00b7 IV 0.1 pts cheap \u00b7 14% annualized \u00b7 1.3 moves OTM"
+     },
+     {
+      "strike": 140.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.211,
+      "bid": 2.7,
+      "ask": 2.78,
+      "mid": 2.74,
+      "iv": 0.6231,
+      "oi": 3695,
+      "annualized": 0.1846,
+      "breakeven": 142.74,
+      "cushion_moves": 1.0799,
+      "iv_resid_pts": -0.0251,
+      "level": {
+       "value": 140.0,
+       "kind": "round",
+       "label": "round number"
+      },
+      "level_dist_pct": 0.0,
+      "f_support": 0.35,
+      "f_richness": 0.4819,
+      "f_cushion": 0.72,
+      "f_assignment": 1.0,
+      "collateral": 14000.0,
+      "f_roc": 0.6667,
+      "score": 0.5668,
+      "reason": "at round 140 \u00b7 IV on the skew curve \u00b7 18% annualized \u00b7 1.1 moves OTM"
+     }
+    ]
+   },
+   "em45": 24.3365,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 100.0,
+     "target": 100.0,
+     "collateral": 10000.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 24.34
+    },
+    {
+     "rung": 2,
+     "strike": 75.0,
+     "target": 75.66,
+     "collateral": 7500.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 24.34
+    },
+    {
+     "rung": 3,
+     "strike": 50.0,
+     "target": 51.33,
+     "collateral": 5000.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 24.34
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 90.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.781,
+    "bid": 42.55,
+    "ask": 44.55,
+    "mid": 43.55,
+    "iv": 0.6396,
+    "oi": 10656,
+    "extrinsic": 20.69,
+    "extrinsic_pct": 18.34,
+    "cost": 4355.0,
+    "exposure": 8819.0,
+    "breakeven": 133.55
+   }
+  },
+  {
+   "symbol": "SOFI",
+   "bucket": "High-beta",
+   "role": "opportunistic",
+   "asof": "2026-10-02",
+   "action": "NO_SHORT",
+   "label": "NO NEW SHORTS",
+   "priority": 5,
+   "reasons": [
+    "IVR 0 < 30: no new short premium",
+    "Opportunistic name: spikes only"
+   ],
+   "both_sides": false,
+   "leap_window": false,
+   "leap_checks": {
+    "bull_gate": true,
+    "regime": true,
+    "consolidation": false,
+    "bottom_third": true,
+    "ivr_low": true,
+    "core_name": false
+   },
+   "price": 15.75,
+   "prev_close": 15.84,
+   "iv30": 0.5302,
+   "hv20": 0.2869,
+   "iv_hv": 1.8481,
+   "ivr": 0.3968,
+   "ivr_source": "proxy",
+   "iv_history_days": 1,
+   "index_level": null,
+   "regime": "Low",
+   "extension_pct": 15.3439,
+   "price_to_sma200": 0.8314,
+   "spike": {
+    "dir": "down",
+    "size": 0.2747,
+    "k": 1,
+    "down": 0.2747,
+    "up": 0.0574,
+    "is_spike": false
+   },
+   "consolidation": false,
+   "bb_pct": 35.3175,
+   "range_pos": 0.1883,
+   "sma50": 17.454,
+   "sma200": 18.9434,
+   "history_days": 1468,
+   "history_source": "cboe",
+   "notes": [],
+   "change_pct": -0.5682,
+   "expiry": "2026-11-20",
+   "dte": 48,
+   "expiry_note": "monthly",
+   "supports": [
+    {
+     "value": 12.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 13.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 14.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 14.88,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 14.92,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 15.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 15.0,
+     "kind": "oi_wall",
+     "label": "put-OI wall"
+    },
+    {
+     "value": 15.5,
+     "kind": "swing",
+     "label": "swing low"
+    },
+    {
+     "value": 15.65,
+     "kind": "swing",
+     "label": "swing low"
+    }
+   ],
+   "resistances": [
+    {
+     "value": 16.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 17.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 17.28,
+     "kind": "sma100",
+     "label": "100-day avg"
+    },
+    {
+     "value": 17.45,
+     "kind": "sma50",
+     "label": "50-day avg"
+    },
+    {
+     "value": 17.96,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 18.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 18.7,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 18.8,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 18.86,
+     "kind": "swing_high",
+     "label": "swing high"
+    },
+    {
+     "value": 18.94,
+     "kind": "sma200",
+     "label": "200-day avg"
+    },
+    {
+     "value": 19.0,
+     "kind": "round",
+     "label": "round number"
+    },
+    {
+     "value": 19.0,
+     "kind": "oi_wall_call",
+     "label": "call-OI wall"
+    },
+    {
+     "value": 19.5,
+     "kind": "swing_high",
+     "label": "swing high"
+    }
+   ],
+   "puts": {
+    "side": "P",
+    "target": 30,
+    "band": [
+     23,
+     37
+    ],
+    "in_band": 2,
+    "passed": 2,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 15.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.352,
+      "bid": 0.79,
+      "ask": 0.8,
+      "mid": 0.795,
+      "iv": 0.522,
+      "oi": 15195,
+      "annualized": 0.403,
+      "breakeven": 14.21,
+      "cushion_moves": 0.5102,
+      "iv_resid_pts": 0.3255,
+      "level": {
+       "value": 15.5,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 3.2258,
+      "f_support": 0.4548,
+      "f_richness": 0.7326,
+      "f_cushion": 0.3401,
+      "f_assignment": 1.0,
+      "collateral": 1500.0,
+      "f_roc": 1.0,
+      "score": 0.6706,
+      "reason": "3.2% under swing low \u00b7 IV 0.3 pts rich \u00b7 40% annualized \u00b7 BE 0.5 moves away"
+     },
+     {
+      "strike": 14.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": -0.233,
+      "bid": 0.44,
+      "ask": 0.46,
+      "mid": 0.45,
+      "iv": 0.5279,
+      "oi": 10114,
+      "annualized": 0.2444,
+      "breakeven": 13.55,
+      "cushion_moves": 0.7265,
+      "iv_resid_pts": 0.327,
+      "level": {
+       "value": 14.88,
+       "kind": "swing",
+       "label": "swing low"
+      },
+      "level_dist_pct": 5.914,
+      "f_support": 0.4172,
+      "f_richness": 0.7327,
+      "f_cushion": 0.4843,
+      "f_assignment": 1.0,
+      "collateral": 1400.0,
+      "f_roc": 0.0,
+      "score": 0.481,
+      "reason": "5.9% under swing low \u00b7 IV 0.3 pts rich \u00b7 24% annualized \u00b7 BE 0.7 moves away"
+     }
+    ]
+   },
+   "calls": {
+    "side": "C",
+    "target": 10,
+    "band": [
+     3,
+     17
+    ],
+    "in_band": 7,
+    "passed": 7,
+    "rejected": {},
+    "candidates": [
+     {
+      "strike": 20.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.161,
+      "bid": 0.23,
+      "ask": 0.24,
+      "mid": 0.235,
+      "iv": 0.5602,
+      "oi": 39528,
+      "annualized": 0.1135,
+      "breakeven": 20.23,
+      "cushion_moves": 1.4035,
+      "iv_resid_pts": -0.0883,
+      "level": {
+       "value": 19.5,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 2.5641,
+      "f_support": 1.0,
+      "f_richness": 0.6912,
+      "f_cushion": 0.9357,
+      "f_assignment": 1.0,
+      "collateral": 2000.0,
+      "f_roc": 1.0,
+      "score": 0.9131,
+      "reason": "2.6% over swing high \u00b7 IV 0.1 pts cheap \u00b7 11% annualized \u00b7 1.4 moves OTM"
+     },
+     {
+      "strike": 21.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.12,
+      "bid": 0.15,
+      "ask": 0.17,
+      "mid": 0.16,
+      "iv": 0.573,
+      "oi": 6576,
+      "annualized": 0.0772,
+      "breakeven": 21.16,
+      "cushion_moves": 1.7337,
+      "iv_resid_pts": -0.5964,
+      "level": {
+       "value": 19.5,
+       "kind": "swing_high",
+       "label": "swing high"
+      },
+      "level_dist_pct": 7.6923,
+      "f_support": 0.0615,
+      "f_richness": 0.6404,
+      "f_cushion": 1.0,
+      "f_assignment": 1.0,
+      "collateral": 2100.0,
+      "f_roc": 0.8333,
+      "score": 0.5952,
+      "reason": "7.7% over swing high \u00b7 IV 0.6 pts cheap \u00b7 8% annualized \u00b7 1.7 moves OTM"
+     },
+     {
+      "strike": 22.0,
+      "expiry": "2026-11-20",
+      "dte": 48,
+      "delta": 0.091,
+      "bid": 0.12,
+      "ask": 0.13,
+      "mid": 0.125,
+      "iv": 0.6028,
+      "oi": 18530,
+      "annualized": 0.0604,
+      "breakeven": 22.12,
+      "cushion_moves": 2.064,
+      "iv_resid_pts": 0.3898,
+      "level": null,
+      "level_dist_pct": null,
+      "f_support": 0.0,
+      "f_richness": 0.739,
+      "f_cushion": 1.0,
+      "f_assignment": 1.0,
+      "collateral": 2200.0,
+      "f_roc": 0.6667,
+      "score": 0.5681,
+      "reason": "no nearby resistance \u00b7 IV 0.4 pts rich \u00b7 6% annualized \u00b7 2.1 moves OTM"
+     }
+    ]
+   },
+   "em45": 2.932,
+   "ladder": [
+    {
+     "rung": 1,
+     "strike": 15.0,
+     "target": 15.0,
+     "collateral": 1500.0,
+     "moves_below": 0,
+     "listed": true,
+     "em45": 2.93
+    },
+    {
+     "rung": 2,
+     "strike": 12.0,
+     "target": 12.07,
+     "collateral": 1200.0,
+     "moves_below": 1,
+     "listed": true,
+     "em45": 2.93
+    },
+    {
+     "rung": 3,
+     "strike": 9.0,
+     "target": 9.14,
+     "collateral": 900.0,
+     "moves_below": 2,
+     "listed": true,
+     "em45": 2.93
+    }
+   ],
+   "leap": {
+    "found": true,
+    "note": "",
+    "strike": 13.0,
+    "expiry": "2027-12-17",
+    "dte": 440,
+    "delta": 0.773,
+    "bid": 5.4,
+    "ask": 5.7,
+    "mid": 5.55,
+    "iv": 0.5693,
+    "oi": 1845,
+    "extrinsic": 2.8,
+    "extrinsic_pct": 17.78,
+    "cost": 555.0,
+    "exposure": 1217.0,
+    "breakeven": 18.55
+   }
+  }
+ ]
+}

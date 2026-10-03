@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<title>Vol Wheel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%232f6fde' stroke-width='4'/%3E%3Cpath d='M16 3v26M3 16h26' stroke='%232f6fde' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f5; --border: #e2e5ea;
+  --text: #15181d; --muted: #5d6573; --faint: #8a92a0;
+  --accent: #2f6fde;
+  --put: #0f8a5f; --put-bg: #e3f5ec;
+  --call: #b4590b; --call-bg: #fdf0e3;
+  --leap: #6a3fd1; --leap-bg: #efe9fc;
+  --watch: #1f6fb8; --watch-bg: #e5f0fa;
+  --neutral: #5d6573; --neutral-bg: #eceef2;
+  --stop: #9a2f2f; --stop-bg: #f8e7e7;
+  --ok: #0f8a5f; --bad: #b3261e;
+  --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  --radius: 14px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --surface: #171a21; --surface-2: #1e222b; --border: #2a2f3a;
+    --text: #e8eaee; --muted: #a2a9b6; --faint: #737b89;
+    --accent: #6c9cf0;
+    --put: #4cc79a; --put-bg: #10291f;
+    --call: #f0a35e; --call-bg: #2e1f10;
+    --leap: #a98bf2; --leap-bg: #221a38;
+    --watch: #6aaeea; --watch-bg: #13253a;
+    --neutral: #a2a9b6; --neutral-bg: #232832;
+    --stop: #ec8a8a; --stop-bg: #331a1a;
+    --ok: #4cc79a; --bad: #f08080;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --surface: #171a21; --surface-2: #1e222b; --border: #2a2f3a;
+  --text: #e8eaee; --muted: #a2a9b6; --faint: #737b89;
+  --accent: #6c9cf0;
+  --put: #4cc79a; --put-bg: #10291f;
+  --call: #f0a35e; --call-bg: #2e1f10;
+  --leap: #a98bf2; --leap-bg: #221a38;
+  --watch: #6aaeea; --watch-bg: #13253a;
+  --neutral: #a2a9b6; --neutral-bg: #232832;
+  --stop: #ec8a8a; --stop-bg: #331a1a;
+  --ok: #4cc79a; --bad: #f08080;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 16px 16px calc(32px + env(safe-area-inset-bottom)); }
+header h1 { font-size: 20px; margin: 4px 0 2px; letter-spacing: -.01em; }
+.sub { color: var(--muted); font-size: 13px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
+}
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pill.on { color: var(--ok); }
+.pill.off { color: var(--bad); }
+.status { margin: 12px 0 8px; }
+select, button { font: inherit; color: inherit; }
+.acct { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.acct select {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-weight: 600; color: var(--text);
+}
+.theme-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; cursor: pointer; color: var(--muted); font-size: 13px; }
+details.notes { margin: 8px 0 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; font-size: 13px; color: var(--muted); }
+details.notes summary { cursor: pointer; font-weight: 600; color: var(--text); }
+details.notes ul { margin: 6px 0 2px; padding-left: 18px; }
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 14px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
+.stat b { display: block; font-size: 18px; line-height: 1.2; }
+.stat span { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+.filters button { white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.filters button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.cards { display: flex; flex-direction: column; gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.card > button.head { all: unset; display: block; width: 100%; padding: 12px 14px; cursor: pointer; box-sizing: border-box; }
+.card > button.head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius); }
+.sym { font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.bucket { font-size: 12px; color: var(--muted); }
+.tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); color: var(--muted); }
+.badge { font-size: 12px; font-weight: 800; letter-spacing: .03em; padding: 4px 9px; border-radius: 8px; white-space: nowrap; }
+.a-SELL_PUT { background: var(--put-bg); color: var(--put); }
+.a-SELL_CALL { background: var(--call-bg); color: var(--call); }
+.a-LEAP_BUY { background: var(--leap-bg); color: var(--leap); }
+.a-WATCH { background: var(--watch-bg); color: var(--watch); }
+.a-NEUTRAL { background: var(--neutral-bg); color: var(--neutral); }
+.a-NO_SHORT, .a-NO_DATA, .a-ERROR { background: var(--stop-bg); color: var(--stop); }
+.card.hot { border-left: 4px solid var(--put); }
+.card.hot.call { border-left-color: var(--call); }
+.card.hot.leap { border-left-color: var(--leap); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.m { min-width: 0; }
+.m .k { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; }
+.m .v { font-size: 15px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m .v small { font-weight: 500; color: var(--muted); font-size: 11.5px; }
+.up { color: var(--ok); } .down { color: var(--bad); }
+.src { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 5px; vertical-align: 2px; margin-left: 3px; text-transform: uppercase; }
+.src-proxy { background: var(--call-bg); color: var(--call); }
+.src-partial { background: var(--watch-bg); color: var(--watch); }
+.src-VIX, .src-VXN { background: var(--leap-bg); color: var(--leap); }
+.src-true { background: var(--put-bg); color: var(--put); }
+.reason { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.chev { color: var(--faint); transition: transform .15s; font-size: 14px; }
+.card.open .chev { transform: rotate(90deg); }
+.body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+.card.open .body { display: block; }
+.body h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 14px 0 6px; }
+.body h3 .hint { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--faint); }
+.strike { padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; background: var(--surface-2); }
+.strike .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.strike .k { font-weight: 700; font-size: 15px; }
+.strike .meta { font-size: 12.5px; color: var(--muted); }
+.strike .why { font-size: 12.5px; margin-top: 3px; }
+.elig { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+.elig.yes { background: var(--put-bg); color: var(--put); }
+.elig.no { background: var(--call-bg); color: var(--call); }
+.score { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.bars { display: flex; gap: 3px; margin-top: 6px; }
+.bars i { flex: 1; height: 4px; border-radius: 2px; background: var(--border); position: relative; overflow: hidden; }
+.bars i b { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
+.legend { font-size: 11px; color: var(--faint); margin-top: 3px; }
+.empty { font-size: 13px; color: var(--faint); padding: 4px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--border); }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--faint); font-weight: 600; }
+td.n, th.n { text-align: right; }
+.kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 10px; font-size: 13px; }
+.kv div span { display: block; font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.checks span { padding: 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); }
+.checks .y { color: var(--ok); } .checks .n { color: var(--bad); }
+section.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-top: 18px; }
+section.panel h2 { font-size: 15px; margin: 0 0 8px; }
+footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 24px; }
+.err { background: var(--stop-bg); color: var(--stop); padding: 12px; border-radius: 12px; }
+@media (max-width: 420px) {
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .kv { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row spread">
+      <h1>Vol Wheel</h1>
+      <div class="row">
+        <label class="acct">Account
+          <select id="acct" aria-label="Account size"></select>
+        </label>
+        <button class="theme-btn" id="theme" type="button" aria-label="Toggle light/dark theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="display:block"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+    <div class="sub" id="scanTime">Loading…</div>
+    <div class="row status" id="status"></div>
+  </header>
+  <details class="notes" id="notes" hidden><summary>Data quality</summary><ul></ul></details>
+  <div class="summary" id="summary"></div>
+  <div class="filters" id="filters" role="toolbar" aria-label="Filter by action"></div>
+  <main class="cards" id="cards"></main>
+  <section class="panel" id="caps"></section>
+  <footer>Signals only, not financial advice.</footer>
+</div>
+<script>
+(function () {
+  "use strict";
+  var state = { data: null, acct: 500000, filter: "all", open: {} };
+  var $ = function (id) { return document.getElementById(id); };
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function num(x, d) { return x == null || isNaN(x) ? "–" : Number(x).toFixed(d == null ? 0 : d); }
+  function money(x, d) {
+    if (x == null || isNaN(x)) return "–";
+    return "$" + Number(x).toLocaleString(undefined, { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+  }
+  function kmoney(x) { return x >= 1e6 ? "$" + (x / 1e6) + "M" : "$" + (x / 1e3) + "k"; }
+  function pct(x, d) { return x == null || isNaN(x) ? "–" : (Number(x) * 100).toFixed(d == null ? 0 : d) + "%"; }
+  function entrySize() { return state.acct * (state.data.sizing.entry_pct / 100); }
+
+  // theme
+  var theme = store("vw-theme");
+  if (theme) document.documentElement.setAttribute("data-theme", theme);
+  $("theme").addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme");
+    var dark = cur ? cur === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = dark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    store("vw-theme", next);
+  });
+
+  fetch("data/latest.json", { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function (d) { state.data = d; init(); })
+    .catch(function (e) { $("cards").innerHTML = '<div class="err">Could not load data/latest.json (' + esc(e.message) + "). The scan may not have run yet.</div>"; $("scanTime").textContent = ""; });
+
+  function init() {
+    var d = state.data, s = d.sizing;
+    var saved = parseInt(store("vw-acct") || "", 10);
+    state.acct = s.tiers.indexOf(saved) >= 0 ? saved : s.default_tier;
+    $("acct").innerHTML = s.tiers.map(function (t) { return '<option value="' + t + '"' + (t === state.acct ? " selected" : "") + ">" + kmoney(t) + "</option>"; }).join("");
+    $("acct").addEventListener("change", function (e) { state.acct = parseInt(e.target.value, 10); store("vw-acct", state.acct); render(); });
+    renderHeader();
+    render();
+  }
+
+  function renderHeader() {
+    var d = state.data, g = d.bull_gate || {};
+    var t = new Date(d.generated_at);
+    $("scanTime").textContent = "Scanned " + t.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " · market date " + d.scan_date;
+    var gate = '<span class="pill ' + (g.on ? "on" : "off") + '"><span class="dot"></span>Bull gate ' + (g.on ? "ON" : "OFF") + "</span>";
+    var spy = d.spy_regime ? '<span class="pill">SPY regime: ' + esc(d.spy_regime.regime) + " (" + num(d.spy_regime.extension_pct) + "th pct)</span>" : "";
+    var sma = g.spy_sma200 ? '<span class="pill">SPY ' + num(g.spy_close, 2) + (g.spy_above_sma200 ? " > " : " < ") + "SMA200 " + num(g.spy_sma200, 2) + "</span>" : "";
+    var mode = !g.bull_mode ? '<span class="pill off">bull_mode off in config</span>' : "";
+    $("status").innerHTML = gate + spy + sma + mode;
+    var notes = d.notes || [];
+    if (notes.length) {
+      $("notes").hidden = false;
+      $("notes").querySelector("ul").innerHTML = notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("");
+      $("notes").querySelector("summary").textContent = "Data quality · " + notes.length + " note" + (notes.length > 1 ? "s" : "");
+    }
+  }
+
+  var FILTERS = [
+    ["all", "All"], ["act", "Actionable"], ["SELL_PUT", "Sell put"], ["SELL_CALL", "Covered call"],
+    ["LEAP_BUY", "LEAP"], ["WATCH", "Watch"], ["quiet", "Quiet"]
+  ];
+  function matches(t) {
+    var f = state.filter;
+    if (f === "all") return true;
+    if (f === "act") return ["SELL_PUT", "SELL_CALL", "LEAP_BUY"].indexOf(t.action) >= 0;
+    if (f === "quiet") return ["NEUTRAL", "NO_SHORT", "NO_DATA", "ERROR"].indexOf(t.action) >= 0;
+    return t.action === f;
+  }
+
+  function render() {
+    var d = state.data, ts = d.tickers;
+    var count = function (a) { return ts.filter(function (t) { return a.indexOf(t.action) >= 0; }).length; };
+    $("summary").innerHTML = [
+      [count(["SELL_PUT"]), "Puts"], [count(["SELL_CALL"]), "Calls"],
+      [count(["LEAP_BUY"]), "LEAPs"], [count(["WATCH"]), "Watch"]
+    ].map(function (x) { return '<div class="stat"><b>' + x[0] + "</b><span>" + x[1] + "</span></div>"; }).join("");
+    $("filters").innerHTML = FILTERS.map(function (f) {
+      return '<button type="button" data-f="' + f[0] + '" aria-pressed="' + (state.filter === f[0]) + '">' + f[1] + "</button>";
+    }).join("");
+    Array.prototype.forEach.call($("filters").querySelectorAll("button"), function (b) {
+      b.addEventListener("click", function () { state.filter = b.getAttribute("data-f"); render(); });
+    });
+    var shown = ts.filter(matches);
+    $("cards").innerHTML = shown.length ? shown.map(card).join("") : '<div class="empty">Nothing in this filter today.</div>';
+    Array.prototype.forEach.call($("cards").querySelectorAll(".card > button.head"), function (b) {
+      b.addEventListener("click", function () {
+        var c = b.parentNode, sym = c.getAttribute("data-sym");
+        state.open[sym] = !state.open[sym];
+        c.classList.toggle("open", state.open[sym]);
+        b.setAttribute("aria-expanded", state.open[sym]);
+      });
+    });
+    renderCaps();
+  }
+
+  function srcBadge(t) {
+    if (!t.ivr_source) return "";
+    var label = t.ivr_source === "true" ? "" : t.ivr_source;
+    return label ? '<span class="src src-' + esc(t.ivr_source) + '" title="IV rank source">' + esc(label) + "</span>" : "";
+  }
+
+  function card(t) {
+    var hot = { SELL_PUT: "hot", SELL_CALL: "hot call", LEAP_BUY: "hot leap" }[t.action] || "";
+    var open = !!state.open[t.symbol];
+    var ch = t.change_pct;
+    var chHtml = ch == null ? "" : ' <small class="' + (ch >= 0 ? "up" : "down") + '">' + (ch >= 0 ? "+" : "") + num(ch, 1) + "%</small>";
+    var sp = t.spike || {};
+    var spike = sp.dir ? (sp.dir === "down" ? "▼ " : "▲ ") + num(sp.size, 1) + "σ" : "–";
+    var spikeCls = sp.is_spike ? (sp.dir === "down" ? "down" : "up") : "";
+    return '<article class="card ' + hot + (open ? " open" : "") + '" data-sym="' + esc(t.symbol) + '">' +
+      '<button class="head" type="button" aria-expanded="' + open + '">' +
+        '<div class="row spread">' +
+          '<div class="row"><span class="sym">' + esc(t.symbol) + '</span><span class="bucket">' + esc(t.bucket) + "</span>" +
+            (t.role === "opportunistic" ? '<span class="tag">opp</span>' : "") + "</div>" +
+          '<div class="row"><span class="badge a-' + esc(t.action) + '">' + esc(t.label) + '</span><span class="chev">▸</span></div>' +
+        "</div>" +
+        '<div class="metrics">' +
+          m("Price", t.price != null ? money(t.price, 2) + chHtml : "–") +
+          m("IV rank", t.ivr != null ? num(t.ivr) + srcBadge(t) : "–") +
+          m("Regime", t.regime ? esc(t.regime) + (t.extension_pct != null ? " <small>" + num(t.extension_pct) + "p</small>" : "") : "–") +
+          m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "")) +
+        "</div>" +
+        '<div class="reason">' + esc((t.reasons || []).join(" · ")) + "</div>" +
+      "</button>" +
+      '<div class="body">' + body(t) + "</div>" +
+    "</article>";
+  }
+  function m(k, v) { return '<div class="m"><div class="k">' + k + '</div><div class="v">' + v + "</div></div>"; }
+
+  function strikeRow(c, side) {
+    var elig = "";
+    if (side === "P") {
+      elig = c.collateral <= entrySize()
+        ? '<span class="elig yes">CSP ok</span>'
+        : '<span class="elig no">spread / PMCC</span>';
+    }
+    var f = [["S/R", c.f_support], ["Rich", c.f_richness], ["ROC", c.f_roc], ["Cush", c.f_cushion], ["Fit", c.f_assignment]];
+    return '<div class="strike">' +
+      '<div class="top"><span class="k">' + money(c.strike, c.strike % 1 ? 2 : 0) + " " + (side === "P" ? "put" : "call") + "</span>" +
+        '<span class="meta">' + num(Math.abs(c.delta) * 100) + "Δ · mid " + money(c.mid, 2) + " · " + pct(c.annualized) + " ann · IV " + pct(c.iv, 1) + "</span>" +
+        elig + "</div>" +
+      '<div class="why">' + esc(c.reason) + "</div>" +
+      '<div class="row spread"><span class="meta">BE ' + money(c.breakeven, 2) + " · OI " + Number(c.oi).toLocaleString() + " · " + money(c.bid, 2) + "/" + money(c.ask, 2) + "</span>" +
+        '<span class="score">score ' + num(c.score, 2) + "</span></div>" +
+      '<div class="bars">' + f.map(function (x) { return '<i title="' + x[0] + " " + num(x[1], 2) + '"><b style="width:' + Math.round((x[1] || 0) * 100) + '%"></b></i>'; }).join("") + "</div>" +
+      '<div class="legend">S/R · richness · return · cushion · fit</div>' +
+    "</div>";
+  }
+
+  function side(t, key, title, sideCode) {
+    var s = t[key];
+    if (!s) return "";
+    var hint = s.target != null ? '<span class="hint"> · ' + s.target + "Δ target, " + s.band[0] + "–" + s.band[1] + "Δ band</span>" : "";
+    var html = "<h3>" + title + hint + "</h3>";
+    if (s.candidates && s.candidates.length) html += s.candidates.map(function (c) { return strikeRow(c, sideCode); }).join("");
+    else {
+      var rej = Object.keys(s.rejected || {}).map(function (k) { return k + " " + s.rejected[k]; }).join(", ");
+      html += '<div class="empty">No strike passes the filters (' + s.in_band + " in band" + (rej ? "; rejected: " + esc(rej) : "") + ").</div>";
+    }
+    return html;
+  }
+
+  function body(t) {
+    var h = "";
+    if (t.expiry) h += '<h3>Expiry <span class="hint">· ' + esc(t.expiry) + " (" + t.dte + " DTE, " + esc(t.expiry_note) + ")</span></h3>";
+    h += side(t, "puts", "Puts", "P");
+    if (t.pair_call && t.pair_call.candidates && t.pair_call.candidates.length) h += side(t, "pair_call", "Alongside: 10Δ covered call", "C");
+    h += side(t, "calls", "Calls (covered only)", "C");
+    if (t.ladder && t.ladder.length) {
+      var es = entrySize(), fit = 0;
+      h += '<h3>Ladder <span class="hint">· rungs 1 and 2 forty-five-day moves (' + money(t.ladder[0].em45, 2) + ") apart</span></h3>";
+      h += '<table><thead><tr><th>Rung</th><th class="n">Strike</th><th class="n">Cash</th><th>Fits ' + kmoney(state.acct) + "</th></tr></thead><tbody>" +
+        t.ladder.map(function (r) {
+          var ok = r.collateral <= es; if (ok) fit++;
+          return "<tr><td>" + r.rung + '</td><td class="n">' + money(r.strike, r.strike % 1 ? 2 : 0) + (r.listed === false ? "*" : "") + '</td><td class="n">' + money(r.collateral) + "</td><td>" + (ok ? '<span class="elig yes">CSP ok</span>' : '<span class="elig no">spread / PMCC</span>') + "</td></tr>";
+        }).join("") + "</tbody></table>";
+      if (t.ladder.some(function (r) { return r.listed === false; })) h += '<div class="legend">* below the lowest listed strike; target level shown</div>';
+    }
+    var lp = t.leap;
+    h += "<h3>LEAP candidate" + (t.leap_window ? ' <span class="hint">· window OPEN</span>' : ' <span class="hint">· window closed</span>') + "</h3>";
+    if (lp && lp.found) {
+      h += '<div class="strike"><div class="top"><span class="k">' + money(lp.strike, lp.strike % 1 ? 2 : 0) + " call · " + esc(lp.expiry) + "</span>" +
+        '<span class="meta">' + num(lp.delta * 100) + "Δ · " + lp.dte + " DTE · mid " + money(lp.mid, 2) + "</span></div>" +
+        '<div class="why">Extrinsic ' + money(lp.extrinsic, 2) + " (" + num(lp.extrinsic_pct, 1) + "% of price) · cost " + money(lp.cost) + " · exposure " + money(lp.exposure) + " · BE " + money(lp.breakeven, 2) + (lp.note ? " · " + esc(lp.note) : "") + "</div></div>";
+    } else if (lp) h += '<div class="empty">' + esc(lp.note || "none") + "</div>";
+    if (t.leap_checks) {
+      var names = { bull_gate: "bull gate", regime: "Low/Mid regime", consolidation: "consolidation", bottom_third: "bottom third", ivr_low: "IVR < 25", core_name: "core name" };
+      h += '<div class="checks">' + Object.keys(t.leap_checks).map(function (k) {
+        var y = t.leap_checks[k]; return '<span class="' + (y ? "y" : "n") + '">' + (y ? "✓ " : "✗ ") + names[k] + "</span>";
+      }).join("") + "</div>";
+    }
+    h += "<h3>Signals</h3><div class=\"kv\">" +
+      kv("IV30", pct(t.iv30, 1)) + kv("HV20", pct(t.hv20, 1)) + kv("IV / HV", num(t.iv_hv, 2)) +
+      kv("IVR source", esc(t.ivr_source || "–") + (t.iv_history_days != null ? " · " + t.iv_history_days + "d" : "")) +
+      kv("Extension", t.extension_pct != null ? num(t.extension_pct) + "th pct" : "–") + kv("Px / SMA200", num(t.price_to_sma200, 3)) +
+      kv("BB width", t.bb_pct != null ? num(t.bb_pct) + "th pct" : "–") + kv("Range pos", t.range_pos != null ? num(t.range_pos * 100) + "%" : "–") +
+      kv("Consolidating", t.consolidation ? "yes" : "no") +
+      kv("SMA50", money(t.sma50, 2)) + kv("SMA200", money(t.sma200, 2)) + kv("45d move", money(t.em45, 2)) +
+      "</div>";
+    if (t.notes && t.notes.length) h += '<h3>Notes</h3><ul class="legend" style="padding-left:16px;margin:0">' + t.notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul>";
+    return h;
+  }
+  function kv(k, v) { return "<div><span>" + k + "</span>" + v + "</div>"; }
+
+  function renderCaps() {
+    var d = state.data, a = state.acct, es = entrySize();
+    var rows = d.buckets.map(function (b) {
+      var cap = a * b.cap / 100;
+      return "<tr><td><b>" + esc(b.name) + "</b><div class=\"legend\">" + esc(b.core.join(", ")) + (b.opportunistic.length ? " · opp: " + esc(b.opportunistic.join(", ")) : "") + '</div></td><td class="n">' + b.cap + '%</td><td class="n">' + money(cap) + '</td><td class="n">' + Math.floor(cap / es) + "</td></tr>";
+    }).join("");
+    $("caps").innerHTML = "<h2>Bucket caps · " + kmoney(a) + " account</h2>" +
+      "<table><thead><tr><th>Bucket</th><th class=\"n\">Cap</th><th class=\"n\">Max $</th><th class=\"n\">Entries</th></tr></thead><tbody>" + rows +
+      '<tr><td><b>Total deployed</b></td><td class="n">' + d.total_deployed_cap + '%</td><td class="n">' + money(a * d.total_deployed_cap / 100) + '</td><td class="n">' + Math.floor(a * d.total_deployed_cap / 100 / es) + "</td></tr></tbody></table>" +
+      '<div class="legend" style="margin-top:6px">Entry size ' + money(es) + " (" + d.sizing.entry_pct + "% of account). Per name ≤ " + d.per_name_cap + "% (index ≤ " + d.per_name_cap_index + "%). Short puts, shares and LEAPs share one budget per name. Cover ≤ 50% on " + esc((d.momentum_names || []).join(", ")) + ".</div>";
+  }
+})();
+</script>
+</body>
+</html>

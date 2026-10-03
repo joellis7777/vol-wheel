@@ -1,0 +1,7 @@
+requests>=2.31
+pandas>=2.1
+numpy>=1.26
+pyyaml>=6.0
+# Optional: fallback for daily prices when CBOE history is unavailable.
+# The scanner falls back to Yahoo's chart endpoint via requests if this isn't installed.
+yfinance>=0.2.40
