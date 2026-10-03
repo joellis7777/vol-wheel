@@ -1,0 +1,51 @@
+name: scan
+
+on:
+  schedule:
+    - cron: "35 21 * * 1-5"   # weekdays 21:35 UTC (after the 4pm ET close + CBOE delay)
+  workflow_dispatch:
+  # TEMP: lets the feature branch run a real scan before it reaches main. Remove after merge.
+  push:
+    branches: ["claude/vol-wheel-scanner-dashboard-ljjouk"]
+    paths: ["vol_wheel/**", "config/**", ".github/workflows/scan.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Scan
+        run: python -m vol_wheel.scan
+
+      - name: Commit IV history and dashboard data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/iv_history docs/data
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "scan: $(date -u +%Y-%m-%d) data"
+          for i in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

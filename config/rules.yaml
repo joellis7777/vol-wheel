@@ -1,0 +1,141 @@
+# vol-wheel rulebook in config form. Every threshold the scanner uses lives here.
+# Edit, commit, and the next scan picks it up. Percent values are written as
+# whole percents unless the key ends in _frac (0.05 = 5%).
+
+bull_mode: true            # manual switch; LEAP buys also need SPY > SMA200
+
+universe:
+  # bucket: {cap: % of account, core: [...], opportunistic: [...]}
+  Index:      {cap: 25, core: [QQQ, SPY], opportunistic: []}
+  Crypto:     {cap: 20, core: [IBIT],    opportunistic: [MSTR]}
+  AI semis:   {cap: 15, core: [NVDA],    opportunistic: [MRVL]}
+  Platform:   {cap: 15, core: [GOOG],    opportunistic: [AMZN]}
+  High-beta:  {cap: 15, core: [TSLA],    opportunistic: [HOOD, SOFI]}
+  Power:      {cap: 10, core: [CEG],     opportunistic: []}
+  Hard asset: {cap: 10, core: [GLD],     opportunistic: []}
+
+total_deployed_cap: 80       # % of account across all buckets
+per_name_cap: 15             # % of account per single name
+per_name_cap_index: 25       # % of account for index names (SPY, QQQ)
+
+# Index ETFs whose IV rank comes from a volatility index until our own history is long enough.
+vol_index_proxy:
+  SPY: _VIX
+  QQQ: _VXN
+
+# Names that trade with bitcoin over the weekend: ladder spacing uses the larger
+# of the IV-based and HV-based expected move.
+weekend_gap_names: [IBIT, MSTR]
+# Momentum names: cover at most this % of shares/LEAPs with short calls.
+momentum_names: [TSLA, MSTR, HOOD, NVDA, IBIT]
+momentum_max_call_coverage: 50
+
+iv_rank:
+  lookback_days: 252        # 52 weeks of trading days
+  min_history_days: 60      # true IVR from our own iv30 history once this many days exist
+  full_history_days: 252    # below this, IVR is labelled "partial"
+  proxy_hv_window: 20       # proxy = percentile of HV20 over the lookback
+
+thresholds:
+  ivr_no_short: 30          # IVR below this: no new short premium
+  ivr_sell: 50              # IVR at/above this: sell premium on a spike
+  ivr_both_sides: 70        # Mid regime + IVR at/above this: 10-delta call may sit alongside a put
+  both_sides_call_delta: 10
+  spike_sigma: 1.5          # move / (sigma_daily * sqrt(k)) needed for a spike
+  spike_max_days: 3         # k = 1..N
+  spike_hv_window: 20       # sigma_daily = HV20 (measured before the window) * price / sqrt(252)
+
+regime:
+  sma_window: 200
+  lookback_days: 756        # ~3 years (or whatever exists)
+  min_days: 60              # need at least this many SMA200 ratios
+  low_below: 20             # extension percentile < 20 -> Low
+  high_above: 80            # extension percentile > 80 -> High
+
+consolidation:
+  bb_window: 20
+  bb_std: 2.0
+  bb_lookback_days: 252
+  bb_pct_max: 25            # BB width in the bottom 25% of the past year
+  ivr_max: 25
+  range_window: 50          # range position within the 50-day high-low
+
+leap:
+  core_only: true           # opportunistic names are spike-only
+  ivr_max: 25
+  range_pos_max: 0.3333     # bottom third of the 50-day range
+  regimes: [Low, Mid]
+  min_dte: 365              # 12 months
+  max_dte: 548              # 18 months
+  delta_min: 70
+  delta_max: 80
+  max_spread_pct: 15        # LEAP spreads are wider; % of mid
+  max_spread_abs: 0.50
+  min_open_interest: 10
+
+strikes:
+  dte_min: 35
+  dte_max: 50
+  dte_target: 45
+  prefer_monthly: true
+  # target deltas (whole delta points) by regime
+  put_delta:  {Low: 30, Mid: 20, High: 10}
+  call_delta: {Low: 10, Mid: 20, High: 30}
+  delta_band: 7
+  max_spread_pct: 10        # spread <= 10% of mid ...
+  max_spread_abs: 0.10      # ... or <= $0.10
+  min_open_interest: 100
+  put_min_credit_pct_high_delta: 1.0   # puts >= 20 delta need mid >= 1% of strike
+  put_min_credit_pct_low_delta: 0.3    # puts < 20 delta need mid >= 0.3% of strike
+  put_high_delta_cutoff: 20
+  top_n: 3
+
+  weights:
+    support: 0.30
+    richness: 0.25
+    roc: 0.20
+    cushion: 0.15
+    assignment: 0.10
+
+  support:
+    ideal_min_pct: 0.5      # strike 0.5-3% beyond a level scores 1
+    ideal_max_pct: 3.0
+    fade_to_pct: 8.0        # fading to 0 at 8%
+    penalty_zone_pct: 2.0   # strike within 2% on the wrong side of a level ...
+    penalty: 0.5            # ... loses this much
+    swing_lookback_days: 120
+    swing_order: 5          # bars each side for a swing high/low
+    round_step_frac: 0.05   # round-number step ~ 5% of price, snapped to 1/2/2.5/5 x 10^n
+    oi_wall_max_dte: 60     # open interest summed over expiries up to this DTE
+    level_range_pct: 25     # only levels within 25% of price count
+    # strength of each level type (multiplies its score and its penalty)
+    strength: {sma50: 0.9, sma100: 0.9, sma200: 1.0, swing: 1.0, round: 0.7, oi_wall: 0.9}
+
+  richness:
+    resid_floor_pts: -2.0   # IV residual vs skew fit (vol points) mapped to 0..1
+    resid_cap_pts: 3.0
+    iv_hv_floor: 0.8        # IV / HV20 mapped to 0..1
+    iv_hv_cap: 1.5
+    resid_weight: 0.5       # share of richness from the skew residual (rest from IV/HV)
+
+  cushion:
+    full_score_moves: 1.5
+
+  assignment:
+    near_pct: 1.0           # breakeven within 1% above SMA200 / swing low still scores 1
+    fade_to_pct: 10.0
+    swing_lookback_days: 252
+
+sizing:
+  tiers: [25000, 50000, 150000, 500000, 1000000]
+  default_tier: 500000
+  entry_pct: 5              # each ladder entry ~5% of the account
+  ladder_rungs: 3           # up to 3 rungs per name per side
+  ladder_dte: 45            # rung spacing = 1 and 2 forty-five-day expected moves
+
+data:
+  cboe_chain_url: https://cdn.cboe.com/api/global/delayed_quotes/options/{sym}.json
+  cboe_history_url: https://cdn.cboe.com/api/global/delayed_quotes/charts/historical/{sym}.json
+  timeout_s: 30
+  retries: 3
+  history_min_days: 220     # fall back to yfinance if CBOE gives fewer daily bars than this
