@@ -16,6 +16,7 @@
   --put: #0f8a5f; --put-bg: #e3f5ec;
   --call: #b4590b; --call-bg: #fdf0e3;
   --leap: #6a3fd1; --leap-bg: #efe9fc;
+  --earn: #8a5a00; --earn-bg: #fbf1d9;
   --watch: #1f6fb8; --watch-bg: #e5f0fa;
   --neutral: #5d6573; --neutral-bg: #eceef2;
   --stop: #9a2f2f; --stop-bg: #f8e7e7;
@@ -32,6 +33,7 @@
     --put: #4cc79a; --put-bg: #10291f;
     --call: #f0a35e; --call-bg: #2e1f10;
     --leap: #a98bf2; --leap-bg: #221a38;
+    --earn: #e8b84d; --earn-bg: #2e2410;
     --watch: #6aaeea; --watch-bg: #13253a;
     --neutral: #a2a9b6; --neutral-bg: #232832;
     --stop: #ec8a8a; --stop-bg: #331a1a;
@@ -46,6 +48,7 @@
   --put: #4cc79a; --put-bg: #10291f;
   --call: #f0a35e; --call-bg: #2e1f10;
   --leap: #a98bf2; --leap-bg: #221a38;
+  --earn: #e8b84d; --earn-bg: #2e2410;
   --watch: #6aaeea; --watch-bg: #13253a;
   --neutral: #a2a9b6; --neutral-bg: #232832;
   --stop: #ec8a8a; --stop-bg: #331a1a;
@@ -81,7 +84,7 @@ select, button { font: inherit; color: inherit; }
 details.notes { margin: 8px 0 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; font-size: 13px; color: var(--muted); }
 details.notes summary { cursor: pointer; font-weight: 600; color: var(--text); }
 details.notes ul { margin: 6px 0 2px; padding-left: 18px; }
-.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 14px; }
+.summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 6px 0 14px; }
 .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
 .stat b { display: block; font-size: 18px; line-height: 1.2; }
 .stat span { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
@@ -100,12 +103,22 @@ details.notes ul { margin: 6px 0 2px; padding-left: 18px; }
 .a-SELL_CALL { background: var(--call-bg); color: var(--call); }
 .a-LEAP_BUY { background: var(--leap-bg); color: var(--leap); }
 .a-WATCH { background: var(--watch-bg); color: var(--watch); }
+.a-EARNINGS_PLAY { background: var(--earn-bg); color: var(--earn); }
 .a-NEUTRAL { background: var(--neutral-bg); color: var(--neutral); }
 .a-NO_SHORT, .a-NO_DATA, .a-ERROR { background: var(--stop-bg); color: var(--stop); }
 .card.hot { border-left: 4px solid var(--put); }
 .card.hot.call { border-left-color: var(--call); }
 .card.hot.leap { border-left-color: var(--leap); }
-.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.card.hot.earn { border-left-color: var(--earn); }
+.earn-line { margin-top: 6px; font-size: 12.5px; color: var(--earn); font-weight: 600; }
+.ok { color: var(--ok); } .bad { color: var(--bad); }
+.src-ex { background: var(--earn-bg); color: var(--earn); }
+.src-inflated { background: var(--stop-bg); color: var(--stop); }
+.variant { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 8px 0 4px; }
+.variant em { font-style: normal; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--faint); }
+section.hedge { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--watch); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; }
+section.hedge h2 { font-size: 15px; margin: 0 0 4px; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 8px; margin-top: 10px; }
 .m { min-width: 0; }
 .m .k { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; }
 .m .v { font-size: 15px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -151,7 +164,8 @@ section.panel h2 { font-size: 15px; margin: 0 0 8px; }
 footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 24px; }
 .err { background: var(--stop-bg); color: var(--stop); padding: 12px; border-radius: 12px; }
 @media (max-width: 420px) {
-  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .stat { padding: 7px 8px; }
+  .stat span { font-size: 10.5px; }
   .kv { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
@@ -174,6 +188,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   <details class="notes" id="notes" hidden><summary>Data quality</summary><ul></ul></details>
   <div class="summary" id="summary"></div>
   <div class="filters" id="filters" role="toolbar" aria-label="Filter by action"></div>
+  <section class="hedge" id="hedge" hidden></section>
   <main class="cards" id="cards"></main>
   <section class="panel" id="caps"></section>
   <footer>Signals only, not financial advice.</footer>
@@ -242,12 +257,12 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
 
   var FILTERS = [
     ["all", "All"], ["act", "Actionable"], ["SELL_PUT", "Sell put"], ["SELL_CALL", "Covered call"],
-    ["LEAP_BUY", "LEAP"], ["WATCH", "Watch"], ["quiet", "Quiet"]
+    ["EARNINGS_PLAY", "Earnings"], ["LEAP_BUY", "LEAP"], ["WATCH", "Watch"], ["quiet", "Quiet"]
   ];
   function matches(t) {
     var f = state.filter;
     if (f === "all") return true;
-    if (f === "act") return ["SELL_PUT", "SELL_CALL", "LEAP_BUY"].indexOf(t.action) >= 0;
+    if (f === "act") return ["SELL_PUT", "SELL_CALL", "EARNINGS_PLAY", "LEAP_BUY"].indexOf(t.action) >= 0;
     if (f === "quiet") return ["NEUTRAL", "NO_SHORT", "NO_DATA", "ERROR"].indexOf(t.action) >= 0;
     return t.action === f;
   }
@@ -256,7 +271,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     var d = state.data, ts = d.tickers;
     var count = function (a) { return ts.filter(function (t) { return a.indexOf(t.action) >= 0; }).length; };
     $("summary").innerHTML = [
-      [count(["SELL_PUT"]), "Puts"], [count(["SELL_CALL"]), "Calls"],
+      [count(["SELL_PUT"]), "Puts"], [count(["SELL_CALL"]), "Calls"], [count(["EARNINGS_PLAY"]), "Earnings"],
       [count(["LEAP_BUY"]), "LEAPs"], [count(["WATCH"]), "Watch"]
     ].map(function (x) { return '<div class="stat"><b>' + x[0] + "</b><span>" + x[1] + "</span></div>"; }).join("");
     $("filters").innerHTML = FILTERS.map(function (f) {
@@ -275,17 +290,45 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         b.setAttribute("aria-expanded", state.open[sym]);
       });
     });
+    renderHedge();
     renderCaps();
   }
 
   function srcBadge(t) {
-    if (!t.ivr_source) return "";
-    var label = t.ivr_source === "true" ? "" : t.ivr_source;
-    return label ? '<span class="src src-' + esc(t.ivr_source) + '" title="IV rank source">' + esc(label) + "</span>" : "";
+    var out = "";
+    var label = t.ivr_source && t.ivr_source !== "true" ? t.ivr_source : "";
+    if (label) out += '<span class="src src-' + esc(t.ivr_source) + '" title="IV rank source">' + esc(label) + "</span>";
+    if (t.ivr_flag === "ex-earnings") out += '<span class="src src-ex" title="IV rank uses iv30 with the implied earnings move stripped out">ex</span>';
+    if (t.ivr_flag === "earnings-inflated") out += '<span class="src src-inflated" title="Earnings inside the 30-day IV window; ex-earnings IV not estimable">earn↑</span>';
+    return out;
+  }
+
+  function earnText(t) {
+    var e = t.earnings;
+    if (!e || !e.date || e.days_to == null) return null;
+    var d = new Date(e.date + "T12:00:00");
+    var when = d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + (e.timing ? " " + e.timing.toUpperCase() : "") + (e.estimated ? " (est.)" : "");
+    var dayWord = e.days_to === 0 ? "today" : e.days_to === 1 ? "tomorrow" : "in " + e.days_to + " days";
+    return { short: e.days_to === 0 ? "today" : e.days_to + "d", line: "Earnings " + dayWord + " · " + when + (e.implied_move ? " · implied ±" + pct(e.implied_move, 1) : "") };
+  }
+
+  function renderHedge() {
+    var h = state.data.hedge, el = $("hedge");
+    if (!h || !h.enabled || !h.active) { el.hidden = true; return; }
+    var rows = Object.keys(h.candidates || {}).map(function (sym) {
+      return ((h.candidates[sym] || {}).puts || []).map(function (p) {
+        return "<tr><td>" + esc(sym) + '</td><td class="n">' + money(p.strike) + '</td><td class="n">' + num(p.otm_pct, 0) + '%</td><td>' + esc(p.expiry) + " (" + p.dte + 'd)</td><td class="n">' + money(p.mid, 2) + '</td><td class="n">' + money(p.cost) + "</td></tr>";
+      }).join("");
+    }).join("");
+    el.innerHTML = "<h2>Optional hedge</h2><div class=\"legend\">VIX " + num(h.vix, 1) + " &lt; " + h.vix_max + " and SPY in the " + esc(h.spy_regime) + " regime. Far-OTM puts, " + h.dte[0] + "–" + h.dte[1] + " DTE. Not a standing hedge.</div>" +
+      '<table style="margin-top:6px"><thead><tr><th>Sym</th><th class="n">Strike</th><th class="n">OTM</th><th>Expiry</th><th class="n">Mid</th><th class="n">Cost</th></tr></thead><tbody>' + rows + "</tbody></table>";
+    el.hidden = false;
   }
 
   function card(t) {
-    var hot = { SELL_PUT: "hot", SELL_CALL: "hot call", LEAP_BUY: "hot leap" }[t.action] || "";
+    var hot = { SELL_PUT: "hot", SELL_CALL: "hot call", LEAP_BUY: "hot leap", EARNINGS_PLAY: "hot earn" }[t.action] || "";
+    var et = earnText(t);
+    var ivhv = t.iv_hv != null ? '<span class="' + (t.iv_hv_ok ? "ok" : "bad") + '">' + num(t.iv_hv, 2) + "</span>" + (t.ivr_flag === "ex-earnings" ? " <small>ex-earn</small>" : "") : "–";
     var open = !!state.open[t.symbol];
     var ch = t.change_pct;
     var chHtml = ch == null ? "" : ' <small class="' + (ch >= 0 ? "up" : "down") + '">' + (ch >= 0 ? "+" : "") + num(ch, 1) + "%</small>";
@@ -302,9 +345,12 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         '<div class="metrics">' +
           m("Price", t.price != null ? money(t.price, 2) + chHtml : "–") +
           m("IV rank", t.ivr != null ? num(t.ivr) + srcBadge(t) : "–") +
+          m("IV / HV", ivhv) +
           m("Regime", t.regime ? esc(t.regime) + (t.extension_pct != null ? " <small>" + num(t.extension_pct) + "p</small>" : "") : "–") +
-          m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "")) +
+          m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "") + (sp.earnings_gap ? " <small>gap</small>" : "")) +
+          m("Earnings", t.earnings == null ? '<small>ETF</small>' : et ? (t.earnings.in_window ? '<span class="bad">' + et.short + "</span>" : et.short) : "–") +
         "</div>" +
+        (et && t.earnings.in_window ? '<div class="earn-line">' + esc(et.line) + "</div>" : "") +
         '<div class="reason">' + esc((t.reasons || []).join(" · ")) + "</div>" +
       "</button>" +
       '<div class="body">' + body(t) + "</div>" +
@@ -312,10 +358,10 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   }
   function m(k, v) { return '<div class="m"><div class="k">' + k + '</div><div class="v">' + v + "</div></div>"; }
 
-  function strikeRow(c, side) {
+  function strikeRow(c, side, sizeFrac) {
     var elig = "";
     if (side === "P") {
-      elig = c.collateral <= entrySize()
+      elig = c.collateral <= entrySize() * (sizeFrac || 1)
         ? '<span class="elig yes">CSP ok</span>'
         : '<span class="elig no">spread / PMCC</span>';
     }
@@ -332,12 +378,13 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     "</div>";
   }
 
-  function side(t, key, title, sideCode) {
-    var s = t[key];
+  function side(t, key, title, sideCode, src, hintOverride, sizeFrac) {
+    var s = (src || t)[key];
     if (!s) return "";
-    var hint = s.target != null ? '<span class="hint"> · ' + s.target + "Δ target, " + s.band[0] + "–" + s.band[1] + "Δ band</span>" : "";
+    var hint = hintOverride != null ? '<span class="hint"> · ' + hintOverride + "</span>" :
+      s.target != null ? '<span class="hint"> · ' + s.target + "Δ target, " + s.band[0] + "–" + s.band[1] + "Δ band</span>" : "";
     var html = "<h3>" + title + hint + "</h3>";
-    if (s.candidates && s.candidates.length) html += s.candidates.map(function (c) { return strikeRow(c, sideCode); }).join("");
+    if (s.candidates && s.candidates.length) html += s.candidates.map(function (c) { return strikeRow(c, sideCode, sizeFrac); }).join("");
     else {
       var rej = Object.keys(s.rejected || {}).map(function (k) { return k + " " + s.rejected[k]; }).join(", ");
       html += '<div class="empty">No strike passes the filters (' + s.in_band + " in band" + (rej ? "; rejected: " + esc(rej) : "") + ").</div>";
@@ -348,6 +395,15 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   function body(t) {
     var h = "";
     if (t.expiry) h += '<h3>Expiry <span class="hint">· ' + esc(t.expiry) + " (" + t.dte + " DTE, " + esc(t.expiry_note) + ")</span></h3>";
+    var ep = t.earnings_play;
+    if (ep) {
+      var e = t.earnings || {};
+      var lim = "outside ±" + pct(ep.mult * ep.move, 1) + " (" + ep.mult + "× the implied move) · " + ep.band[0] + "–" + ep.band[1] + "Δ · half size";
+      h += '<h3>Earnings play <span class="hint">· ' + esc((earnText(t) || {}).line || "") + "</span></h3>";
+      h += '<div class="legend">' + (e.play ? "Triggered: 5-day " + (e.play.ret >= 0 ? "+" : "") + pct(e.play.ret, 1) + " (" + num(e.play.z, 1) + "σ) → sell a " + (ep.side === "C" ? "call after the run-up" : "put after the sell-off") : "Not triggered: needs a 5-day run-up or sell-off of ≥ 1σ, earnings 1–21 days out and IV ≥ 1.15× HV") + ". Normal entries are paused while earnings fall before expiry.</div>";
+      if (!ep.side || ep.side === "P") h += side(t, "puts", "Earnings puts", "P", ep, lim, ep.size_frac);
+      if (!ep.side || ep.side === "C") h += side(t, "calls", "Earnings calls (covered only)", "C", ep, lim, ep.size_frac);
+    }
     h += side(t, "puts", "Puts", "P");
     if (t.pair_call && t.pair_call.candidates && t.pair_call.candidates.length) h += side(t, "pair_call", "Alongside: 10Δ covered call", "C");
     h += side(t, "calls", "Calls (covered only)", "C");
@@ -361,13 +417,17 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         }).join("") + "</tbody></table>";
       if (t.ladder.some(function (r) { return r.listed === false; })) h += '<div class="legend">* below the lowest listed strike; target level shown</div>';
     }
-    var lp = t.leap;
-    h += "<h3>LEAP candidate" + (t.leap_window ? ' <span class="hint">· window OPEN</span>' : ' <span class="hint">· window closed</span>') + "</h3>";
-    if (lp && lp.found) {
-      h += '<div class="strike"><div class="top"><span class="k">' + money(lp.strike, lp.strike % 1 ? 2 : 0) + " call · " + esc(lp.expiry) + "</span>" +
-        '<span class="meta">' + num(lp.delta * 100) + "Δ · " + lp.dte + " DTE · mid " + money(lp.mid, 2) + "</span></div>" +
-        '<div class="why">Extrinsic ' + money(lp.extrinsic, 2) + " (" + num(lp.extrinsic_pct, 1) + "% of price) · cost " + money(lp.cost) + " · exposure " + money(lp.exposure) + " · BE " + money(lp.breakeven, 2) + (lp.note ? " · " + esc(lp.note) : "") + "</div></div>";
-    } else if (lp) h += '<div class="empty">' + esc(lp.note || "none") + "</div>";
+    h += "<h3>LEAP candidates" + (t.leap_window ? ' <span class="hint">· window OPEN</span>' : ' <span class="hint">· window closed</span>') + "</h3>";
+    var leaps = t.leaps || (t.leap ? { ira: t.leap } : {});
+    Object.keys(leaps).forEach(function (name) {
+      var lp = leaps[name];
+      h += '<div class="variant">' + esc(lp.label || name) + (lp.variant_note ? " <em>· " + esc(lp.variant_note) + "</em>" : "") + "</div>";
+      if (lp.found) {
+        h += '<div class="strike"><div class="top"><span class="k">' + money(lp.strike, lp.strike % 1 ? 2 : 0) + " call · " + esc(lp.expiry) + "</span>" +
+          '<span class="meta">' + num(lp.delta * 100) + "Δ · " + lp.dte + " DTE · mid " + money(lp.mid, 2) + "</span></div>" +
+          '<div class="why">Extrinsic ' + money(lp.extrinsic, 2) + " (" + num(lp.extrinsic_pct, 1) + "% of price) · cost " + money(lp.cost) + " · exposure " + money(lp.exposure) + " · BE " + money(lp.breakeven, 2) + (lp.note ? " · " + esc(lp.note) : "") + "</div></div>";
+      } else h += '<div class="empty">' + esc(lp.note || "none") + "</div>";
+    });
     if (t.leap_checks) {
       var names = { bull_gate: "bull gate", regime: "Low/Mid regime", consolidation: "consolidation", bottom_third: "bottom third", ivr_low: "IVR < 25", core_name: "core name" };
       h += '<div class="checks">' + Object.keys(t.leap_checks).map(function (k) {
@@ -375,7 +435,8 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       }).join("") + "</div>";
     }
     h += "<h3>Signals</h3><div class=\"kv\">" +
-      kv("IV30", pct(t.iv30, 1)) + kv("HV20", pct(t.hv20, 1)) + kv("IV / HV", num(t.iv_hv, 2)) +
+      kv("IV30", pct(t.iv30, 1) + (t.iv30_ex ? " <small>(ex-earn " + pct(t.iv30_ex, 1) + ")</small>" : "")) + kv("HV20", pct(t.hv20, 1)) +
+      kv("IV / HV", num(t.iv_hv, 2) + " <small>min " + (t.iv_hv_min || "–") + "</small>") +
       kv("IVR source", esc(t.ivr_source || "–") + (t.iv_history_days != null ? " · " + t.iv_history_days + "d" : "")) +
       kv("Extension", t.extension_pct != null ? num(t.extension_pct) + "th pct" : "–") + kv("Px / SMA200", num(t.price_to_sma200, 3)) +
       kv("BB width", t.bb_pct != null ? num(t.bb_pct) + "th pct" : "–") + kv("Range pos", t.range_pos != null ? num(t.range_pos * 100) + "%" : "–") +

@@ -20,7 +20,8 @@ from __future__ import annotations
 import logging
 import re
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -206,9 +207,26 @@ def fetch_history_yf(sym: str) -> pd.DataFrame:
     return _finish_history(df)
 
 
-def fetch_chain(sym: str, cfg: dict) -> dict:
+def session_date(now_utc: datetime | None = None, tz: str = "America/New_York", open_hm: str = "09:30") -> date:
+    """The market session a fetch belongs to, from the ET clock (never the UTC calendar).
+
+    Before the open (or on a weekend) it's the previous weekday; from the open until midnight ET
+    it's today. GitHub can start the post-close cron hours late (21:51 ET was seen), and the UTC
+    date by then is already tomorrow.
+    """
+    et = (now_utc or datetime.now(timezone.utc)).astimezone(ZoneInfo(tz))
+    h, m = (int(x) for x in open_hm.split(":"))
+    d = et.date()
+    if et.weekday() < 5 and (et.hour, et.minute) < (h, m):
+        d -= timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d
+
+
+def fetch_chain(sym: str, cfg: dict, asof: date | None = None) -> dict:
     url = cfg["cboe_chain_url"].format(sym=sym)
-    return parse_chain(get_json(url, cfg.get("timeout_s", 30), cfg.get("retries", 3)))
+    return parse_chain(get_json(url, cfg.get("timeout_s", 30), cfg.get("retries", 3)), asof=asof or session_date())
 
 
 def fetch_history(sym: str, cfg: dict) -> tuple[pd.DataFrame, str, list[str]]:

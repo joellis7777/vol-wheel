@@ -257,17 +257,26 @@ def select_strikes(opts: pd.DataFrame, side: str, target_delta: float, ctx: dict
 
     ctx: price, iv30 (decimal), hv20 (decimal), hist (DataFrame), expiry, dte, poly (skew fit),
          levels (list for this side), anchors (assignment anchors for puts).
+         Optional: band (lo, hi) to replace target +/- delta_band (earnings plays use 10-15),
+         strike_limit: puts must sit at/below it, calls at/above it (outside the earnings move).
     """
     top_n = top_n or cfg.get("top_n", 3)
-    band = cfg["delta_band"]
+    lo, hi = ctx.get("band") or (max(target_delta - cfg["delta_band"], 0), target_delta + cfg["delta_band"])
     price, dte = ctx["price"], ctx["dte"]
     o = opts[(opts["expiry"] == ctx["expiry"]) & (opts["type"] == side)].copy()
     o["dabs"] = o["delta"].abs() * 100
-    o = o[(o["dabs"] >= target_delta - band) & (o["dabs"] <= target_delta + band)]
+    o = o[(o["dabs"] >= lo) & (o["dabs"] <= hi)]
     # Short premium only: OTM strikes.
     o = o[o["strike"] < price] if side == "P" else o[o["strike"] > price]
-    res = {"side": side, "target": target_delta, "band": [max(target_delta - band, 0), target_delta + band],
+    res = {"side": side, "target": target_delta, "band": [lo, hi],
            "in_band": int(len(o)), "passed": 0, "rejected": {}, "candidates": []}
+    lim = ctx.get("strike_limit")
+    if lim is not None and np.isfinite(lim):
+        inside = o[o["strike"] > lim] if side == "P" else o[o["strike"] < lim]
+        if len(inside):
+            res["rejected"]["inside earnings move"] = int(len(inside))
+        o = o[o["strike"] <= lim] if side == "P" else o[o["strike"] >= lim]
+        res["strike_limit"] = round(float(lim), 2)
     keep = []
     for _, r in o.iterrows():
         ok, why = passes_filters(r, side, cfg)
@@ -421,3 +430,27 @@ def ladder(first_strike: float, price: float, iv: float, strikes: list[float], c
     for r in out:
         r["em45"] = round(em, 2)
     return out
+
+
+# ---------------------------------------------------------------- hedge
+
+def hedge_puts(opts: pd.DataFrame, price: float, cfg: dict) -> dict:
+    """Far-OTM protective puts: the expiry closest to target_dte inside [min_dte, max_dte], one put
+    per otm_pct (strike nearest price x (1 - pct))."""
+    p = opts[(opts["type"] == "P") & (opts["dte"] >= cfg["min_dte"]) & (opts["dte"] <= cfg["max_dte"])
+             & (opts["bid"] > 0)]
+    if p.empty:
+        return {"found": False, "note": f"no puts {cfg['min_dte']}-{cfg['max_dte']} DTE"}
+    exp = p.groupby("expiry")["dte"].first()
+    e = (exp - cfg.get("target_dte", 105)).abs().idxmin()
+    pe = p[p["expiry"] == e]
+    out = []
+    for pct in cfg.get("otm_pcts", [10, 15]):
+        tgt = price * (1 - pct / 100.0)
+        r = pe.iloc[(pe["strike"] - tgt).abs().argsort()].iloc[0]
+        out.append({"otm_target": pct, "otm_pct": round((1 - r["strike"] / price) * 100, 1),
+                    "strike": float(r["strike"]), "expiry": e.isoformat(), "dte": int(r["dte"]),
+                    "delta": round(float(r["delta"]), 3), "bid": float(r["bid"]), "ask": float(r["ask"]),
+                    "mid": round(float(r["mid"]), 2), "cost": round(float(r["mid"]) * 100, 0),
+                    "cost_pct": round(float(r["mid"]) / price * 100, 2), "oi": int(r["oi"])})
+    return {"found": True, "puts": out}

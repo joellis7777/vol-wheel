@@ -9,6 +9,30 @@ The rulebook this implements is the "Volatility Wheel + LEAP Strategy Rulebook" 
 artifact `b35fd311-9607-4176-9b14-4bc53847457f`). Every threshold lives in `config/rules.yaml`;
 change behaviour there, not in code. If you add a rule, add its knob to the YAML.
 
+## Strategy decisions (source of truth — read first, keep current)
+
+These are Jordan's standing decisions. Treat them as authoritative over older notes, defaults or
+your own assumptions; if a request conflicts with one, say so before building. When a decision
+changes, update this list in the same change.
+
+- **Wheel runs in a Schwab IRA.** All short puts/calls (45 DTE wheel, calls against LEAPs, earnings
+  plays) are IRA trades, so tax treatment doesn't drive wheel decisions.
+- **Taxable account = long-term holds + LEAPs held >1 year with no short calls against them**
+  (tax-straddle rules would otherwise suspend the holding period). Hence the dashboard's two LEAP
+  variants: IRA 12–18 months, Taxable 16–18 months "hold >1 year, don't sell calls against".
+- **No standing crash hedge.** Protection = 20% cash reserve in SGOV, bucket caps, circuit
+  breakers (and 10Δ puts in the High regime). The far-OTM SPY/QQQ put card is optional and off
+  by default (`hedge_alerts: false`).
+- **Watch wash sales between taxable and the IRA**: don't buy or get assigned a stock in the IRA
+  within 30 days of selling it at a loss in taxable (the loss is permanently disallowed). Not
+  automated (no account data in this public repo); call it out when relevant.
+- **Phase 3 broker = Schwab Trader API** (OAuth login must be renewed every 7 days; its quotes can
+  replace the delayed CBOE feed). Robinhood's agent accounts don't cover IRAs, so they're out.
+- **Earnings mode** replaces the old "no entries above 10Δ spanning earnings" rule: only directional
+  10–15Δ pre-earnings sales outside 1.5× the implied move at half size (see below).
+- **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
+  trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
+
 ## Layout
 
 ```
@@ -24,9 +48,12 @@ vol_wheel/
   scan.py                  orchestration, action decision, coverage check, JSON output, then alerts;
                            `python -m vol_wheel.scan`
   schedule.py              resolve_mode(): post-close / intraday / skip from the cron string + ET clock
+  earnings.py              earnings dates (Nasdaq → yfinance, cached), implied move, ex-earnings IV,
+                           earnings-play setup, post-earnings gap
   alerts.py                ntfy messages, dedup against data/alert_state.json, digest, test alert
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
+data/earnings.json         earnings cache: next/last report date + timing, implied move (workflow-written)
 docs/index.html            static phone-first dashboard (vanilla JS, light/dark) -> data/latest.json
 docs/data/latest.json      written by the scan workflow (do not hand-edit)
 docs/.nojekyll             serve docs/ as-is on GitHub Pages
@@ -68,7 +95,9 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
   the scan.
 - Title/priority/tags/click are sent as query params (ntfy treats them like headers and they carry
   UTF-8 like "·" and "Δ" safely). Click opens the dashboard.
-- Triggers: SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL (Mid regime + IVR ≥ 70 10Δ call add-on).
+- Triggers: SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL (Mid regime + IVR ≥ 70 10Δ call add-on),
+  EARNINGS_PLAY (tags date + put/call arrow; no rung re-alerts), HEDGE (result-level, state key
+  `_HEDGE`). LEAP alerts list both variants.
   Priority high; default when the previous scan saw WATCH ("Upgraded from WATCH"). Tags:
   chart_with_downwards_trend (puts), chart_with_upwards_trend (calls), seedling (LEAPs).
 - Dedup in `data/alert_state.json` per ticker + trigger: alert when there is no record or the
@@ -107,8 +136,12 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 - Fallback for daily prices: yfinance (`^VIX` for `_VIX`), else Yahoo's chart endpoint via requests.
   Used when CBOE history fails or has fewer than `data.history_min_days` bars.
 - `data.parse_chain` normalizes units defensively (IV > 3 => percent, |delta| > 1.5 => percent).
+- **Market date = `data.session_date()`**, from the ET clock: before 09:30 ET or on a weekend it's
+  the previous weekday, otherwise today. Never derive it from the UTC date or CBOE's timestamp:
+  GitHub started the 2026-10-05 post-close cron at 21:51 ET, the UTC date was already 10-06, and
+  that run wrote IV history as 10-06 (corrected by hand). `fetch_chain` passes it as the chain's
+  `asof`, which drives DTE, IV-history dates and alert dedup dates.
 - If today's bar isn't in the history yet, `with_today()` appends the chain quote as today's bar.
-  Weekend fetches map to Friday (`market_date`) so manual weekend runs don't create fake bars.
 - One ticker failing never fails the run: it becomes an `ERROR` card and a header note. The job
   exits non-zero only when every ticker failed.
 
@@ -130,13 +163,44 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 
 ## Actions (`scan.decide_action`, priority order)
 
-1. `SELL_PUT`: IVR ≥ 50 + down-spike (larger of the two if both).
-2. `SELL_CALL`: IVR ≥ 50 + up-spike, "only if holding shares/LEAPs".
-3. `LEAP_BUY`: bull gate, regime Low/Mid, consolidation, range pos ≤ 1/3, IVR < 25, core name.
-4. `WATCH`: IVR ≥ 50, no spike.  5. `NEUTRAL` ("WAIT"): 30 ≤ IVR < 50.
-6. `NO_SHORT`: IVR < 30.  `NO_DATA` / `ERROR` last.
+1. `SELL_PUT`: IVR ≥ 50 + down-spike (larger of the two if both) + iv30 ≥ 1.15 × HV20.
+2. `SELL_CALL`: same with an up-spike, "only if holding shares/LEAPs".
+   A spike that fails the IV/HV filter (`thresholds.min_iv_hv_ratio`) or falls in earnings mode
+   becomes `WATCH` with the reason spelled out. Cards show IV/HV (green ≥ 1.15, red below).
+3. `EARNINGS_PLAY`: see Earnings mode.
+4. `LEAP_BUY`: bull gate, regime Low/Mid, consolidation, range pos ≤ 1/3, IVR < 25, core name.
+5. `WATCH`: IVR ≥ 50, no spike (or a blocked spike).  6. `NEUTRAL` ("WAIT"): 30 ≤ IVR < 50.
+7. `NO_SHORT`: IVR < 30.  `NO_DATA` / `ERROR` last.
 - `both_sides`: SELL_PUT in Mid regime with IVR ≥ 70 adds a 10Δ covered call (`pair_call`).
 - Put and call candidates and the LEAP candidate are always computed, whatever the action.
+
+## Earnings mode (`earnings.py`, config `earnings:`)
+
+- Single stocks only (`earnings.etfs` = SPY, QQQ, IBIT, GLD have none). Next date + timing
+  (BMO/AMC) from `https://api.nasdaq.com/api/analyst/{sym}/earnings-date` (`data.announcement` /
+  `data.reportText` text, parsed by regex), yfinance `Ticker.calendar` as fallback, cached in
+  `data/earnings.json` (refetched once per session date; on failure the cached date is kept and a
+  header note says so). A report that has happened moves `next` → `last`, carrying the implied move
+  recorded on the last scan before it.
+- Reaction date = report day if BMO, else the next weekday. "In window" = reaction ≤ the chosen
+  35–50 DTE expiry; the card shows "Earnings in N days · date timing · implied ±x%".
+- **Implied move** = term structure: first expiry after the reaction (E1) vs the next one ≥ 5 days
+  later (E2): base² = (σ2²T2 − σ1²T1)/(T2 − T1), jump² = (σ1² − base²)T1, move = jump (1-sd, fraction
+  of price). Fallback for strike distance only: ATM straddle / price.
+- **Ex-earnings IV**: when the report is within 30 days, iv30_ex = √(iv30² − jump²·365/30). IVR and
+  IV/HV use iv30_ex (badge "ex-earn"); IV history stores raw `iv30` plus `iv30_ex`, and IVR reads
+  `iv30_ex` where present. If any step is non-positive → badge "earn-inflated" and normal signals off.
+- **Normal SELL_PUT/SELL_CALL are paused while earnings fall before expiry.** The only entry is:
+- **EARNINGS_PLAY**: report 1–21 days out and before expiry, implied move known, raw iv30 ≥ 1.15×HV20,
+  and a 5-day return of ≥ 1σ (HV20·√(5/252)): run-up → sell a call, sell-off → sell a put. Strikes
+  10–15Δ and beyond price × (1 ± 1.5 × move) (`strike_limit` in `select_strikes`), same filters
+  and scoring, half size (CSP eligibility vs half the entry). Alert "EARNINGS PLAY · SYM".
+- Nasdaq usually omits BMO/AMC timing for estimated dates. Unknown timing is treated as "after the
+  close" for the term structure (E1 = first expiry after the next weekday) and as "before the open"
+  for the gap (pre-report close = the close before the report day), so neither misses the event.
+- **Post-earnings gap**: within 3 sessions of the reaction, a move since the pre-report close ≥ 1.5×
+  the recorded implied move is forced to count as a spike in that direction (reason says so; the
+  card shows "gap"). It still needs IVR ≥ 50 and IV/HV ≥ 1.15 like any spike.
 
 ## Strike selection (`strikes.py`)
 
@@ -158,7 +222,15 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   - Assignment fit: puts BE ≤ SMA200 or a 252d swing low (+1%, fading to 0 at +10%); calls K > price.
 - Top 3 per side with a one-line reason, at least `min_strike_gap_pct` (0.5%) of price apart so
   SPY/QQQ's $1 strikes don't yield three near-identical picks.
-- LEAP: 365–548 DTE calls, 70–80Δ, liquid if possible; lowest extrinsic % of price.
+- LEAP: 70–80Δ calls, liquid if possible, lowest extrinsic % of price, in two variants
+  (`leap.variants`): IRA 365–548 DTE and Taxable 487–548 DTE ("hold >1 year, don't sell calls
+  against"; 487 DTE = held >1 year and still out by the 120-DTE exit). LEAP expiries are sparse
+  (Jan plus a few other months), so when nothing is listed in a window the nearest expiry up to
+  `fallback_max_dte` is shown with a "no listed expiry … nearest is N months" note.
+  `t.leaps = {ira, taxable}`; `t.leap` = the IRA one.
+- Hedge (only if `hedge_alerts: true`): when VIX < 14 and SPY is in the High regime, SPY/QQQ puts
+  at the expiry nearest 105 DTE within 90–120, strikes nearest 10% and 15% OTM → a card above the
+  ticker list and one "HEDGE · SPY/QQQ puts" alert per episode.
 - Ladder: rung 1 = top put; rungs 2–3 = 1 and 2 forty-five-day expected moves lower, snapped down
   to a listed strike. IBIT/MSTR use max(iv30, HV20) for the move (weekend gaps).
 

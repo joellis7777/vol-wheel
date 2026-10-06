@@ -21,15 +21,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import alerts, data, ivhistory, schedule, signals, strikes
+from . import alerts, data, earnings, ivhistory, schedule, signals, strikes
 from .config import ROOT, load_rules, universe
 
 log = logging.getLogger("vol_wheel")
 
-ACTION_PRIORITY = {"SELL_PUT": 0, "SELL_CALL": 1, "LEAP_BUY": 2, "WATCH": 3, "NEUTRAL": 4,
-                   "NO_SHORT": 5, "NO_DATA": 6, "ERROR": 7}
+ACTION_PRIORITY = {"SELL_PUT": 0, "SELL_CALL": 1, "EARNINGS_PLAY": 2, "LEAP_BUY": 3, "WATCH": 4,
+                   "NEUTRAL": 5, "NO_SHORT": 6, "NO_DATA": 7, "ERROR": 8}
 ACTION_LABEL = {
-    "SELL_PUT": "SELL PUT", "SELL_CALL": "SELL COVERED CALL", "LEAP_BUY": "LEAP BUY",
+    "SELL_PUT": "SELL PUT", "SELL_CALL": "SELL COVERED CALL", "EARNINGS_PLAY": "EARNINGS PLAY",
+    "LEAP_BUY": "LEAP BUY",
     "WATCH": "WATCH", "NEUTRAL": "WAIT", "NO_SHORT": "NO NEW SHORTS", "NO_DATA": "NO DATA",
     "ERROR": "ERROR",
 }
@@ -68,8 +69,12 @@ def atm_iv(opts: pd.DataFrame, price: float) -> float:
 # ---------------------------------------------------------------- action
 
 def decide_action(ivr: float, spk: dict, regime: str, cons_on: bool, range_pos: float,
-                  gate_on: bool, role: str, rules: dict) -> dict:
+                  gate_on: bool, role: str, rules: dict, iv_hv: float | None = None,
+                  earn: dict | None = None) -> dict:
+    """earn: {"in_window": earnings before the chosen expiry, "inflated": IVR can't be stripped of
+    the earnings bump, "date", "days_to", "play": {"side", "ret", "z"} | None}."""
     th, lp = rules["thresholds"], rules["leap"]
+    earn = earn or {}
     sig = th["spike_sigma"]
     down, up = spk.get("down", 0.0) >= sig, spk.get("up", 0.0) >= sig
     leap_checks = {
@@ -82,15 +87,39 @@ def decide_action(ivr: float, spk: dict, regime: str, cons_on: bool, range_pos: 
     }
     leap_window = all(leap_checks.values())
     reasons: list[str] = []
+    min_ratio = th.get("min_iv_hv_ratio", 0)
+    ratio_ok = iv_hv is None or not np.isfinite(iv_hv) or iv_hv >= min_ratio
+    gap = spk.get("earnings_gap")
+    if gap:
+        reasons.append(f"Post-earnings gap {gap['move'] * 100:+.1f}% = {gap['ratio']:.1f}× the implied "
+                       f"{gap['implied_move'] * 100:.1f}% move (counts as a spike)")
+    play = earn.get("play")
     if not np.isfinite(ivr):
         action = "NO_DATA"
         reasons.append("IV rank unavailable")
-    elif ivr >= th["ivr_sell"] and down and (not up or spk["down"] >= spk["up"]):
-        action = "SELL_PUT"
-        reasons.append(f"IVR {ivr:.0f} ≥ {th['ivr_sell']} and down-spike {spk['down']:.1f}σ")
-    elif ivr >= th["ivr_sell"] and up:
-        action = "SELL_CALL"
-        reasons.append(f"IVR {ivr:.0f} ≥ {th['ivr_sell']} and up-spike {spk['up']:.1f}σ — only if holding shares/LEAPs")
+    elif play:
+        action = "EARNINGS_PLAY"
+        side = "call after a run-up" if play["side"] == "C" else "put after a sell-off"
+        ec = rules["earnings"]
+        reasons.append(f"Earnings {earn.get('date')} in {earn.get('days_to')}d · 5-day {play['ret'] * 100:+.1f}% "
+                       f"({play['z']:+.1f}σ): sell a {side} at {ec['play_delta_min']}–{ec['play_delta_max']}Δ, "
+                       f"outside {ec['play_move_mult']}× the implied move, half size")
+    elif ivr >= th["ivr_sell"] and (down or up):
+        is_put = down and (not up or spk["down"] >= spk["up"])
+        what = f"{'down' if is_put else 'up'}-spike {spk['down' if is_put else 'up']:.1f}σ"
+        if earn.get("in_window") or earn.get("inflated"):
+            action = "WATCH"
+            reasons.append(f"IVR {ivr:.0f} and {what}, but earnings {earn.get('date')} fall before expiry: "
+                           "normal entries paused (earnings mode)")
+        elif not ratio_ok:
+            action = "WATCH"
+            reasons.append(f"IVR {ivr:.0f} and {what}, but IV/HV {iv_hv:.2f} < {min_ratio}: "
+                           "premium not rich versus realized moves")
+        else:
+            action = "SELL_PUT" if is_put else "SELL_CALL"
+            ratio_txt = f", IV/HV {iv_hv:.2f}" if iv_hv is not None and np.isfinite(iv_hv) else ""
+            reasons.append(f"IVR {ivr:.0f} ≥ {th['ivr_sell']}, {what}{ratio_txt}"
+                           + ("" if is_put else " — only if holding shares/LEAPs"))
     elif ivr >= th["ivr_sell"]:
         action = "WATCH"
         reasons.append(f"IVR {ivr:.0f} ≥ {th['ivr_sell']}, no {sig}σ spike yet")
@@ -104,6 +133,8 @@ def decide_action(ivr: float, spk: dict, regime: str, cons_on: bool, range_pos: 
     else:
         action = "NEUTRAL"
         reasons.append(f"IVR {ivr:.0f} between {th['ivr_no_short']} and {th['ivr_sell']}: wait")
+    if earn.get("inflated"):
+        reasons.append("IVR earnings-inflated (ex-earnings IV not estimable): normal signals off")
     both_sides = bool(action == "SELL_PUT" and regime == "Mid" and ivr >= th["ivr_both_sides"])
     if both_sides:
         reasons.append(f"Mid regime + IVR ≥ {th['ivr_both_sides']}: a {th['both_sides_call_delta']}Δ "
@@ -115,16 +146,36 @@ def decide_action(ivr: float, spk: dict, regime: str, cons_on: bool, range_pos: 
             "leap_checks": leap_checks}
 
 
+def earnings_play_setup(ectx: dict, close: pd.Series, iv30: float, hv20: float, rules: dict) -> dict | None:
+    """Directional pre-earnings sale: earnings 1-21 days out and before expiry, an implied move to
+    stay outside of, raw IV rich versus realized, and a 5-day run-up (call) or sell-off (put)."""
+    ec, th = rules["earnings"], rules["thresholds"]
+    if not ectx.get("in_window") or ectx.get("days_to") is None:
+        return None
+    if not (ec["play_min_days"] <= ectx["days_to"] <= ec["play_max_days"]):
+        return None
+    move = earnings.move_for_strikes(ectx.get("implied") or {})
+    if not move:
+        return None
+    if not (np.isfinite(iv30) and np.isfinite(hv20) and hv20 > 0 and iv30 / hv20 >= th.get("min_iv_hv_ratio", 0)):
+        return None
+    tr = earnings.trend(close, ec.get("trend_days", 5), hv20)
+    if tr["z"] is None or abs(tr["z"]) < ec.get("trend_sigma", 1.0):
+        return None
+    return {"side": "C" if tr["z"] > 0 else "P", "ret": tr["ret"], "z": tr["z"], "move": move}
+
+
 # ---------------------------------------------------------------- per ticker
 
 def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: bool = True,
-                chain: dict | None = None, hist: pd.DataFrame | None = None) -> dict:
+                chain: dict | None = None, hist: pd.DataFrame | None = None,
+                earn_cache: dict | None = None, today: date | None = None) -> dict:
     sym = t["symbol"]
     notes: list[str] = []
     dcfg = rules["data"]
     if chain is None:
         try:
-            chain = data.fetch_chain(sym, dcfg)
+            chain = data.fetch_chain(sym, dcfg, asof=today)
         except Exception as e:  # noqa: BLE001
             notes.append(f"option chain unavailable: {e}")
             chain = None
@@ -143,20 +194,43 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         iv30 = atm_iv(opts, price)
         if np.isfinite(iv30):
             notes.append("iv30 missing; using ATM IV of the ~30 DTE expiry")
-    if append and np.isfinite(iv30):
-        ivhistory.append(sym, asof, iv30, price)
-    iv_hist = ivhistory.load(sym)
-    if not append and np.isfinite(iv30):
-        iv_hist = pd.concat([iv_hist[iv_hist.index < pd.Timestamp(asof)],
-                             pd.Series([iv30], index=pd.DatetimeIndex([pd.Timestamp(asof)]))])
 
-    idx_sym = rules.get("vol_index_proxy", {}).get(sym)
-    ivr = compute_ivr(sym, iv30, iv_hist, close, rules, index_hists.get(idx_sym), idx_sym)
-
-    th, rg, cc = rules["thresholds"], rules["regime"], rules["consolidation"]
+    th, rg, cc, sc = rules["thresholds"], rules["regime"], rules["consolidation"], rules["strikes"]
     hv20_s = signals.hv(close, th["spike_hv_window"]).dropna()
     hv20 = float(hv20_s.iloc[-1]) if len(hv20_s) else float("nan")
+
+    expiry, dte, exp_note = (strikes.choose_expiry(opts, sc) if not opts.empty else (None, None, "no chain"))
+
+    # Earnings mode: strip the earnings bump from iv30 when the report is inside the IV window.
+    ec = rules.get("earnings", {})
+    ectx = earnings.earnings_context(sym, earn_cache or {}, opts, price, iv30, asof, expiry, ec)
+    iv_eff, iv30_ex, inflated = iv30, None, False
+    im = ectx.get("implied") or {}
+    if ectx.get("in_iv_window"):
+        if im.get("feasible") and im.get("iv30_ex"):
+            iv30_ex = im["iv30_ex"]
+            iv_eff = iv30_ex
+        else:
+            inflated = True
+    if earn_cache is not None and ectx.get("next") and earnings.move_for_strikes(im):
+        earn_cache.setdefault(sym, {})["implied_move"] = earnings.move_for_strikes(im)
+
+    if append and np.isfinite(iv30):
+        ivhistory.append(sym, asof, iv30, price, iv30_ex=iv30_ex)
+    iv_hist = ivhistory.load(sym)
+    if not append and np.isfinite(iv_eff):
+        iv_hist = pd.concat([iv_hist[iv_hist.index < pd.Timestamp(asof)],
+                             pd.Series([iv_eff], index=pd.DatetimeIndex([pd.Timestamp(asof)]))])
+
+    idx_sym = rules.get("vol_index_proxy", {}).get(sym)
+    ivr = compute_ivr(sym, iv_eff, iv_hist, close, rules, index_hists.get(idx_sym), idx_sym)
+
     spk = signals.spike(close, th["spike_max_days"], th["spike_hv_window"])
+    gap = earnings.post_gap(close, ectx.get("last"), asof, ec, th["spike_max_days"]) if ectx.get("applies") else None
+    if gap:
+        spk[gap["dir"]] = max(spk[gap["dir"]], th["spike_sigma"])
+        spk[f"{gap['dir']}_k"] = spk.get(f"{gap['dir']}_k") or 1
+        spk["earnings_gap"] = gap
     ext = signals.extension(close, rg["sma_window"], rg["lookback_days"], rg["min_days"])
     regime = signals.regime(ext["pct"], rg["low_below"], rg["high_above"])
     if not np.isfinite(ext["pct"]):
@@ -164,7 +238,12 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     cons = signals.consolidation(close, ivr["ivr"], cc["bb_window"], cc["bb_std"], cc["bb_lookback_days"],
                                  cc["bb_pct_max"], cc["ivr_max"])
     rpos = signals.range_position(hist, cc["range_window"])
-    dec = decide_action(ivr["ivr"], spk, regime, cons["on"], rpos, gate["on"], t["role"], rules)
+    iv_hv = iv_eff / hv20 if np.isfinite(iv_eff) and hv20 > 0 else None
+    play = earnings_play_setup(ectx, close, iv30, hv20, rules) if ectx.get("applies") else None
+    nxt = ectx.get("next") or {}
+    earn_flags = {"in_window": ectx.get("in_window", False), "inflated": inflated, "date": nxt.get("date"),
+                  "days_to": ectx.get("days_to"), "play": play}
+    dec = decide_action(ivr["ivr"], spk, regime, cons["on"], rpos, gate["on"], t["role"], rules, iv_hv, earn_flags)
 
     spike_dir, spike_size, spike_k = None, 0.0, None
     if spk["down"] >= spk["up"] and spk["down"] > 0:
@@ -172,18 +251,22 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     elif spk["up"] > 0:
         spike_dir, spike_size, spike_k = "up", spk["up"], spk["up_k"]
 
+    stripped = iv30_ex is not None and np.isfinite(iv30) and iv30_ex < iv30 - 0.0005
+    ivr_flag = "earnings-inflated" if inflated else ("ex-earnings" if stripped else None)
     out = {
         "symbol": sym, "bucket": t["bucket"], "role": t["role"], "asof": asof.isoformat(),
         **{k: dec[k] for k in ("action", "label", "priority", "reasons", "both_sides", "leap_window", "leap_checks")},
         "price": price, "prev_close": float(close.iloc[-2]) if len(close) > 1 else None,
-        "iv30": iv30, "hv20": hv20, "iv_hv": iv30 / hv20 if np.isfinite(iv30) and hv20 > 0 else None,
-        "ivr": ivr["ivr"], "ivr_source": ivr["source"], "iv_history_days": ivr["days"],
+        "iv30": iv30, "iv30_ex": iv30_ex, "hv20": hv20, "iv_hv": iv_hv,
+        "iv_hv_min": th.get("min_iv_hv_ratio"), "iv_hv_ok": iv_hv is None or iv_hv >= th.get("min_iv_hv_ratio", 0),
+        "ivr": ivr["ivr"], "ivr_source": ivr["source"], "ivr_flag": ivr_flag, "iv_history_days": ivr["days"],
         "index_level": ivr.get("index_level"),
         "regime": regime, "extension_pct": ext["pct"], "price_to_sma200": ext["ratio"],
         "spike": {"dir": spike_dir, "size": spike_size, "k": spike_k, "down": spk["down"], "up": spk["up"],
-                  "is_spike": spike_size >= th["spike_sigma"]},
+                  "is_spike": spike_size >= th["spike_sigma"], "earnings_gap": gap},
         "consolidation": cons["on"], "bb_pct": cons["bb_pct"], "range_pos": rpos,
         "sma50": signals.sma(close, 50), "sma200": signals.sma(close, 200),
+        "earnings": _earnings_out(ectx, play),
         "history_days": len(close), "history_source": hist_src, "notes": notes,
     }
     if out["prev_close"]:
@@ -193,8 +276,6 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         out["notes"].append("no option quotes: strikes, ladder and LEAP skipped")
         return out
 
-    sc = rules["strikes"]
-    expiry, dte, exp_note = strikes.choose_expiry(opts, sc)
     out["expiry"], out["dte"], out["expiry_note"] = (expiry.isoformat() if expiry else None), dte, exp_note
     if expiry is None:
         out["notes"].append(f"no usable expiry ({exp_note})")
@@ -206,7 +287,7 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         recent = hist.iloc[-ac.get("swing_lookback_days", 252):]
         anchors = [signals.sma(close, 200)] + [v for v in signals.swing_points(
             recent["low"], sc["support"].get("swing_order", 5), "low") if v < price]
-        base_ctx = {"price": price, "iv30": iv30, "hv20": hv20, "hist": hist, "expiry": expiry, "dte": dte,
+        base_ctx = {"price": price, "iv30": iv_eff, "hv20": hv20, "hist": hist, "expiry": expiry, "dte": dte,
                     "poly": poly, "anchors": anchors}
         put_lv = strikes.levels(hist, opts, price, "P", sc)
         call_lv = strikes.levels(hist, opts, price, "C", sc)
@@ -217,9 +298,19 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         if dec["both_sides"]:
             out["pair_call"] = strikes.select_strikes(opts, "C", th["both_sides_call_delta"],
                                                       {**base_ctx, "levels": call_lv}, sc, top_n=1)
-        em_iv = iv30
+        move = earnings.move_for_strikes(im) if ectx.get("in_window") else None
+        if move:
+            lo, hi, mult = ec["play_delta_min"], ec["play_delta_max"], ec["play_move_mult"]
+            ep = {"move": move, "move_usd": move * price, "mult": mult, "band": [lo, hi],
+                  "size_frac": ec.get("play_size_frac", 0.5), "side": play["side"] if play else None}
+            for side, key, lv in (("P", "puts", put_lv), ("C", "calls", call_lv)):
+                lim = price * (1 - mult * move) if side == "P" else price * (1 + mult * move)
+                ep[key] = strikes.select_strikes(opts, side, (lo + hi) / 2,
+                                                 {**base_ctx, "levels": lv, "band": (lo, hi), "strike_limit": lim}, sc)
+            out["earnings_play"] = ep
+        em_iv = iv_eff
         if sym in rules.get("weekend_gap_names", []) and np.isfinite(hv20):
-            em_iv = np.nanmax([iv30, hv20])
+            em_iv = np.nanmax([iv_eff, hv20])
         out["em45"] = strikes.expected_move(price, em_iv, rules["sizing"]["ladder_dte"])
         if out["puts"]["candidates"]:
             put_strikes = opts[(opts["type"] == "P") & (opts["expiry"] == expiry)]["strike"].tolist()
@@ -227,8 +318,38 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
                                            sc, rules["sizing"]["ladder_rungs"], rules["sizing"]["ladder_dte"])
         if sym in rules.get("momentum_names", []):
             out["notes"].append(f"Momentum name: cover at most {rules['momentum_max_call_coverage']}% with calls")
-    out["leap"] = strikes.leap_candidate(opts, price, rules["leap"])
+    lp = rules["leap"]
+    variants = lp.get("variants") or {"ira": {"min_dte": lp["min_dte"], "max_dte": lp["max_dte"], "label": "LEAP"}}
+    out["leaps"] = {}
+    for name, v in variants.items():
+        cand = strikes.leap_candidate(opts, price, {**lp, "min_dte": v["min_dte"], "max_dte": v["max_dte"]})
+        if not cand.get("found") and v.get("fallback_max_dte"):
+            # LEAP expiries are sparse (Jan, plus a few Mar/Jun/Dec); take the nearest one past the
+            # window rather than nothing, and say so.
+            alt = strikes.leap_candidate(opts, price, {**lp, "min_dte": v["min_dte"], "max_dte": v["fallback_max_dte"]})
+            if alt.get("found"):
+                months = alt["dte"] / 30.44
+                alt["note"] = (f"no listed expiry {v['min_dte'] / 30.44:.0f}–{v['max_dte'] / 30.44:.0f} months out; "
+                               f"nearest is {months:.0f} months" + (f" · {alt['note']}" if alt.get("note") else ""))
+                alt["outside_window"] = True
+                cand = alt
+        out["leaps"][name] = {**cand, "label": v.get("label", name), "variant_note": v.get("note", "")}
+    out["leap"] = out["leaps"].get("ira") or next(iter(out["leaps"].values()))
+    if rules.get("hedge_alerts") and sym in rules.get("hedge", {}).get("symbols", []):
+        out["hedge_puts"] = strikes.hedge_puts(opts, price, rules["hedge"])
     return out
+
+
+def _earnings_out(ectx: dict, play: dict | None) -> dict | None:
+    if not ectx.get("applies"):
+        return None
+    im = ectx.get("implied") or {}
+    nxt = ectx.get("next") or {}
+    return {"date": nxt.get("date"), "timing": nxt.get("timing"), "estimated": nxt.get("estimated"),
+            "source": nxt.get("source"), "days_to": ectx.get("days_to"), "in_window": ectx.get("in_window"),
+            "in_iv_window": ectx.get("in_iv_window"), "implied_move": earnings.move_for_strikes(im),
+            "implied_feasible": im.get("feasible"), "implied_why": im.get("why"), "iv30_ex": im.get("iv30_ex"),
+            "last": ectx.get("last"), "play": play}
 
 
 def _levels_out(lv: list[dict]) -> list[dict]:
@@ -280,20 +401,45 @@ def coverage(rules: dict, results: list[dict], symbols: list[str] | None = None)
             "missing": [s for s in expected if s not in present], "failed": failed, "no_chain": no_chain}
 
 
+def hedge_card(rules: dict, results: list[dict], index_hists: dict, spy_regime: dict | None) -> dict | None:
+    """Optional far-OTM SPY/QQQ put suggestion when VIX is low and SPY is extended."""
+    if not rules.get("hedge_alerts"):
+        return None
+    hc = rules["hedge"]
+    vix_s = index_hists.get("_VIX")
+    vix = float(vix_s.iloc[-1]) if vix_s is not None and len(vix_s) else None
+    reg = (spy_regime or {}).get("regime")
+    conds = {"vix_low": vix is not None and vix < hc["vix_max"], "spy_regime": reg == hc["spy_regime"]}
+    cands = {r["symbol"]: r["hedge_puts"] for r in results if r.get("hedge_puts")}
+    return {"enabled": True, "active": all(conds.values()), "vix": vix, "vix_max": hc["vix_max"],
+            "spy_regime": reg, "conditions": conds, "candidates": cands,
+            "dte": [hc["min_dte"], hc["max_dte"]], "otm_pcts": hc["otm_pcts"]}
+
+
 def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode: str = "close",
-        slot: str | None = None) -> dict:
+        slot: str | None = None, today: date | None = None, persist: bool = True) -> dict:
     started = datetime.now(timezone.utc)
+    today = today or data.session_date(None, rules.get("schedule", {}).get("timezone", "America/New_York"),
+                                       rules.get("schedule", {}).get("market_open", "09:30"))
     notes: list[str] = []
     uni = universe(rules)
     if symbols:
         uni = [t for t in uni if t["symbol"] in symbols]
+    ec = rules.get("earnings", {})
+    stocks = [t["symbol"] for t in uni if t["symbol"] not in ec.get("etfs", [])]
+    try:
+        earn_cache, en = earnings.refresh(stocks, today, ec)
+        notes += en
+    except Exception as e:  # noqa: BLE001 - earnings are optional context
+        earn_cache = {}
+        notes.append(f"earnings dates unavailable ({e})")
 
     # Bull gate needs SPY history even if SPY is filtered out.
     spy_close = None
     try:
         spy_hist, _, _ = data.fetch_history("SPY", rules["data"])
         try:
-            spy_chain = data.fetch_chain("SPY", rules["data"])
+            spy_chain = data.fetch_chain("SPY", rules["data"], asof=today)
             spy_hist = data.with_today(spy_hist, spy_chain)
         except Exception:  # noqa: BLE001
             pass
@@ -314,7 +460,7 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
     for t in uni:
         log.info("scanning %s", t["symbol"])
         try:
-            r = scan_ticker(t, rules, gate, index_hists, append=append)
+            r = scan_ticker(t, rules, gate, index_hists, append=append, earn_cache=earn_cache, today=today)
         except Exception as e:  # noqa: BLE001
             log.error("%s failed: %s\n%s", t["symbol"], e, traceback.format_exc())
             r = {"symbol": t["symbol"], "bucket": t["bucket"], "role": t["role"], "action": "ERROR",
@@ -347,12 +493,22 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
     notes.append("Quotes are CBOE delayed (~15 min) " + ("intraday snapshots; IV history is only "
                  "appended after the close" if mode == "intraday" else "end-of-day snapshots"))
 
+    if persist:
+        try:
+            earnings.save_cache(earn_cache, ec)
+        except OSError as e:
+            notes.append(f"earnings cache not written: {e}")
+    hedge = hedge_card(rules, results, index_hists, spy_regime)
+    for r in results:
+        r.pop("hedge_puts", None)
     buckets = [{"name": b, "cap": s["cap"], "core": s.get("core") or [], "opportunistic": s.get("opportunistic") or []}
                for b, s in rules["universe"].items()]
     return clean({
         "generated_at": started.isoformat(timespec="seconds"),
-        "scan_mode": mode, "scan_slot": slot, "coverage": cov,
-        "scan_date": max((r.get("asof") or "" for r in results), default=date.today().isoformat()),
+        "scan_mode": mode, "scan_slot": slot, "coverage": cov, "session_date": today.isoformat(),
+        "hedge": hedge, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
+                                                                  "play_size_frac")},
+        "scan_date": today.isoformat(),
         "bull_gate": gate, "spy_regime": spy_regime, "notes": notes,
         "ivr_sources": {s: srcs.count(s) for s in set(srcs) if s},
         "sizing": rules["sizing"], "buckets": buckets, "total_deployed_cap": rules["total_deployed_cap"],
