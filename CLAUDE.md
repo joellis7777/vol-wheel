@@ -186,7 +186,10 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   35–50 DTE expiry; the card shows "Earnings in N days · date timing · implied ±x%".
 - **Implied move** = term structure: first expiry after the reaction (E1) vs the next one ≥ 5 days
   later (E2): base² = (σ2²T2 − σ1²T1)/(T2 − T1), jump² = (σ1² − base²)T1, move = jump (1-sd, fraction
-  of price). Fallback for strike distance only: ATM straddle / price.
+  of price). If the term structure reads but shows no bump (jump < 0.5%), there is no earnings
+  move and iv30 is used as-is. Only if it can't be read at all does ATM straddle / price stand in,
+  and only for an E1 within 7 days of the reaction and 14 days of today (otherwise the straddle is
+  mostly base vol: CEG/MSTR showed "±13%" from a 5-week straddle on 2026-10-06).
 - **Ex-earnings IV**: when the report is within 30 days, iv30_ex = √(iv30² − jump²·365/30). IVR and
   IV/HV use iv30_ex (badge "ex-earn"); IV history stores raw `iv30` plus `iv30_ex`, and IVR reads
   `iv30_ex` where present. If any step is non-positive → badge "earn-inflated" and normal signals off.
