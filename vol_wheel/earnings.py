@@ -197,8 +197,10 @@ def implied_move(opts: pd.DataFrame, price: float, edate: date, timing: str | No
     later = [e for e in exps[1:] if (e - e1).days >= cfg.get("min_term_gap_days", 5)]
     s1, straddle = atm_iv(opts, e1, price)
     out["e1"] = e1.isoformat()
-    # The straddle only approximates the earnings move when E1 expires right after the report.
-    if np.isfinite(straddle) and price > 0 and (e1 - react).days <= cfg.get("straddle_max_days_after", 7):
+    # The straddle only approximates the earnings move when E1 expires right after the report and
+    # soon (otherwise it is mostly base vol).
+    if (np.isfinite(straddle) and price > 0 and (e1 - react).days <= cfg.get("straddle_max_days_after", 7)
+            and (e1 - today).days <= cfg.get("straddle_max_dte", 14)):
         out["straddle_move"] = straddle / price
     if not later or not np.isfinite(s1):
         return {**out, "why": "no second expiry for the term structure"}
@@ -235,9 +237,10 @@ def implied_move(opts: pd.DataFrame, price: float, edate: date, timing: str | No
 
 
 def move_for_strikes(im: dict) -> float | None:
-    """Earnings move used for strike distance: term-structure move, else the straddle."""
-    if im.get("feasible") and im.get("move"):
-        return im["move"]
+    """Earnings move used for strike distance: the term-structure move; the straddle only when the
+    term structure couldn't be read at all (never when it read and found no bump)."""
+    if im.get("feasible"):
+        return im.get("move")
     return im.get("straddle_move")
 
 

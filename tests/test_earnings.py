@@ -210,6 +210,15 @@ def test_flat_term_structure_means_no_bump(rules):
     assert im2["straddle_move"] is None and earnings.move_for_strikes(im2) is None
 
 
+def test_no_bump_means_no_straddle_fallback(rules):
+    # Flat term structure, report 10 days out with a weekly right after it: the term structure says
+    # "no bump", so the (base-vol) straddle must not be used as the earnings move.
+    ch = data.parse_chain(make_chain_payload(price=100.0, atm_iv=0.50))
+    im = earnings.implied_move(ch["options"], 100.0, ASOF + timedelta(days=10), "bmo", ASOF, 0.50, rules["earnings"])
+    assert im["feasible"] and im["move"] is None
+    assert earnings.move_for_strikes(im) is None
+
+
 def test_ex_earnings_iv_never_below_base(rules):
     # iv30 that holds little of the jump: plain subtraction would collapse it; floor at base vol
     ch = data.parse_chain(make_chain_payload(price=100.0, term_iv=earnings_term_iv(ASOF, EDATE, 0.30, 0.06)))

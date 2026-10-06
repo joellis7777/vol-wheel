@@ -187,7 +187,8 @@ earnings:
   iv_window_days: 30        # earnings within this many days inflate iv30 -> strip the implied move
   min_term_gap_days: 5      # second expiry must be at least this much later than the first post-earnings one
   min_move: 0.005           # a term-structure jump below 0.5% = no earnings bump (iv30 used as-is)
-  straddle_max_days_after: 7  # straddle/price stands in for the move only if E1 expires within 7 days of the reaction
+  straddle_max_days_after: 7  # straddle/price stands in for the move only if the term structure can't be read,
+  straddle_max_dte: 14        # E1 expires within 7 days of the reaction and within 14 days of today
   # EARNINGS PLAY: pre-earnings directional sale (rulebook "earnings mode")
   play_min_days: 1          # earnings at least 1 day away ...
   play_max_days: 21         # ... and at most 21 days away
