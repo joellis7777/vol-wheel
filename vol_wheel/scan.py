@@ -215,6 +215,17 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     if earn_cache is not None and ectx.get("next") and earnings.move_for_strikes(im):
         earn_cache.setdefault(sym, {})["implied_move"] = earnings.move_for_strikes(im)
 
+    # Earnings before the usual expiry: trade the latest expiry that ends before the report when
+    # one exists (normal signals); otherwise the trade would span earnings and normal entries pause.
+    trade_exp, trade_dte, trade_note, pre = expiry, dte, exp_note, None
+    nxt = ectx.get("next") or {}
+    if ectx.get("in_window") and expiry is not None:
+        pre = earnings.pre_earnings_expiry(opts, date.fromisoformat(nxt["date"]), nxt.get("timing"), asof, ec)
+        if pre:
+            trade_exp, trade_dte = pre
+            trade_note = f"ends before earnings {nxt['date']}; the usual {expiry.isoformat()} expiry spans them"
+    spans = bool(ectx.get("in_window")) and pre is None
+
     if append and np.isfinite(iv30):
         ivhistory.append(sym, asof, iv30, price, iv30_ex=iv30_ex)
     iv_hist = ivhistory.load(sym)
@@ -240,10 +251,15 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     rpos = signals.range_position(hist, cc["range_window"])
     iv_hv = iv_eff / hv20 if np.isfinite(iv_eff) and hv20 > 0 else None
     play = earnings_play_setup(ectx, close, iv30, hv20, rules) if ectx.get("applies") else None
-    nxt = ectx.get("next") or {}
-    earn_flags = {"in_window": ectx.get("in_window", False), "inflated": inflated, "date": nxt.get("date"),
+    earn_flags = {"in_window": spans, "inflated": inflated, "date": nxt.get("date"),
                   "days_to": ectx.get("days_to"), "play": play}
     dec = decide_action(ivr["ivr"], spk, regime, cons["on"], rpos, gate["on"], t["role"], rules, iv_hv, earn_flags)
+    if pre and dec["action"] in ("SELL_PUT", "SELL_CALL"):
+        dec["reasons"].append(f"Using the {trade_exp.isoformat()} expiry ({trade_dte} DTE), which ends before "
+                              f"earnings {nxt['date']}")
+    elif spans and dec["action"] == "WATCH" and any("earnings mode" in r for r in dec["reasons"]):
+        dec["reasons"].append(f"No expiry of {ec.get('pre_earnings_expiry', {}).get('min_dte', 21)}+ DTE ends "
+                              "before the report")
 
     spike_dir, spike_size, spike_k = None, 0.0, None
     if spk["down"] >= spk["up"] and spk["down"] > 0:
@@ -266,7 +282,7 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
                   "is_spike": spike_size >= th["spike_sigma"], "earnings_gap": gap},
         "consolidation": cons["on"], "bb_pct": cons["bb_pct"], "range_pos": rpos,
         "sma50": signals.sma(close, 50), "sma200": signals.sma(close, 200),
-        "earnings": _earnings_out(ectx, play),
+        "earnings": _earnings_out(ectx, play, pre, spans),
         "history_days": len(close), "history_source": hist_src, "notes": notes,
     }
     if out["prev_close"]:
@@ -276,19 +292,23 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         out["notes"].append("no option quotes: strikes, ladder and LEAP skipped")
         return out
 
-    out["expiry"], out["dte"], out["expiry_note"] = (expiry.isoformat() if expiry else None), dte, exp_note
-    if expiry is None:
+    out["expiry"], out["dte"], out["expiry_note"] = (trade_exp.isoformat() if trade_exp else None), trade_dte, trade_note
+    if trade_exp is None:
         out["notes"].append(f"no usable expiry ({exp_note})")
     else:
-        exp_opts = opts[opts["expiry"] == expiry]
         rc = sc["richness"]
-        poly = strikes.skew_fit(exp_opts, price, rc.get("fit_delta_min", 5), rc.get("fit_delta_max", 60))
+
+        def fit(e):
+            return strikes.skew_fit(opts[opts["expiry"] == e], price, rc.get("fit_delta_min", 5), rc.get("fit_delta_max", 60))
+        poly = fit(trade_exp)
         ac = sc["assignment"]
         recent = hist.iloc[-ac.get("swing_lookback_days", 252):]
         anchors = [signals.sma(close, 200)] + [v for v in signals.swing_points(
             recent["low"], sc["support"].get("swing_order", 5), "low") if v < price]
-        base_ctx = {"price": price, "iv30": iv_eff, "hv20": hv20, "hist": hist, "expiry": expiry, "dte": dte,
-                    "poly": poly, "anchors": anchors}
+        base_ctx = {"price": price, "iv30": iv_eff, "hv20": hv20, "hist": hist, "expiry": trade_exp,
+                    "dte": trade_dte, "poly": poly, "anchors": anchors}
+        # Earnings plays sell through the report, so they always use the usual (spanning) expiry.
+        play_ctx = base_ctx if trade_exp == expiry else {**base_ctx, "expiry": expiry, "dte": dte, "poly": fit(expiry)}
         put_lv = strikes.levels(hist, opts, price, "P", sc)
         call_lv = strikes.levels(hist, opts, price, "C", sc)
         out["supports"] = _levels_out(put_lv)
@@ -306,14 +326,14 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
             for side, key, lv in (("P", "puts", put_lv), ("C", "calls", call_lv)):
                 lim = price * (1 - mult * move) if side == "P" else price * (1 + mult * move)
                 ep[key] = strikes.select_strikes(opts, side, (lo + hi) / 2,
-                                                 {**base_ctx, "levels": lv, "band": (lo, hi), "strike_limit": lim}, sc)
+                                                 {**play_ctx, "levels": lv, "band": (lo, hi), "strike_limit": lim}, sc)
             out["earnings_play"] = ep
         em_iv = iv_eff
         if sym in rules.get("weekend_gap_names", []) and np.isfinite(hv20):
             em_iv = np.nanmax([iv_eff, hv20])
         out["em45"] = strikes.expected_move(price, em_iv, rules["sizing"]["ladder_dte"])
         if out["puts"]["candidates"]:
-            put_strikes = opts[(opts["type"] == "P") & (opts["expiry"] == expiry)]["strike"].tolist()
+            put_strikes = opts[(opts["type"] == "P") & (opts["expiry"] == trade_exp)]["strike"].tolist()
             out["ladder"] = strikes.ladder(out["puts"]["candidates"][0]["strike"], price, em_iv, put_strikes,
                                            sc, rules["sizing"]["ladder_rungs"], rules["sizing"]["ladder_dte"])
         if sym in rules.get("momentum_names", []):
@@ -340,12 +360,13 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     return out
 
 
-def _earnings_out(ectx: dict, play: dict | None) -> dict | None:
+def _earnings_out(ectx: dict, play: dict | None, pre: tuple | None = None, spans: bool = False) -> dict | None:
     if not ectx.get("applies"):
         return None
     im = ectx.get("implied") or {}
     nxt = ectx.get("next") or {}
     return {"date": nxt.get("date"), "timing": nxt.get("timing"), "estimated": nxt.get("estimated"),
+            "pre_expiry": {"expiry": pre[0].isoformat(), "dte": pre[1]} if pre else None, "spans_trade": spans,
             "source": nxt.get("source"), "days_to": ectx.get("days_to"), "in_window": ectx.get("in_window"),
             "in_iv_window": ectx.get("in_iv_window"), "implied_move": earnings.move_for_strikes(im),
             "implied_feasible": im.get("feasible"), "implied_why": im.get("why"), "iv30_ex": im.get("iv30_ex"),

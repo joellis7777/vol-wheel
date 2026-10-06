@@ -309,7 +309,8 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     var d = new Date(e.date + "T12:00:00");
     var when = d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + (e.timing ? " " + e.timing.toUpperCase() : "") + (e.estimated ? " (est.)" : "");
     var dayWord = e.days_to === 0 ? "today" : e.days_to === 1 ? "tomorrow" : "in " + e.days_to + " days";
-    return { short: e.days_to === 0 ? "today" : e.days_to + "d", line: "Earnings " + dayWord + " · " + when + (e.implied_move ? " · implied ±" + pct(e.implied_move, 1) : "") };
+    var pre = e.pre_expiry ? " · trading the " + new Date(e.pre_expiry.expiry + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " expiry (ends before)" : "";
+    return { short: e.days_to === 0 ? "today" : e.days_to + "d", line: "Earnings " + dayWord + " · " + when + (e.implied_move ? " · implied ±" + pct(e.implied_move, 1) : "") + pre };
   }
 
   function renderHedge() {
@@ -348,7 +349,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
           m("IV / HV", ivhv) +
           m("Regime", t.regime ? esc(t.regime) + (t.extension_pct != null ? " <small>" + num(t.extension_pct) + "p</small>" : "") : "–") +
           m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "") + (sp.earnings_gap ? " <small>gap</small>" : "")) +
-          m("Earnings", t.earnings == null ? '<small>ETF</small>' : et ? (t.earnings.in_window ? '<span class="bad">' + et.short + "</span>" : et.short) : "–") +
+          m("Earnings", t.earnings == null ? '<small>ETF</small>' : et ? (t.earnings.spans_trade ? '<span class="bad">' + et.short + "</span>" : et.short) : "–") +
         "</div>" +
         (et && t.earnings.in_window ? '<div class="earn-line">' + esc(et.line) + "</div>" : "") +
         '<div class="reason">' + esc((t.reasons || []).join(" · ")) + "</div>" +
@@ -400,7 +401,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       var e = t.earnings || {};
       var lim = "outside ±" + pct(ep.mult * ep.move, 1) + " (" + ep.mult + "× the implied move) · " + ep.band[0] + "–" + ep.band[1] + "Δ · half size";
       h += '<h3>Earnings play <span class="hint">· ' + esc((earnText(t) || {}).line || "") + "</span></h3>";
-      h += '<div class="legend">' + (e.play ? "Triggered: 5-day " + (e.play.ret >= 0 ? "+" : "") + pct(e.play.ret, 1) + " (" + num(e.play.z, 1) + "σ) → sell a " + (ep.side === "C" ? "call after the run-up" : "put after the sell-off") : "Not triggered: needs a 5-day run-up or sell-off of ≥ 1σ, earnings 1–21 days out and IV ≥ 1.15× HV") + ". Normal entries are paused while earnings fall before expiry.</div>";
+      h += '<div class="legend">' + (e.play ? "Triggered: 5-day " + (e.play.ret >= 0 ? "+" : "") + pct(e.play.ret, 1) + " (" + num(e.play.z, 1) + "σ) → sell a " + (ep.side === "C" ? "call after the run-up" : "put after the sell-off") : "Not triggered: needs a 5-day run-up or sell-off of ≥ 1σ, earnings 1–21 days out and IV ≥ 1.15× HV") + (e.pre_expiry ? ". Normal entries use the " + esc(e.pre_expiry.expiry) + " expiry, which ends before the report; the play sells through it on the usual expiry." : ". Normal entries are paused: no expiry of 21+ DTE ends before the report.") + "</div>";
       if (!ep.side || ep.side === "P") h += side(t, "puts", "Earnings puts", "P", ep, lim, ep.size_frac);
       if (!ep.side || ep.side === "C") h += side(t, "calls", "Earnings calls (covered only)", "C", ep, lim, ep.size_frac);
     }

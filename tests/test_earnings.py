@@ -224,3 +224,46 @@ def test_ex_earnings_iv_never_below_base(rules):
     ch = data.parse_chain(make_chain_payload(price=100.0, term_iv=earnings_term_iv(ASOF, EDATE, 0.30, 0.06)))
     im = earnings.implied_move(ch["options"], 100.0, EDATE, "amc", ASOF, 0.31, rules["earnings"])
     assert im["iv30_ex"] == pytest.approx(min(im["base_iv"], 0.31), abs=1e-9)
+
+
+# ---------------------------------------------------------------- pre-earnings expiry
+
+def test_pre_earnings_expiry_picks_latest_before_report(rules):
+    ec = rules["earnings"]
+    o = data.parse_chain(make_chain_payload(price=100.0))["options"]  # weeklies at +21 (10-23) and +28 (10-30)
+    assert earnings.pre_earnings_expiry(o, date(2026, 11, 4), None, ASOF, ec) == (date(2026, 10, 30), 28)
+    # report on 10-30: before the open/unknown -> must expire the day before; after the close -> same day ok
+    assert earnings.pre_earnings_expiry(o, date(2026, 10, 30), None, ASOF, ec) == (date(2026, 10, 23), 21)
+    assert earnings.pre_earnings_expiry(o, date(2026, 10, 30), "amc", ASOF, ec) == (date(2026, 10, 30), 28)
+    # nothing of 21+ DTE before a 10-22 report
+    assert earnings.pre_earnings_expiry(o, date(2026, 10, 22), None, ASOF, ec) is None
+    off = {**ec, "pre_earnings_expiry": {**ec["pre_earnings_expiry"], "enabled": False}}
+    assert earnings.pre_earnings_expiry(o, date(2026, 11, 4), None, ASOF, off) is None
+
+
+def _spike_inputs():
+    hist = make_history(n=800, start=60, vol=0.01, seed=21, end=date(2026, 10, 1), shocks={1: -0.06})
+    price = round(float(hist["close"].iloc[-1]), 2)
+    ch = data.parse_chain(make_chain_payload(sym="TST", price=price, atm_iv=0.40, oi=500, spread_frac=0.02))
+    return hist, ch
+
+
+def test_scan_ticker_trades_pre_earnings_expiry(rules, tmp_path, monkeypatch):
+    from vol_wheel import ivhistory
+    monkeypatch.setattr(ivhistory, "DIR", tmp_path)
+    hist, ch = _spike_inputs()
+    cache = {"TST": {"next": {"date": "2026-11-04", "timing": None}}}
+    t = {"symbol": "TST", "bucket": "Test", "role": "core", "cap": 10}
+    r = scan.scan_ticker(t, rules, {"on": True}, {}, append=False, chain=ch, hist=hist, earn_cache=cache, today=ASOF)
+    assert r["earnings"]["in_window"] and not r["earnings"]["spans_trade"]
+    assert r["earnings"]["pre_expiry"] == {"expiry": "2026-10-30", "dte": 28}
+    assert r["expiry"] == "2026-10-30" and "ends before earnings" in r["expiry_note"]
+    assert all(c["expiry"] == "2026-10-30" for c in r["puts"]["candidates"])
+    assert r["action"] == "SELL_PUT", r["reasons"]
+    assert any("ends before earnings 2026-11-04" in x for x in r["reasons"])
+
+    off = {**rules, "earnings": {**rules["earnings"], "pre_earnings_expiry": {"enabled": False}}}
+    r2 = scan.scan_ticker(t, off, {"on": True}, {}, append=False, chain=ch, hist=hist, earn_cache=cache, today=ASOF)
+    assert r2["expiry"] == "2026-11-20" and r2["earnings"]["spans_trade"]
+    assert r2["action"] == "WATCH" and any("earnings mode" in x for x in r2["reasons"])
+    assert any("No expiry of 21+ DTE" in x for x in r2["reasons"])

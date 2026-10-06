@@ -199,6 +199,13 @@ earnings:
   trend_days: 5             # call after a run-up / put after a sell-off, by the 5-day return ...
   trend_sigma: 1.0          # ... of at least 1.0 x HV20 * sqrt(5/252)
   gap_mult: 1.5             # post-earnings move >= 1.5x the implied move counts as a normal spike
+  # When earnings fall before the usual 35-50 DTE expiry, trade the latest expiry that ends before
+  # the report instead of pausing the wheel (normal deltas, sizes and signals). Off = pause.
+  pre_earnings_expiry:
+    enabled: true
+    min_dte: 21             # shortest expiry worth selling (the rulebook's 21-DTE decision point)
+    max_dte: 34             # anything 35+ is already the normal window
+    prefer_monthly: false   # weeklies are fine; take the latest expiry before the report
 
 # Optional crash-hedge card + alert (rulebook: no standing hedge; this is the opportunistic one).
 hedge_alerts: false
