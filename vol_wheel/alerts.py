@@ -202,6 +202,9 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
                 lines.append("Half size · covered only: against shares or a LEAP")
         else:
             lines.append("No strike passes the filters outside the implied move; see the dashboard")
+    pre = (t.get("earnings") or {}).get("pre_expiry")
+    if pre and trigger in ("SELL_PUT", "SELL_CALL", "PAIR_CALL"):
+        lines.append(f"Expiry ends before earnings {(t.get('earnings') or {}).get('date')}")
     if rung > 1 and rec:
         ref = rec.get("strike") if trigger != "LEAP_BUY" else rec.get("price")
         side = "below" if RUNG_DIR[trigger] < 0 else "above"

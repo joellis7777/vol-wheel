@@ -244,6 +244,26 @@ def move_for_strikes(im: dict) -> float | None:
     return im.get("straddle_move")
 
 
+def pre_earnings_expiry(opts: pd.DataFrame, edate: date, timing: str | None, today: date,
+                        cfg: dict) -> tuple[date, int] | None:
+    """Latest expiry inside [min_dte, max_dte] that settles before the report: on or before the
+    report day for after-close reports, strictly before it otherwise (before-open or unknown)."""
+    pc = cfg.get("pre_earnings_expiry") or {}
+    if not pc.get("enabled") or opts is None or opts.empty:
+        return None
+    exps = opts.groupby("expiry")["dte"].first()
+    ok = [(e, int(d)) for e, d in exps.items()
+          if pc.get("min_dte", 21) <= d <= pc.get("max_dte", 34)
+          and (e <= edate if timing == "amc" else e < edate)]
+    if not ok:
+        return None
+    if pc.get("prefer_monthly"):
+        from .strikes import is_monthly
+        monthly = [x for x in ok if is_monthly(x[0], set(exps.index))]
+        ok = monthly or ok
+    return max(ok, key=lambda x: x[1])
+
+
 # ---------------------------------------------------------------- signals
 
 def trend(close: pd.Series, days: int = 5, hv20: float = float("nan")) -> dict:

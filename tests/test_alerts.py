@@ -180,3 +180,11 @@ def test_earnings_play_message(rules):
     assert "5-day -7.0% (-1.6σ) → sell a put after a sell-off" in m["body"]
     assert "Half size: too big for a CSP at $500k ($20,500 > $12,500)" in m["body"]
     assert alerts.triggers_for(t, rules) == ["EARNINGS_PLAY"]
+
+
+def test_pre_earnings_expiry_noted_in_alert(rules):
+    t = ticker()
+    t["earnings"] = {"date": "2026-11-04", "pre_expiry": {"expiry": "2026-10-30", "dte": 28}}
+    assert "Expiry ends before earnings 2026-11-04" in alerts.build_message(t, "SELL_PUT", rules)["body"]
+    t["earnings"]["pre_expiry"] = None
+    assert "ends before earnings" not in alerts.build_message(t, "SELL_PUT", rules)["body"]
