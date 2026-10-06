@@ -60,6 +60,17 @@ def test_trend_and_post_gap(rules):
     assert earnings.post_gap(close, {**last, "date": "2026-09-24"}, date(2026, 10, 2), rules["earnings"]) is None
 
 
+def test_post_gap_unknown_timing_catches_before_open_report(rules):
+    # Report on Fri 10-02 with unknown timing (really before the open): the gap is in 10-02's close
+    close = pd.Series([100.0] * 30 + [100, 100, 100, 100, 100, 92],
+                      index=pd.bdate_range(end="2026-10-02", periods=36))
+    last = {"date": "2026-10-02", "timing": None, "implied_move": 0.04}
+    g = earnings.post_gap(close, last, date(2026, 10, 2), rules["earnings"])
+    assert g and g["dir"] == "down" and g["move"] == pytest.approx(-0.08)
+    # with timing "amc" the same day's close is the pre-report close -> nothing yet
+    assert earnings.post_gap(close, {**last, "timing": "amc"}, date(2026, 10, 2), rules["earnings"]) is None
+
+
 def test_refresh_moves_past_report_to_last_and_survives_failures(rules, tmp_path):
     cfg = {**rules["earnings"], "cache_path": str(tmp_path / "earn.json")}
     (tmp_path / "earn.json").write_text(json.dumps({
@@ -160,9 +171,24 @@ def test_scan_ticker_leap_variants(rules, tmp_path, monkeypatch):
     assert r["earnings"] is None  # ETF
     ira, tax = r["leaps"]["ira"], r["leaps"]["taxable"]
     assert ira["found"] and 365 <= ira["dte"] <= 548
-    assert tax["found"] and 487 <= tax["dte"] <= 548
+    assert tax["found"] and 487 <= tax["dte"] <= 548 and not tax.get("outside_window")
     assert "don't sell calls" in tax["variant_note"]
     assert r["leap"] == ira
+
+
+def test_taxable_leap_falls_back_to_nearest_listed_expiry(rules, tmp_path, monkeypatch):
+    from vol_wheel import ivhistory
+    from conftest import third_friday
+    monkeypatch.setattr(ivhistory, "DIR", tmp_path)
+    hist, _, price = _ticker_inputs(trend_up=False)
+    exps = [third_friday(2026, 11), third_friday(2026, 12), third_friday(2027, 12), third_friday(2028, 1),
+            third_friday(2028, 6)]  # nothing 487-548 DTE; Jun 2028 is ~623
+    ch = data.parse_chain(make_chain_payload(sym="SPY", price=price, expiries=exps))
+    t = {"symbol": "SPY", "bucket": "Index", "role": "core", "cap": 25}
+    r = scan.scan_ticker(t, rules, {"on": True}, {}, append=False, chain=ch, hist=hist, earn_cache={}, today=ASOF)
+    tax = r["leaps"]["taxable"]
+    assert tax["found"] and tax["outside_window"] and tax["dte"] > 548
+    assert "no listed expiry 16–18 months out" in tax["note"]
 
 
 def test_session_date():

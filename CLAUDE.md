@@ -195,6 +195,9 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   and a 5-day return of ≥ 1σ (HV20·√(5/252)): run-up → sell a call, sell-off → sell a put. Strikes
   10–15Δ and beyond price × (1 ± 1.5 × move) (`strike_limit` in `select_strikes`), same filters
   and scoring, half size (CSP eligibility vs half the entry). Alert "EARNINGS PLAY · SYM".
+- Nasdaq usually omits BMO/AMC timing for estimated dates. Unknown timing is treated as "after the
+  close" for the term structure (E1 = first expiry after the next weekday) and as "before the open"
+  for the gap (pre-report close = the close before the report day), so neither misses the event.
 - **Post-earnings gap**: within 3 sessions of the reaction, a move since the pre-report close ≥ 1.5×
   the recorded implied move is forced to count as a spike in that direction (reason says so; the
   card shows "gap"). It still needs IVR ≥ 50 and IV/HV ≥ 1.15 like any spike.
@@ -221,7 +224,10 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   SPY/QQQ's $1 strikes don't yield three near-identical picks.
 - LEAP: 70–80Δ calls, liquid if possible, lowest extrinsic % of price, in two variants
   (`leap.variants`): IRA 365–548 DTE and Taxable 487–548 DTE ("hold >1 year, don't sell calls
-  against"). `t.leaps = {ira, taxable}`; `t.leap` = the IRA one.
+  against"; 487 DTE = held >1 year and still out by the 120-DTE exit). LEAP expiries are sparse
+  (Jan plus a few other months), so when nothing is listed in a window the nearest expiry up to
+  `fallback_max_dte` is shown with a "no listed expiry … nearest is N months" note.
+  `t.leaps = {ira, taxable}`; `t.leap` = the IRA one.
 - Hedge (only if `hedge_alerts: true`): when VIX < 14 and SPY is in the High regime, SPY/QQQ puts
   at the expiry nearest 105 DTE within 90–120, strikes nearest 10% and 15% OTM → a card above the
   ticker list and one "HEDGE · SPY/QQQ puts" alert per episode.

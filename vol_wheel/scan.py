@@ -251,7 +251,8 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     elif spk["up"] > 0:
         spike_dir, spike_size, spike_k = "up", spk["up"], spk["up_k"]
 
-    ivr_flag = "earnings-inflated" if inflated else ("ex-earnings" if iv30_ex else None)
+    stripped = iv30_ex is not None and np.isfinite(iv30) and iv30_ex < iv30 - 0.0005
+    ivr_flag = "earnings-inflated" if inflated else ("ex-earnings" if stripped else None)
     out = {
         "symbol": sym, "bucket": t["bucket"], "role": t["role"], "asof": asof.isoformat(),
         **{k: dec[k] for k in ("action", "label", "priority", "reasons", "both_sides", "leap_window", "leap_checks")},
@@ -322,6 +323,16 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     out["leaps"] = {}
     for name, v in variants.items():
         cand = strikes.leap_candidate(opts, price, {**lp, "min_dte": v["min_dte"], "max_dte": v["max_dte"]})
+        if not cand.get("found") and v.get("fallback_max_dte"):
+            # LEAP expiries are sparse (Jan, plus a few Mar/Jun/Dec); take the nearest one past the
+            # window rather than nothing, and say so.
+            alt = strikes.leap_candidate(opts, price, {**lp, "min_dte": v["min_dte"], "max_dte": v["fallback_max_dte"]})
+            if alt.get("found"):
+                months = alt["dte"] / 30.44
+                alt["note"] = (f"no listed expiry {v['min_dte'] / 30.44:.0f}–{v['max_dte'] / 30.44:.0f} months out; "
+                               f"nearest is {months:.0f} months" + (f" · {alt['note']}" if alt.get("note") else ""))
+                alt["outside_window"] = True
+                cand = alt
         out["leaps"][name] = {**cand, "label": v.get("label", name), "variant_note": v.get("note", "")}
     out["leap"] = out["leaps"].get("ira") or next(iter(out["leaps"].values()))
     if rules.get("hedge_alerts") and sym in rules.get("hedge", {}).get("symbols", []):

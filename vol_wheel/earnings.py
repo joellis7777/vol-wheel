@@ -258,11 +258,15 @@ def post_gap(close: pd.Series, last: dict | None, today: date, cfg: dict, max_da
     `max_days` sessions and it's >= gap_mult x the implied move recorded before the report."""
     if not last or not last.get("date") or not last.get("implied_move"):
         return None
-    react = pd.Timestamp(reaction_date(date.fromisoformat(last["date"]), last.get("timing")))
+    edate = pd.Timestamp(last["date"])
     c = pd.Series(close, dtype=float).dropna()
-    after = c[c.index >= react]
-    before = c[c.index < react]
-    if after.empty or before.empty or len(after) > max_days or pd.Timestamp(today) < react:
+    # Pre-report close: the report day's close for after-close reports, otherwise the close before
+    # the report day (covers before-open reports and unknown timing, which Nasdaq often omits).
+    before = c[c.index <= edate] if last.get("timing") == "amc" else c[c.index < edate]
+    if before.empty:
+        return None
+    after = c[c.index > before.index[-1]]
+    if after.empty or len(after) > max_days or pd.Timestamp(today) < after.index[0]:
         return None
     move = float(c.iloc[-1] / before.iloc[-1] - 1)
     ratio = abs(move) / last["implied_move"]

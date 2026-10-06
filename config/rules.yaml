@@ -72,7 +72,10 @@ leap:
   # calls sold against them (tax-straddle rules); the IRA wheel can sell calls against its LEAPs.
   variants:
     ira:     {min_dte: 365, max_dte: 548, label: "IRA · 12–18 months", note: "calls may be sold against it"}
-    taxable: {min_dte: 487, max_dte: 548, label: "Taxable · 16–18 months", note: "hold >1 year, don't sell calls against"}
+    # min 487 DTE = held >1 year and still out by the 120-DTE roll/close rule. If nothing is listed
+    # 16-18 months out (common: LEAPs list Jan plus a few other months), show the nearest expiry up
+    # to fallback_max_dte, flagged.
+    taxable: {min_dte: 487, max_dte: 548, fallback_max_dte: 760, label: "Taxable · 16–18 months", note: "hold >1 year, don't sell calls against"}
   delta_min: 70
   delta_max: 80
   max_spread_pct: 15        # LEAP spreads are wider; % of mid
