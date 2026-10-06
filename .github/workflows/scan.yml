@@ -56,12 +56,12 @@ jobs:
           if [ "$ALERTS" != "true" ]; then args+=(--no-alerts); fi
           python -m vol_wheel.scan "${args[@]}"
 
-      - name: Commit IV history, alert state and dashboard data
+      - name: Commit IV history, alert state, earnings cache and dashboard data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/iv_history docs/data
-          [ -f data/alert_state.json ] && git add data/alert_state.json
+          for f in data/alert_state.json data/earnings.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0

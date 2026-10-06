@@ -41,6 +41,7 @@ thresholds:
   ivr_sell: 50              # IVR at/above this: sell premium on a spike
   ivr_both_sides: 70        # Mid regime + IVR at/above this: 10-delta call may sit alongside a put
   both_sides_call_delta: 10
+  min_iv_hv_ratio: 1.15     # SELL PUT / SELL CALL also need iv30 >= 1.15 x HV20 (premium rich vs realized)
   spike_sigma: 1.5          # move / (sigma_daily * sqrt(k)) needed for a spike
   spike_max_days: 3         # k = 1..N
   spike_hv_window: 20       # sigma_daily = HV20 (measured before the window) * price / sqrt(252)
@@ -65,8 +66,13 @@ leap:
   ivr_max: 25
   range_pos_max: 0.3333     # bottom third of the 50-day range
   regimes: [Low, Mid]
-  min_dte: 365              # 12 months
-  max_dte: 548              # 18 months
+  min_dte: 365              # default window (IRA variant); see variants below
+  max_dte: 548
+  # Two LEAP candidates per name. Taxable LEAPs are held >1 year for long-term gains and never have
+  # calls sold against them (tax-straddle rules); the IRA wheel can sell calls against its LEAPs.
+  variants:
+    ira:     {min_dte: 365, max_dte: 548, label: "IRA · 12–18 months", note: "calls may be sold against it"}
+    taxable: {min_dte: 487, max_dte: 548, label: "Taxable · 16–18 months", note: "hold >1 year, don't sell calls against"}
   delta_min: 70
   delta_max: 80
   max_spread_pct: 15        # LEAP spreads are wider; % of mid
@@ -156,14 +162,47 @@ alerts:
   enabled: true
   ntfy_server: https://ntfy.sh  # topic comes from the NTFY_TOPIC repo secret, never from here
   dashboard_url: https://joellis7777.github.io/vol-wheel/
-  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL]
+  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, HEDGE]
   sizing_tier: 500000           # CSP eligibility in the message is shown for this account size
   max_rungs: 3                  # re-alert when price reaches rung 2 and 3 (1 and 2 expected moves past the last alerted strike)
   daily_digest: true            # one low-priority post-close message listing WATCH names
-  priority: {trigger: high, upgrade_from_watch: default, digest: low}
+  priority: {trigger: high, upgrade_from_watch: default, digest: low, hedge: default}
   tags:
     SELL_PUT: chart_with_downwards_trend
     SELL_CALL: chart_with_upwards_trend
     PAIR_CALL: chart_with_upwards_trend
     LEAP_BUY: seedling
+    EARNINGS_PLAY: date
+    HEDGE: shield
     DIGEST: eyes
+
+earnings:
+  # Single stocks only; these have no earnings.
+  etfs: [SPY, QQQ, IBIT, GLD]
+  nasdaq_url: https://api.nasdaq.com/api/analyst/{sym}/earnings-date
+  cache_path: data/earnings.json
+  iv_window_days: 30        # earnings within this many days inflate iv30 -> strip the implied move
+  min_term_gap_days: 5      # second expiry must be at least this much later than the first post-earnings one
+  min_move: 0.005           # a term-structure jump below 0.5% = no earnings bump (iv30 used as-is)
+  straddle_max_days_after: 7  # straddle/price stands in for the move only if E1 expires within 7 days of the reaction
+  # EARNINGS PLAY: pre-earnings directional sale (rulebook "earnings mode")
+  play_min_days: 1          # earnings at least 1 day away ...
+  play_max_days: 21         # ... and at most 21 days away
+  play_delta_min: 10
+  play_delta_max: 15
+  play_move_mult: 1.5       # strike outside 1.5x the implied earnings move
+  play_size_frac: 0.5       # half size
+  trend_days: 5             # call after a run-up / put after a sell-off, by the 5-day return ...
+  trend_sigma: 1.0          # ... of at least 1.0 x HV20 * sqrt(5/252)
+  gap_mult: 1.5             # post-earnings move >= 1.5x the implied move counts as a normal spike
+
+# Optional crash-hedge card + alert (rulebook: no standing hedge; this is the opportunistic one).
+hedge_alerts: false
+hedge:
+  symbols: [SPY, QQQ]
+  vix_max: 14               # VIX below this ...
+  spy_regime: High          # ... and SPY in this regime
+  min_dte: 90
+  max_dte: 120
+  target_dte: 105
+  otm_pcts: [10, 15]        # one candidate per % out of the money

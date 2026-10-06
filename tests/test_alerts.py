@@ -52,7 +52,7 @@ def test_csp_too_big_and_call_and_leap_titles(rules):
     assert "cover ≤ 50%" in c["body"]
     l = alerts.build_message(ticker(action="LEAP_BUY"), "LEAP_BUY", rules)
     assert l["title"] == "LEAP BUY · NVDA" and l["tags"] == ["seedling"]
-    assert "Cost $5,520 fits the $25,000 entry at $500k" in l["body"]
+    assert "cost $5,520 fits the $25,000 entry at $500k" in l["body"]
     p = alerts.build_message(ticker(both=True), "PAIR_CALL", rules)
     assert p["title"] == "ADD 10Δ CALL · NVDA" and "$280" in p["body"]
 
@@ -164,3 +164,19 @@ def test_send_test_requires_topic(rules):
     rec = Recorder()
     assert alerts.send_test(rules, topic="t", sender=rec)
     assert rec.sent[0][0]["title"] == "vol-wheel test alert"
+
+
+def test_earnings_play_message(rules):
+    t = ticker(action="EARNINGS_PLAY")
+    t["earnings"] = {"date": "2026-10-14", "timing": "amc", "days_to": 8,
+                     "play": {"side": "P", "ret": -0.07, "z": -1.6}}
+    t["earnings_play"] = {"side": "P", "move": 0.06, "move_usd": 14.05, "mult": 1.5, "band": [10, 15],
+                          "size_frac": 0.5, "puts": {"candidates": [{"strike": 205.0, "expiry": "2026-11-20", "dte": 45,
+                          "delta": -0.12, "mid": 2.1, "annualized": 0.08, "reason": "1.0% under swing low"}]}}
+    m = alerts.build_message(t, "EARNINGS_PLAY", rules)
+    assert m["title"] == "EARNINGS PLAY · NVDA"
+    assert m["tags"] == ["date", "chart_with_downwards_trend"] and m["priority"] == "high"
+    assert "Earnings 2026-10-14 (AMC) in 8d · implied move ±6.0% ($14.05)" in m["body"]
+    assert "5-day -7.0% (-1.6σ) → sell a put after a sell-off" in m["body"]
+    assert "Half size: too big for a CSP at $500k ($20,500 > $12,500)" in m["body"]
+    assert alerts.triggers_for(t, rules) == ["EARNINGS_PLAY"]

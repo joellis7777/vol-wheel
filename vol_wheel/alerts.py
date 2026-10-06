@@ -42,9 +42,11 @@ log = logging.getLogger("vol_wheel.alerts")
 
 STATE_PATH = ROOT / "data" / "alert_state.json"
 TITLES = {"SELL_PUT": "SELL PUT", "SELL_CALL": "SELL COVERED CALL", "LEAP_BUY": "LEAP BUY",
-          "PAIR_CALL": "ADD 10Δ CALL"}
-# Direction a rung moves: puts and LEAP adds step down, calls step up, the add-on call doesn't ladder.
-RUNG_DIR = {"SELL_PUT": -1, "SELL_CALL": 1, "LEAP_BUY": -1, "PAIR_CALL": 0}
+          "PAIR_CALL": "ADD 10Δ CALL", "EARNINGS_PLAY": "EARNINGS PLAY", "HEDGE": "HEDGE"}
+# Direction a rung moves: puts and LEAP adds step down, calls step up; the add-on call, earnings
+# plays (one per report) and the hedge don't ladder.
+RUNG_DIR = {"SELL_PUT": -1, "SELL_CALL": 1, "LEAP_BUY": -1, "PAIR_CALL": 0, "EARNINGS_PLAY": 0, "HEDGE": 0}
+HEDGE_KEY = "_HEDGE"
 
 
 # ---------------------------------------------------------------- state
@@ -119,11 +121,20 @@ def option_line(c: dict, kind: str) -> list[str]:
 
 
 def top_candidate(t: dict, trigger: str) -> dict | None:
+    if trigger == "EARNINGS_PLAY":
+        ep = t.get("earnings_play") or {}
+        c = (ep.get("calls" if ep.get("side") == "C" else "puts") or {}).get("candidates") or []
+        return c[0] if c else None
     key = {"SELL_PUT": "puts", "SELL_CALL": "calls", "PAIR_CALL": "pair_call"}.get(trigger)
     if not key:
         return None
     c = (t.get(key) or {}).get("candidates") or []
     return c[0] if c else None
+
+
+def leap_line(lp: dict) -> str:
+    return (f"{_strike(lp['strike'])} call · {_expiry(lp.get('expiry'), lp.get('dte'))} · "
+            f"{lp['delta'] * 100:.0f}Δ · mid {_money(lp['mid'])} · extrinsic {lp['extrinsic_pct']:.1f}%")
 
 
 def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bool = False,
@@ -155,18 +166,42 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
             cover += f" (cover ≤ {rules.get('momentum_max_call_coverage', 50)}%)"
         lines.append(cover)
     elif trigger == "LEAP_BUY":
-        lp = t.get("leap") or {}
-        if lp.get("found"):
-            lines.append(f"LEAP {_strike(lp['strike'])} call · {_expiry(lp.get('expiry'), lp.get('dte'))} · "
-                         f"{lp['delta'] * 100:.0f}Δ · mid {_money(lp['mid'])}")
-            lines.append(f"Extrinsic {_money(lp['extrinsic'])} ({lp['extrinsic_pct']:.1f}% of price) · "
-                         f"BE {_money(lp['breakeven'])}")
-            cost = lp["cost"]
-            lines.append(f"Cost {_money(cost, 0)} {'fits' if cost <= es else 'exceeds'} the "
-                         f"{_money(es, 0)} entry at {tier}")
-        else:
-            lines.append(f"No LEAP candidate: {lp.get('note', 'none')}")
+        leaps = t.get("leaps") or {"ira": t.get("leap") or {}}
+        for name, lp in leaps.items():
+            label = lp.get("label") or name
+            if lp.get("found"):
+                lines.append(f"{label}: {leap_line(lp)}")
+                cost = lp["cost"]
+                lines.append(f"  cost {_money(cost, 0)} {'fits' if cost <= es else 'exceeds'} the {_money(es, 0)} "
+                             f"entry at {tier}" + (f" · {lp['variant_note']}" if lp.get("variant_note") else ""))
+            else:
+                lines.append(f"{label}: no candidate ({lp.get('note', 'none')})")
         lines.append("Bull gate on · quiet consolidation at the bottom of the range")
+    elif trigger == "EARNINGS_PLAY":
+        e = t.get("earnings") or {}
+        ep = t.get("earnings_play") or {}
+        play = e.get("play") or {}
+        when = f" ({e['timing'].upper()})" if e.get("timing") else ""
+        lines.append(f"Earnings {e.get('date')}{when} in {e.get('days_to')}d · implied move "
+                     f"±{(ep.get('move') or 0) * 100:.1f}% ({_money(ep.get('move_usd'))})")
+        side_word = "call after a run-up" if ep.get("side") == "C" else "put after a sell-off"
+        if play.get("ret") is not None:
+            lines.append(f"5-day {play['ret'] * 100:+.1f}% ({play['z']:+.1f}σ) → sell a {side_word}")
+        if c:
+            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put")
+            lines.append(f"Outside {ep.get('mult', 1.5)}× the implied move · "
+                         f"{ep.get('band', [10, 15])[0]}–{ep.get('band', [10, 15])[1]}Δ")
+            half = es * ep.get("size_frac", 0.5)
+            if ep.get("side") == "P":
+                need = c["strike"] * 100
+                lines.append(f"Half size: CSP ok at {tier} ({_money(need, 0)} of the {_money(half, 0)} half entry)"
+                             if need <= half else
+                             f"Half size: too big for a CSP at {tier} ({_money(need, 0)} > {_money(half, 0)}): "
+                             "use a spread")
+            else:
+                lines.append("Half size · covered only: against shares or a LEAP")
+        else:
+            lines.append("No strike passes the filters outside the implied move; see the dashboard")
     if rung > 1 and rec:
         ref = rec.get("strike") if trigger != "LEAP_BUY" else rec.get("price")
         side = "below" if RUNG_DIR[trigger] < 0 else "above"
@@ -175,16 +210,34 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
     if upgrade:
         lines.append("Upgraded from WATCH")
     pr = ac["priority"]
+    tags = [ac["tags"].get(trigger, "bell")]
+    if trigger == "EARNINGS_PLAY":
+        ep = t.get("earnings_play") or {}
+        tags.append(ac["tags"]["SELL_CALL" if ep.get("side") == "C" else "SELL_PUT"])
     return {
         "title": title, "body": "\n".join(x for x in lines if x),
         "priority": pr["upgrade_from_watch"] if upgrade else pr["trigger"],
-        "tags": [ac["tags"].get(trigger, "bell")], "click": ac["dashboard_url"],
+        "tags": tags, "click": ac["dashboard_url"],
     }
+
+
+def hedge_message(h: dict, rules: dict) -> dict:
+    ac = rules["alerts"]
+    lines = [f"VIX {h.get('vix') or 0:.1f} < {h.get('vix_max')} and SPY in the {h.get('spy_regime')} regime",
+             f"Optional far-OTM puts, {h['dte'][0]}–{h['dte'][1]} DTE:"]
+    for sym, hp in (h.get("candidates") or {}).items():
+        for p in (hp or {}).get("puts", []):
+            lines.append(f"{sym} {_strike(p['strike'])} put · {_expiry(p['expiry'], p['dte'])} · "
+                         f"{p['otm_pct']:.0f}% OTM · mid {_money(p['mid'])} ({_money(p['cost'], 0)})")
+    lines.append("Not a standing hedge: protection is the cash reserve, caps and circuit breakers")
+    return {"title": "HEDGE · SPY/QQQ puts", "body": "\n".join(lines), "priority": ac["priority"].get("hedge", "default"),
+            "tags": [ac["tags"].get("HEDGE", "shield")], "click": ac["dashboard_url"]}
 
 
 # ---------------------------------------------------------------- dedup logic
 
 def triggers_for(t: dict, rules: dict) -> list[str]:
+    """Ticker-level triggers (the hedge is result-level; see evaluate())."""
     allowed = rules["alerts"].get("triggers", list(TITLES))
     out = []
     if t.get("action") in allowed and t.get("action") in TITLES:
@@ -249,6 +302,20 @@ def evaluate(result: dict, state: dict, today: str, rules: dict) -> tuple[list[d
                 rec["active"] = False
         st["action"] = t.get("action")
         st["seen"] = today
+    # Hedge: one alert per episode (conditions newly met), same inactive/same-day rules.
+    h = result.get("hedge") or {}
+    if "HEDGE" in rules["alerts"].get("triggers", []) and h.get("enabled"):
+        st = tickers.setdefault(HEDGE_KEY, {"alerts": {}})
+        recs = st.setdefault("alerts", {})
+        rec = recs.get("HEDGE")
+        if h.get("active"):
+            if rec is None or (not rec.get("active") and rec.get("date") != today):
+                out.append({**hedge_message(h, rules), "symbol": HEDGE_KEY, "trigger": "HEDGE",
+                            "apply": (HEDGE_KEY, "HEDGE", {"date": today, "rung": 1, "active": True})})
+            elif not rec.get("active"):
+                rec["active"] = True
+        elif rec:
+            rec["active"] = False
     return out, state
 
 

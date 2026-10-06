@@ -53,21 +53,23 @@ def third_friday(y, m):
 
 
 def make_chain_payload(sym="TEST", price=100.0, atm_iv=0.30, asof=ASOF, expiries=None, oi=500,
-                       skew=-0.15, smile=0.4, spread_frac=0.04, iv_bumps=None) -> dict:
-    """CBOE-shaped options payload. iv(K) = atm + skew*x + smile*x^2 with x = ln(K/S)."""
+                       skew=-0.15, smile=0.4, spread_frac=0.04, iv_bumps=None, term_iv=None) -> dict:
+    """CBOE-shaped options payload. iv(K) = atm + skew*x + smile*x^2 with x = ln(K/S).
+    term_iv: optional callable expiry -> ATM IV (e.g. an earnings bump on near expiries)."""
     if expiries is None:
         expiries = [asof + timedelta(days=d) for d in (7, 14, 21, 28)]
         expiries += [third_friday(2026, 11), third_friday(2026, 12), third_friday(2027, 1)]
-        expiries += [third_friday(2027, 12), third_friday(2028, 1)]
+        expiries += [third_friday(2027, 12), third_friday(2028, 1), third_friday(2028, 3)]
     iv_bumps = iv_bumps or {}
     opts = []
     step = 1.0 if price < 200 else 5.0
     strikes = np.arange(round(price * 0.5 / step) * step, price * 1.5 + step, step)
     for e in expiries:
         t = (e - asof).days / 365.0
+        base = term_iv(e) if term_iv else atm_iv
         for k in strikes:
             x = math.log(k / price)
-            iv = atm_iv + skew * x + smile * x * x + iv_bumps.get(float(k), 0.0)
+            iv = base + skew * x + smile * x * x + iv_bumps.get(float(k), 0.0)
             for cp in ("C", "P"):
                 px, delta = bs(price, k, t, iv, cp)
                 mid = max(px, 0.01)
@@ -84,3 +86,12 @@ def make_chain_payload(sym="TEST", price=100.0, atm_iv=0.30, asof=ASOF, expiries
 @pytest.fixture
 def rules():
     return load_rules()
+
+
+def earnings_term_iv(asof, edate, base=0.30, jump=0.06):
+    """ATM IV term structure with a one-day earnings jump of `jump` (1-sd fraction) on `edate`:
+    expiries after the event carry sqrt(base^2 + jump^2 / T)."""
+    def f(e):
+        T = max((e - asof).days, 1) / 365.0
+        return math.sqrt(base * base + jump * jump / T) if e > edate else base
+    return f
