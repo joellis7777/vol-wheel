@@ -359,7 +359,111 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     out["leap"] = out["leaps"].get("ira") or next(iter(out["leaps"].values()))
     if rules.get("hedge_alerts") and sym in rules.get("hedge", {}).get("symbols", []):
         out["hedge_puts"] = strikes.hedge_puts(opts, price, rules["hedge"])
+    out["suggestion"] = build_suggestion(out, rules)
     return out
+
+
+def _money(x, d=2) -> str:
+    return f"${x:,.{d}f}" if x is not None else "–"
+
+
+def _strike_txt(k: float) -> str:
+    return _money(k, 0 if float(k).is_integer() else 2)
+
+
+def _exp_txt(iso: str) -> str:
+    d = date.fromisoformat(iso)
+    return f"{d.strftime('%b')} {d.day}"
+
+
+def build_suggestion(t: dict, rules: dict) -> dict | None:
+    """The one trade a card recommends, in plain words, or None (WATCH/WAIT/NO NEW SHORTS).
+
+    Pure on the ticker dict so the dashboard and the alert print the same thing. Sizing that
+    depends on the account (contract count, CSP vs spread) is left to the reader of `entry_frac`:
+    the dashboard computes it for the selected account, alerts for alerts.sizing_tier.
+    """
+    act = t.get("action")
+    th, mg = rules["thresholds"], rules.get("management", {})
+    tp, dd = mg.get("take_profit_pct", 50), mg.get("decide_dte", 21)
+    sym = t["symbol"]
+    e = t.get("earnings") or {}
+    pre = e.get("pre_expiry")
+    momentum = sym in rules.get("momentum_names", [])
+    cover_cap = rules.get("momentum_max_call_coverage", 50)
+
+    def opt(side_key: str, src: dict | None = None):
+        c = ((src or t).get(side_key) or {}).get("candidates") or []
+        return c[0] if c else None
+
+    def manage(is_pre: bool) -> str:
+        if is_pre:
+            p = pre.get("take_profit_pct", tp)
+            return f"Take {p}% of the credit or hold to expiry; never roll past earnings {e.get('date')}"
+        return f"Close at {tp}% of the credit; decide by {dd} DTE"
+
+    if act in ("SELL_PUT", "SELL_CALL"):
+        is_put = act == "SELL_PUT"
+        c = opt("puts" if is_put else "calls")
+        if not c:
+            return {"action": act, "text": f"No {'put' if is_put else 'call'} passes the filters; skip for now",
+                    "tradeable": False}
+        kind = "put" if is_put else "call"
+        s = {"action": act, "tradeable": True, "verb": "Sell", "kind": kind, "strike": c["strike"],
+             "expiry": c["expiry"], "dte": c["dte"], "delta": c["delta"], "mid": c["mid"],
+             "annualized": c["annualized"], "entry_frac": 1.0,
+             "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])}",
+             "requires": None if is_put else
+             (f"Only if you hold 100 {sym} shares or a {sym} LEAP per contract"
+              + (f"; cover at most {cover_cap}% of them" if momentum else "")),
+             "valid_while": (f"IVR ≥ {th['ivr_sell']}, a {th['spike_sigma']}σ {'down' if is_put else 'up'}-spike "
+                             f"in the last {th['spike_max_days']} days and IV/HV ≥ {th['min_iv_hv_ratio']}"),
+             "manage": manage(bool(pre))}
+        if is_put:
+            s["collateral"] = c["strike"] * 100
+        if t.get("both_sides") and opt("pair_call"):
+            pc = opt("pair_call")
+            s["also"] = (f"Optional: also sell {_exp_txt(pc['expiry'])} {_strike_txt(pc['strike'])} call "
+                         f"@ ~{_money(pc['mid'])} against shares you hold")
+        return s
+    if act == "EARNINGS_PLAY":
+        ep = t.get("earnings_play") or {}
+        is_put = ep.get("side") == "P"
+        c = opt("puts" if is_put else "calls", ep)
+        if not c:
+            return {"action": act, "text": "No strike passes the filters outside the implied move; skip",
+                    "tradeable": False}
+        kind = "put" if is_put else "call"
+        frac = ep.get("size_frac", 0.5)
+        s = {"action": act, "tradeable": True, "verb": "Sell", "kind": kind, "strike": c["strike"],
+             "expiry": c["expiry"], "dte": c["dte"], "delta": c["delta"], "mid": c["mid"],
+             "annualized": c["annualized"], "entry_frac": frac,
+             "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])} · half size",
+             "requires": None if is_put else
+             (f"Only if you hold {sym} shares or a {sym} LEAP: cover at most half of them "
+              f"(with 100 shares that's 1 contract or skip)"),
+             "valid_while": f"earnings {e.get('date')} 1–21 days out, the 5-day move ≥ 1σ and the strike "
+                            f"stays outside {ep.get('mult', 1.5)}× the implied move",
+             "manage": manage(False) + "; it sells through the report"}
+        if is_put:
+            s["collateral"] = c["strike"] * 100
+        return s
+    if act == "LEAP_BUY":
+        lines = []
+        for name, lp in (t.get("leaps") or {}).items():
+            if lp.get("found"):
+                lines.append(f"{lp.get('label', name)}: buy {sym} {_exp_txt(lp['expiry'])} {lp['expiry'][:4]} "
+                             f"{_strike_txt(lp['strike'])} call @ ~{_money(lp['mid'])}")
+        if not lines:
+            return {"action": act, "text": "LEAP window open but no candidate passes; skip", "tradeable": False}
+        return {"action": act, "tradeable": True, "verb": "Buy", "kind": "LEAP call", "text": lines[0],
+                "variants": lines, "cost": (t.get("leap") or {}).get("cost"), "entry_frac": 1.0,
+                "requires": "Taxable variant: hold over a year and never sell calls against it",
+                "valid_while": "bull gate on, quiet consolidation in the bottom third of the range, IVR < "
+                               f"{rules['leap']['ivr_max']}",
+                "manage": "Roll or close by 120 DTE; close half (or sell calls against the rest, IRA only) "
+                          "on an up-spike in the High regime"}
+    return None
 
 
 def _earnings_out(ectx: dict, play: dict | None, pre: tuple | None = None, spans: bool = False) -> dict | None:
@@ -440,7 +544,7 @@ def hedge_card(rules: dict, results: list[dict], index_hists: dict, spy_regime: 
 
 
 def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode: str = "close",
-        slot: str | None = None, today: date | None = None, persist: bool = True) -> dict:
+        slot: str | None = None, today: date | None = None, persist: bool = True, et: str | None = None) -> dict:
     started = datetime.now(timezone.utc)
     today = today or data.session_date(None, rules.get("schedule", {}).get("timezone", "America/New_York"),
                                        rules.get("schedule", {}).get("market_open", "09:30"))
@@ -528,7 +632,7 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
                for b, s in rules["universe"].items()]
     return clean({
         "generated_at": started.isoformat(timespec="seconds"),
-        "scan_mode": mode, "scan_slot": slot, "coverage": cov, "session_date": today.isoformat(),
+        "scan_mode": mode, "scan_slot": slot, "scan_et": et, "coverage": cov, "session_date": today.isoformat(),
         "hedge": hedge, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
                                                                   "play_size_frac")},
         "scan_date": today.isoformat(),
@@ -560,10 +664,11 @@ def main(argv: list[str] | None = None) -> int:
     log.info("mode %s (%s, %s ET)", m["mode"], m["reason"], m["et"])
     if m["mode"] == "skip":
         return 0
-    result = run(rules, syms, append=(m["mode"] == "close" and not a.no_append), mode=m["mode"], slot=m["slot"])
+    result = run(rules, syms, append=(m["mode"] == "close" and not a.no_append), mode=m["mode"], slot=m["slot"], et=m["et"])
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     with open(a.out, "w") as f:
-        json.dump(result, f, indent=1, allow_nan=False)
+        # Compact: intraday runs commit this file every 30 min, so keep each version small.
+        json.dump(result, f, separators=(",", ":"), allow_nan=False)
     ok = sum(1 for r in result["tickers"] if r["action"] not in ("ERROR",))
     log.info("wrote %s: %d/%d tickers ok", a.out, ok, len(result["tickers"]))
     for r in result["tickers"]:

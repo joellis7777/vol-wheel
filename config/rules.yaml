@@ -138,6 +138,11 @@ strikes:
     fade_to_pct: 10.0
     swing_lookback_days: 252
 
+# Rulebook trade management, quoted in each "Suggested trade" line.
+management:
+  take_profit_pct: 50       # close winners at 50% of the credit
+  decide_dte: 21            # decide every open short by 21 DTE
+
 sizing:
   tiers: [25000, 50000, 150000, 500000, 1000000]
   default_tier: 500000

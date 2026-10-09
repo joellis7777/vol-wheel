@@ -110,6 +110,12 @@ details.notes ul { margin: 6px 0 2px; padding-left: 18px; }
 .card.hot.call { border-left-color: var(--call); }
 .card.hot.leap { border-left-color: var(--leap); }
 .card.hot.earn { border-left-color: var(--earn); }
+.suggest { margin-top: 10px; padding: 9px 11px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; }
+.suggest .what { font-weight: 700; font-size: 14.5px; color: var(--text); }
+.suggest .what::before { content: "→ "; color: var(--accent); }
+.suggest .req { color: var(--bad); font-weight: 600; margin-top: 3px; }
+.suggest .size, .suggest .meta2 { color: var(--muted); margin-top: 3px; }
+.ref-note { font-size: 12px; color: var(--faint); margin: 12px 0 0; font-style: italic; }
 .earn-line { margin-top: 6px; font-size: 12.5px; color: var(--earn); font-weight: 600; }
 .ok { color: var(--ok); } .bad { color: var(--bad); }
 .src-ex { background: var(--earn-bg); color: var(--earn); }
@@ -244,7 +250,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     var sma = g.spy_sma200 ? '<span class="pill">SPY ' + num(g.spy_close, 2) + (g.spy_above_sma200 ? " > " : " < ") + "SMA200 " + num(g.spy_sma200, 2) + "</span>" : "";
     var mode = !g.bull_mode ? '<span class="pill off">bull_mode off in config</span>' : "";
     var scan = d.scan_mode === "intraday"
-      ? '<span class="pill">Intraday' + (d.scan_slot ? " " + esc(d.scan_slot) + " ET" : "") + "</span>"
+      ? '<span class="pill">Intraday' + (d.scan_et ? " " + esc(d.scan_et) + " ET" : d.scan_slot ? " " + esc(d.scan_slot) + " ET" : "") + "</span>"
       : '<span class="pill">Post-close</span>';
     $("status").innerHTML = scan + gate + spy + sma + mode;
     var notes = d.notes || [];
@@ -351,12 +357,39 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
           m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "") + (sp.earnings_gap ? " <small>gap</small>" : "")) +
           m("Earnings", t.earnings == null ? '<small>ETF</small>' : et ? (t.earnings.spans_trade ? '<span class="bad">' + et.short + "</span>" : et.short) : "–") +
         "</div>" +
+        suggestBox(t) +
         (et && t.earnings.in_window ? '<div class="earn-line">' + esc(et.line) + "</div>" : "") +
         '<div class="reason">' + esc((t.reasons || []).join(" · ")) + "</div>" +
       "</button>" +
       '<div class="body">' + body(t) + "</div>" +
     "</article>";
   }
+  function suggestBox(t) {
+    var s = t.suggestion;
+    if (!s) return "";
+    if (!s.tradeable) return '<div class="suggest"><div class="meta2">' + esc(s.text) + "</div></div>";
+    var size = "";
+    var budget = entrySize() * (s.entry_frac || 1);
+    if (s.collateral) {
+      var n = Math.floor(budget / s.collateral);
+      size = n >= 1
+        ? n + " contract" + (n > 1 ? "s" : "") + " (" + money(n * s.collateral) + " cash-secured of a " + money(budget) + (s.entry_frac < 1 ? " half" : "") + " entry at " + kmoney(state.acct) + ")"
+        : "Too big for a cash-secured put at " + kmoney(state.acct) + " (" + money(s.collateral) + " vs a " + money(budget) + " entry): use a put spread or skip";
+    } else if (s.kind === "call") {
+      size = "1 contract per 100 shares you choose to cover";
+    } else if (s.cost) {
+      var k = Math.floor(budget / s.cost);
+      size = (k >= 1 ? k + " contract" + (k > 1 ? "s" : "") : "Over the entry size") + " (" + money(s.cost) + " each vs a " + money(budget) + " entry at " + kmoney(state.acct) + ")";
+    }
+    return '<div class="suggest"><div class="what">' + esc(s.text) + "</div>" +
+      (s.also ? '<div class="meta2">' + esc(s.also) + "</div>" : "") +
+      (s.variants && s.variants.length > 1 ? '<div class="meta2">' + esc(s.variants.slice(1).join(" · ")) + "</div>" : "") +
+      (s.requires ? '<div class="req">' + esc(s.requires) + "</div>" : "") +
+      (size ? '<div class="size">' + esc(size) + "</div>" : "") +
+      '<div class="meta2">Manage: ' + esc(s.manage) + "</div>" +
+      '<div class="meta2">Still valid while ' + esc(s.valid_while) + ". Quotes are delayed; confirm the price first.</div></div>";
+  }
+
   function m(k, v) { return '<div class="m"><div class="k">' + k + '</div><div class="v">' + v + "</div></div>"; }
 
   function strikeRow(c, side, sizeFrac) {
@@ -394,7 +427,9 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   }
 
   function body(t) {
-    var h = "";
+    var h = '<div class="ref-note">' + (t.suggestion && t.suggestion.tradeable
+      ? "The box above is the trade. Everything below is reference: alternatives, what the other side would be, future ladder rungs and LEAP candidates."
+      : "No trade today. Everything below is reference: what the scanner would sell if a signal fired.") + "</div>";
     if (t.expiry) h += '<h3>Expiry <span class="hint">· ' + esc(t.expiry) + " (" + t.dte + " DTE, " + esc(t.expiry_note) + ")</span></h3>";
     var pe = (t.earnings || {}).pre_expiry;
     if (pe) h += '<div class="legend">Pre-earnings expiry: take ' + (pe.take_profit_pct || 50) + "% of the credit or hold to expiry. The 21-DTE rule doesn't apply; never roll past the report.</div>";

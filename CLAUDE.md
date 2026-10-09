@@ -91,7 +91,12 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
 - Manual runs (`workflow_dispatch`, input `mode`): `auto` = intraday during 09:30–16:00 ET on a
   weekday, post-close otherwise; `close` / `intraday` force it.
 - Only `close` appends IV history. Intraday runs rewrite `latest.json` (`scan_mode`, `scan_slot`,
-  shown as a header pill) and send alerts. The commit message names the mode.
+  `scan_et`, shown as a header pill) and send alerts. The commit message names the mode.
+- **GitHub's cron is unreliable here** (2026-10-06 → 10-09: the 10:30 ET slot never ran on time,
+  post-close started ~21:00 ET). The primary schedule is an outside timer (cron-job.org) calling
+  the workflow_dispatch API every 30 min 10:00–15:30 ET (`mode: intraday`) and at 16:40 ET
+  (`mode: close`); setup in `docs/SCHEDULE.md`. The GitHub crons stay as a backup.
+- `latest.json` is written compact (~16 KB/version compressed) because intraday runs commit it.
 
 ## Alerts (`alerts.py`, config `alerts:`)
 
@@ -179,6 +184,12 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 7. `NO_SHORT`: IVR < 30.  `NO_DATA` / `ERROR` last.
 - `both_sides`: SELL_PUT in Mid regime with IVR ≥ 70 adds a 10Δ covered call (`pair_call`).
 - Put and call candidates and the LEAP candidate are always computed, whatever the action.
+- **`t.suggestion`** (`scan.build_suggestion`) is the one trade a card recommends, in words:
+  `text` ("Sell TSLA Nov 20 $445 call @ ~$3.80 · half size"), `requires` (covered calls: shares or
+  a LEAP), `collateral`/`cost` + `entry_frac` (the dashboard sizes contracts for the selected
+  account), `manage` (from `management:` or the pre-earnings rule) and `valid_while`. None for
+  WATCH/WAIT/NO NEW SHORTS. The card shows it as a box above the fold and everything else as
+  "reference"; alerts open with "→ <text>", "⚠ <requires>", "Manage: …".
 
 ## Earnings mode (`earnings.py`, config `earnings:`)
 
