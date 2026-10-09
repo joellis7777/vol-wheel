@@ -40,8 +40,12 @@ changes, update this list in the same change.
   `thresholds.iv_hv_pre_move`): HV20 for the 1.15× check ends `spike_max_days` before today, so a
   spike doesn't fail the check on its own volatility (CEG +13% on 2026-10-06 read 0.80× instead of
   1.20×). The same pre-move HV feeds the richness score and the earnings-play IV gate.
-- **Universe:** FNV and RGLD (gold royalties) added 2026-10-09 as opportunistic names in the Hard
-  asset bucket beside GLD (shared 10% cap; spikes only; they have earnings).
+- **Universe:** FNV (gold royalty) added 2026-10-09 as an opportunistic name in the Hard asset
+  bucket beside GLD (shared 10% cap; spikes only; has earnings). RGLD was added and removed the same
+  day: over a full day of 15-minute scans no strike in its delta bands had a spread under 40% of
+  mid. Liquidity test for a name: if nothing passes even the 40% fallback for days, drop it; FNV
+  (puts ~12%, calls ~22%) and CEG (11–30%) are wide but workable with limit orders.
+  `data/iv_history/RGLD.csv` is kept in case it's re-added.
 - **Thin option markets** (decided 2026-10-09): keep the 10%-of-mid spread rule, but when nothing
   in the band passes it, show the best strikes with spreads up to 40% of mid, flagged "wide market:
   limit order near the mid" (`strikes.wide_spread_fallback`). CEG, FNV and RGLD hit this routinely.
