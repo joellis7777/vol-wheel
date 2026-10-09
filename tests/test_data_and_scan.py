@@ -132,7 +132,7 @@ def test_coverage_reports_missing_and_failed(rules):
                {"symbol": "HOOD", "action": "ERROR", "reasons": ["CBOE history failed: 403"], "notes": []},
                {"symbol": "CEG", "action": "NO_SHORT", "notes": ["option chain unavailable: timeout"]}]
     cov = scan.coverage(rules, results)
-    assert cov["expected"] == 15 and cov["present"] == 3
+    assert cov["expected"] == 14 and cov["present"] == 3
     assert "GLD" in cov["missing"] and "SPY" not in cov["missing"]
     assert cov["failed"] == {"HOOD": "CBOE history failed: 403"}
     assert cov["no_chain"] == ["CEG"]

@@ -12,7 +12,7 @@ universe:
   Platform:   {cap: 15, core: [GOOG],    opportunistic: [AMZN]}
   High-beta:  {cap: 15, core: [TSLA],    opportunistic: [HOOD, SOFI]}
   Power:      {cap: 10, core: [CEG],     opportunistic: []}
-  Hard asset: {cap: 10, core: [GLD],     opportunistic: [FNV, RGLD]}   # gold royalty names added 2026-10-09
+  Hard asset: {cap: 10, core: [GLD],     opportunistic: [FNV]}   # gold royalty, added 2026-10-09 (RGLD removed same day: illiquid)
 
 total_deployed_cap: 80       # % of account across all buckets
 per_name_cap: 15             # % of account per single name
