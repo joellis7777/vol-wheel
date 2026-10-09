@@ -97,6 +97,11 @@ strikes:
   delta_band: 7
   max_spread_pct: 10        # spread <= 10% of mid ...
   max_spread_abs: 0.10      # ... or <= $0.10
+  # When nothing in the band passes the spread rule (thin names: CEG, FNV, RGLD), still show the
+  # best strikes whose spread is <= wide_spread_max_pct of mid, flagged "wide market: place a limit
+  # near the mid" (decided 2026-10-09). Other filters still apply.
+  wide_spread_fallback: true
+  wide_spread_max_pct: 40
   min_open_interest: 100
   put_min_credit_pct_high_delta: 1.0   # puts >= 20 delta need mid >= 1% of strike
   put_min_credit_pct_low_delta: 0.3    # puts < 20 delta need mid >= 0.3% of strike

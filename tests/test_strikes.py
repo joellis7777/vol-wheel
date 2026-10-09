@@ -191,3 +191,30 @@ def test_skew_fit_ignores_wings():
     poly = strikes.skew_fit(eo, 100.0)
     row = eo[(eo["type"] == "P") & (eo["strike"] == 90.0)].iloc[0]
     assert abs(strikes.skew_residual(poly, 90.0, row["iv"], 100.0)) < 0.005
+
+
+def _wide_ctx(o, sc, price=100.0):
+    e, dte, _ = strikes.choose_expiry(o, sc)
+    return {"price": price, "iv30": 0.30, "hv20": 0.25, "hist": None, "expiry": e, "dte": dte,
+            "poly": strikes.skew_fit(o[o["expiry"] == e], price), "levels": [], "anchors": []}
+
+
+def test_wide_spread_fallback_flags_best_strikes(rules):
+    sc = rules["strikes"]
+    o = data.parse_chain(make_chain_payload(price=100.0, spread_frac=0.25))["options"]  # ~25% spreads
+    res = strikes.select_strikes(o, "P", 20, _wide_ctx(o, sc), sc)
+    assert res["passed"] == 0 and res["wide_spread"] and res["candidates"]
+    c = res["candidates"][0]
+    assert c["wide_spread"] and 20 <= c["spread_pct"] <= 30 and "wide market" in c["reason"]
+    off = {**sc, "wide_spread_fallback": False}
+    assert strikes.select_strikes(o, "P", 20, _wide_ctx(o, off), off)["candidates"] == []
+    # beyond the looser 40% cap: still nothing
+    o2 = data.parse_chain(make_chain_payload(price=100.0, spread_frac=0.6))["options"]
+    assert strikes.select_strikes(o2, "P", 20, _wide_ctx(o2, sc), sc)["candidates"] == []
+
+
+def test_normal_spreads_not_flagged(rules):
+    sc = rules["strikes"]
+    o = data.parse_chain(make_chain_payload(price=100.0))["options"]
+    res = strikes.select_strikes(o, "P", 20, _wide_ctx(o, sc), sc)
+    assert res["candidates"] and not any(c["wide_spread"] for c in res["candidates"])

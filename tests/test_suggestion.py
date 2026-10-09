@@ -51,3 +51,9 @@ def test_no_candidate_is_not_tradeable(rules):
     t = ticker()
     t["puts"] = {"candidates": []}
     assert scan.build_suggestion(t, rules)["tradeable"] is False
+
+
+def test_wide_market_noted_in_suggestion(rules):
+    t = ticker()
+    t["puts"]["candidates"][0]["wide_spread"] = True
+    assert scan.build_suggestion(t, rules)["text"] == "Sell NVDA Nov 20 $215 put @ ~$4.45 · wide market: limit order near the mid"

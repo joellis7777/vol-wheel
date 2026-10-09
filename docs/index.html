@@ -399,6 +399,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         ? '<span class="elig yes">CSP ok</span>'
         : '<span class="elig no">spread / PMCC</span>';
     }
+    if (c.wide_spread) elig += ' <span class="elig no" title="Nothing passed the normal 10% spread rule">wide · limit near mid</span>';
     var f = [["S/R", c.f_support], ["Rich", c.f_richness], ["ROC", c.f_roc], ["Cush", c.f_cushion], ["Fit", c.f_assignment]];
     return '<div class="strike">' +
       '<div class="top"><span class="k">' + money(c.strike, c.strike % 1 ? 2 : 0) + " " + (side === "P" ? "put" : "call") + "</span>" +
