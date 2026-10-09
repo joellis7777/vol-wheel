@@ -287,6 +287,8 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     }
     if out["prev_close"]:
         out["change_pct"] = (price / out["prev_close"] - 1) * 100
+    if pre and out["earnings"] and out["earnings"].get("pre_expiry"):
+        out["earnings"]["pre_expiry"]["take_profit_pct"] = ec.get("pre_earnings_expiry", {}).get("take_profit_pct", 50)
 
     if opts.empty:
         out["notes"].append("no option quotes: strikes, ladder and LEAP skipped")

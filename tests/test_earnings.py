@@ -256,7 +256,7 @@ def test_scan_ticker_trades_pre_earnings_expiry(rules, tmp_path, monkeypatch):
     t = {"symbol": "TST", "bucket": "Test", "role": "core", "cap": 10}
     r = scan.scan_ticker(t, rules, {"on": True}, {}, append=False, chain=ch, hist=hist, earn_cache=cache, today=ASOF)
     assert r["earnings"]["in_window"] and not r["earnings"]["spans_trade"]
-    assert r["earnings"]["pre_expiry"] == {"expiry": "2026-10-30", "dte": 28}
+    assert r["earnings"]["pre_expiry"] == {"expiry": "2026-10-30", "dte": 28, "take_profit_pct": 50}
     assert r["expiry"] == "2026-10-30" and "ends before earnings" in r["expiry_note"]
     assert all(c["expiry"] == "2026-10-30" for c in r["puts"]["candidates"])
     assert r["action"] == "SELL_PUT", r["reasons"]
