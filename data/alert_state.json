@@ -1,5 +1,5 @@
 {
- "digest_date": "2026-10-07",
+ "digest_date": "2026-10-08",
  "tickers": {
   "AMZN": {
    "action": "NO_SHORT",
@@ -32,7 +32,7 @@
    "seen": "2026-10-08"
   },
   "MRVL": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
    "seen": "2026-10-08"
   },
