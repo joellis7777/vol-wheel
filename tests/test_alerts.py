@@ -202,4 +202,4 @@ def test_alert_leads_with_suggested_trade(rules):
     c["suggestion"] = scan.build_suggestion(c, rules)
     lines = alerts.build_message(c, "SELL_CALL", rules)["body"].splitlines()
     assert lines[0] == "→ Sell NVDA Nov 20 $265 call @ ~$2.56"
-    assert lines[1] == "⚠ Only if you hold 100 NVDA shares or a NVDA LEAP per contract; cover at most 50% of them"
+    assert lines[1] == "⚠ Only if you hold 100 NVDA shares (or a LEAP on NVDA) per contract; cover at most 50% of them"

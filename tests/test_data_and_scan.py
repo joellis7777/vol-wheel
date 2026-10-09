@@ -132,7 +132,22 @@ def test_coverage_reports_missing_and_failed(rules):
                {"symbol": "HOOD", "action": "ERROR", "reasons": ["CBOE history failed: 403"], "notes": []},
                {"symbol": "CEG", "action": "NO_SHORT", "notes": ["option chain unavailable: timeout"]}]
     cov = scan.coverage(rules, results)
-    assert cov["expected"] == 13 and cov["present"] == 3
+    assert cov["expected"] == 15 and cov["present"] == 3
     assert "GLD" in cov["missing"] and "SPY" not in cov["missing"]
     assert cov["failed"] == {"HOOD": "CBOE history failed: 403"}
     assert cov["no_chain"] == ["CEG"]
+
+
+def test_iv_hv_uses_realized_vol_from_before_the_move(rules, tmp_path, monkeypatch):
+    """CEG 2026-10-06: a +13% day inflates HV20 and would fail IV/HV against itself."""
+    monkeypatch.setattr(ivhistory, "DIR", tmp_path)
+    hist = make_history(n=400, start=60, vol=0.01, seed=31, end=date(2026, 10, 1), shocks={1: 0.13})
+    ch = data.parse_chain(make_chain_payload(sym="TST", price=round(float(hist["close"].iloc[-1]), 2), atm_iv=0.30))
+    t = {"symbol": "TST", "bucket": "Test", "role": "core", "cap": 10}
+    r = scan.scan_ticker(t, rules, {"on": True}, {}, append=False, chain=ch, hist=hist, earn_cache={})
+    assert r["hv20_ref"] < 0.25 < r["hv20"]               # pre-move HV ~16%, with the spike ~47%
+    assert r["iv_hv"] == pytest.approx(r["iv30"] / r["hv20_ref"])
+    assert r["iv_hv_ok"] and r["spike"]["dir"] == "up" and r["spike"]["is_spike"]
+    off = {**rules, "thresholds": {**rules["thresholds"], "iv_hv_pre_move": False}}
+    r2 = scan.scan_ticker(t, off, {"on": True}, {}, append=False, chain=ch, hist=hist, earn_cache={})
+    assert r2["iv_hv"] == pytest.approx(r2["iv30"] / r2["hv20"]) and not r2["iv_hv_ok"]

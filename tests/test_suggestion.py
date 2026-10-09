@@ -23,7 +23,7 @@ def test_pre_earnings_expiry_changes_management(rules):
 
 def test_covered_call_requires_shares_and_pair_call(rules):
     s = scan.build_suggestion(ticker(action="SELL_CALL"), rules)
-    assert s["kind"] == "call" and "100 NVDA shares or a NVDA LEAP" in s["requires"]
+    assert s["kind"] == "call" and "100 NVDA shares (or a LEAP on NVDA)" in s["requires"]
     p = scan.build_suggestion(ticker(both=True), rules)
     assert p["also"].startswith("Optional: also sell Nov 20 $280 call")
 
