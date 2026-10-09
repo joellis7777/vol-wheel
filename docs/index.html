@@ -396,6 +396,8 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   function body(t) {
     var h = "";
     if (t.expiry) h += '<h3>Expiry <span class="hint">· ' + esc(t.expiry) + " (" + t.dte + " DTE, " + esc(t.expiry_note) + ")</span></h3>";
+    var pe = (t.earnings || {}).pre_expiry;
+    if (pe) h += '<div class="legend">Pre-earnings expiry: take ' + (pe.take_profit_pct || 50) + "% of the credit or hold to expiry. The 21-DTE rule doesn't apply; never roll past the report.</div>";
     var ep = t.earnings_play;
     if (ep) {
       var e = t.earnings || {};

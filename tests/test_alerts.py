@@ -185,6 +185,7 @@ def test_earnings_play_message(rules):
 def test_pre_earnings_expiry_noted_in_alert(rules):
     t = ticker()
     t["earnings"] = {"date": "2026-11-04", "pre_expiry": {"expiry": "2026-10-30", "dte": 28}}
-    assert "Expiry ends before earnings 2026-11-04" in alerts.build_message(t, "SELL_PUT", rules)["body"]
+    body = alerts.build_message(t, "SELL_PUT", rules)["body"]
+    assert "Expiry ends before earnings 2026-11-04 · take 50% or hold to expiry; don't roll past the report" in body
     t["earnings"]["pre_expiry"] = None
     assert "ends before earnings" not in alerts.build_message(t, "SELL_PUT", rules)["body"]

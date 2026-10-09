@@ -206,6 +206,9 @@ earnings:
     min_dte: 21             # shortest expiry worth selling (the rulebook's 21-DTE decision point)
     max_dte: 34             # anything 35+ is already the normal window
     prefer_monthly: false   # weeklies are fine; take the latest expiry before the report
+    # Management (decided 2026-10-09): close at this % of the credit or hold to expiry. The 21-DTE
+    # decision rule doesn't apply (expiring before the report is the point); never roll past it.
+    take_profit_pct: 50
 
 # Optional crash-hedge card + alert (rulebook: no standing hedge; this is the opportunistic one).
 hedge_alerts: false

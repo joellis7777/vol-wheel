@@ -31,8 +31,10 @@ changes, update this list in the same change.
 - **Earnings mode** replaces the old "no entries above 10Δ spanning earnings" rule: nothing normal
   is sold *through* a report. When earnings fall before the usual 35–50 DTE expiry, the wheel
   trades the latest expiry of 21–34 DTE that settles before the report (normal deltas, size and
-  signals; decided 2026-10-06, `earnings.pre_earnings_expiry`). Only if none exists do normal
-  entries pause. The one trade that spans a report is the directional 10–15Δ EARNINGS PLAY
+  signals; decided 2026-10-06, `earnings.pre_earnings_expiry`). Those trades are managed as
+  "take 50% of the credit or hold to expiry" (`take_profit_pct`, decided 2026-10-09): the 21-DTE
+  decision rule doesn't apply and they are never rolled past the report. Only if no such expiry
+  exists do normal entries pause. The one trade that spans a report is the directional 10–15Δ EARNINGS PLAY
   outside 1.5× the implied move at half size (see below).
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
@@ -200,8 +202,9 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 - **Pre-earnings expiry** (`earnings.pre_earnings_expiry`, on by default): when the report falls
   before the usual expiry, strikes, ladder and normal signals use the latest expiry of 21–34 DTE
   that settles before it (on/before the report day for AMC, strictly before for BMO/unknown).
-  `t.expiry` is then that expiry, `t.earnings.pre_expiry` names it, `spans_trade` is false, and
-  alerts add "Expiry ends before earnings …". IVR/IV-HV logic is unchanged.
+  `t.expiry` is then that expiry, `t.earnings.pre_expiry` names it (+ `take_profit_pct`),
+  `spans_trade` is false, and alerts/cards add "take 50% or hold to expiry; don't roll past the
+  report". IVR/IV-HV logic is unchanged.
 - **Only when no such expiry exists are normal SELL_PUT/SELL_CALL paused** ("earnings mode", with
   "No expiry of 21+ DTE ends before the report"). The only trade through a report is:
 - **EARNINGS_PLAY** (always on the usual spanning expiry): report 1–21 days out and before expiry, implied move known, raw iv30 ≥ 1.15×HV20,
