@@ -1,7 +1,7 @@
 {
  "AMZN": {
   "fetched": "2026-10-09",
-  "implied_move": 0.05301214851721214,
+  "implied_move": 0.05020680437430234,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -11,7 +11,7 @@
  },
  "CEG": {
   "fetched": "2026-10-09",
-  "implied_move": 0.03810199002461222,
+  "implied_move": 0.050659491801527214,
   "next": {
    "date": "2026-11-06",
    "estimated": true,
@@ -31,7 +31,7 @@
  },
  "GOOG": {
   "fetched": "2026-10-09",
-  "implied_move": 0.06136525633395093,
+  "implied_move": 0.05916606209736785,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -41,7 +41,7 @@
  },
  "HOOD": {
   "fetched": "2026-10-09",
-  "implied_move": 0.06548946250069637,
+  "implied_move": 0.06623650030461098,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -70,7 +70,7 @@
  },
  "NVDA": {
   "fetched": "2026-10-09",
-  "implied_move": 0.07370621755896399,
+  "implied_move": 0.07121469103477232,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -80,7 +80,7 @@
  },
  "RGLD": {
   "fetched": "2026-10-09",
-  "implied_move": 0.03658737009795783,
+  "implied_move": 0.040591094913803,
   "next": {
    "date": "2026-11-04",
    "estimated": true,
@@ -90,7 +90,7 @@
  },
  "SOFI": {
   "fetched": "2026-10-09",
-  "implied_move": 0.08341130356039196,
+  "implied_move": 0.088538463431716,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -100,7 +100,7 @@
  },
  "TSLA": {
   "fetched": "2026-10-09",
-  "implied_move": 0.05644008922063177,
+  "implied_move": 0.05728258539068477,
   "next": {
    "date": "2026-10-21",
    "estimated": true,
