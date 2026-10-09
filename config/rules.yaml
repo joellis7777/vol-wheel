@@ -234,3 +234,56 @@ hedge:
   max_dte: 120
   target_dte: 105
   otm_pcts: [10, 15]        # one candidate per % out of the money
+
+# Backtest (python -m vol_wheel.backtest; workflow "backtest", manual). Signals, deltas, management,
+# sizing and caps come from the sections above; these knobs only describe the simulation.
+backtest:
+  account: 500000
+  calendar_symbol: SPY
+  dte: 45
+  min_history_days: 260     # a name joins the basket once it has ~1 year of bars
+  cash_yield_symbol: _IRX   # 13-week T-bill yield (Yahoo ^IRX); cash and put collateral earn it
+  cash_yield_fallback_pct: 2.0
+  # Implied vol: CBOE volatility indexes where they exist (true IV rank + the IV/HV gate) ...
+  vol_index: {QQQ: _VXN, SPY: _VIX, GLD: _GVZ}
+  vol_index_atm_ratio: 0.9  # VIX-style indexes sit above ATM IV; price options at 0.9 x the index
+  # ... otherwise IV = mult x max(HV20, HV60), an assumption; run at several values as a sensitivity.
+  stock_iv_mult: 1.15
+  stock_iv_mults: [1.0, 1.15, 1.3]
+  stock_iv_hv_long: 60
+  skew_slope: {index: 0.8, stock: 0.3}   # iv(K) = atm - slope * ln(K/S)
+  costs: {per_contract: 0.65, slippage_pct_index: 2, slippage_pct_stock: 5}   # % of mid per fill
+  decide_itm: hold          # ITM at 21 DTE: hold to expiry and take assignment ("roll" = roll same strike out once)
+  max_rolls: 1
+  ladder_spacing_days: 5    # new rung: one 45-day expected move below the last strike, or 5+ trading days later
+  call_floor_regimes: [Low, Mid]   # covered-call strike >= net cost per share in these regimes
+  circuit_breakers: {half_size_dd: 25, index_only_dd: 40}   # % below the equity peak
+  periods:
+    "2008": ["2007-10-01", "2009-12-31"]
+    "2020": ["2020-02-19", "2020-12-31"]
+    "2022": ["2022-01-01", "2022-12-31"]
+  windows:
+    full:   {start: "2006-01-03", label: "2006 → today"}
+    recent: {start: "2021-01-04", label: "2021 → today (whole basket live)"}
+  # mode: spike = the rulebook (sell only on qualifying spikes); always = tastytrade-style, a new
+  # put every entry_every_days while IVR >= min_ivr; hold = buy-and-hold at weight% (rest in T-bills).
+  # Optional per variant: entry_pct (number or {bucket: pct, default: pct}), caps ({total, per_name,
+  # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed), calls.
+  variants:
+    - {name: qqq_spike, label: "QQQ only · spikes", symbols: [QQQ], mode: spike, entry_pct: 15,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_spike_20d, label: "QQQ only · spikes · fixed 20Δ", symbols: [QQQ], mode: spike, entry_pct: 15,
+       put_delta: 20, call_delta: 20, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_always, label: "QQQ only · always on", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 5, min_ivr: 0, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_always_ivr30, label: "QQQ only · always on, IVR ≥ 30", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 5, min_ivr: 30, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: index_spike, label: "QQQ + SPY · spikes", symbols: [QQQ, SPY], mode: spike, entry_pct: 15,
+       caps: {total: 80, per_name: 40, Index: 80}}
+    - {name: basket_spike, label: "Basket · spikes (current rules)", symbols: universe, mode: spike}
+    - {name: core_sats_spike, label: "Index core 50% + satellites · spikes", symbols: universe, mode: spike,
+       entry_pct: {Index: 15, default: 5}, caps: {Index: 50}}
+    - {name: basket_always, label: "Basket · always on", symbols: universe, mode: always, entry_every_days: 5}
+    - {name: qqq_hold, label: "Buy & hold QQQ 100%", symbols: [QQQ], mode: hold, weight: 100}
+    - {name: qqq_hold_80, label: "Buy & hold QQQ 80% / T-bills 20%", symbols: [QQQ], mode: hold, weight: 80}
+    - {name: basket_hold_80, label: "Buy & hold basket 80% (equal weight)", symbols: universe, mode: hold, weight: 80}
