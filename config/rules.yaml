@@ -255,6 +255,7 @@ backtest:
   costs: {per_contract: 0.65, slippage_pct_index: 2, slippage_pct_stock: 5}   # % of mid per fill
   decide_itm: hold          # ITM at 21 DTE: hold to expiry and take assignment ("roll" = roll same strike out once)
   max_rolls: 1
+  max_gap_days: 30          # a longer gap in the bars = an earlier company on a reused ticker (CEG); dropped
   ladder_spacing_days: 5    # new rung: one 45-day expected move below the last strike, or 5+ trading days later
   call_floor_regimes: [Low, Mid]   # covered-call strike >= net cost per share in these regimes
   circuit_breakers: {half_size_dd: 25, index_only_dd: 40}   # % below the equity peak

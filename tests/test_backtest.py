@@ -40,7 +40,7 @@ def test_fix_splits_back_adjusts():
     h = make_history(300, seed=3)
     h.iloc[200:, :4] = h.iloc[200:, :4] / 10.0   # unadjusted 10:1 split
     fixed, notes = B.fix_splits(h)
-    assert len(notes) == 1 and "10:1" in notes[0]
+    assert len(notes) == 1 and "1/10" in notes[0]
     r = fixed["close"].iloc[200] / fixed["close"].iloc[199]
     assert 0.9 < r < 1.1
     clean, notes2 = B.fix_splits(make_history(300, seed=3))
@@ -158,3 +158,14 @@ def test_hold_and_metrics(rules):
     assert res["max_dd_pct"] == 0
     half = B.run_hold({"symbols": ["TEST"], "weight": 50}, {"TEST": f}, meta, rates, rules, f.index[0], f.index[-1])
     assert 500_000 * 1.4 < half["final"] < 1_000_000
+
+
+def test_clean_ticks_and_last_listing():
+    h = make_history(300, seed=4)
+    h.iloc[150, h.columns.get_loc("close")] = 0.5          # one bad print
+    clean, notes = B.clean_ticks(h)
+    assert len(clean) == 299 and len(notes) == 1
+    old = make_history(200, seed=1, end=pd.Timestamp("2012-03-01").date())
+    new = make_history(300, seed=2, end=pd.Timestamp("2026-10-02").date())
+    both, notes = B.last_listing(pd.concat([old, new]))
+    assert len(both) == 300 and both.index[0] == new.index[0] and notes
