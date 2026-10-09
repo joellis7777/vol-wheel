@@ -142,8 +142,18 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
     ac = rules["alerts"]
     sym = t["symbol"]
     title = f"{TITLES[trigger]} · {sym}" + (f" · rung {rung}" if rung > 1 else "")
-    lines = [header_line(t)]
+    lines = []
     es, tier = entry_size(rules), tier_label(rules)
+    sg = t.get("suggestion") or {}
+    if trigger == "PAIR_CALL" and sg.get("also"):
+        lines.append("→ " + sg["also"])
+    elif sg.get("action") == trigger and sg.get("text"):
+        lines.append("→ " + sg["text"])
+        if sg.get("requires"):
+            lines.append("⚠ " + sg["requires"])
+        if sg.get("manage"):
+            lines.append("Manage: " + sg["manage"])
+    lines.append(header_line(t))
     c = top_candidate(t, trigger)
     if trigger == "SELL_PUT":
         if c:

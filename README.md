@@ -14,7 +14,8 @@ Daily options scanner and phone dashboard for a volatility wheel + LEAP strategy
 - IV history accumulates in `data/iv_history/`; IV rank is a realized-vol proxy (VIX/VXN for
   SPY/QQQ) until 60 days are stored, "partial" until 252
 
-See [CLAUDE.md](CLAUDE.md) for how it all works.
+See [CLAUDE.md](CLAUDE.md) for how it all works, and [docs/SCHEDULE.md](docs/SCHEDULE.md) to set up
+the on-time outside timer (GitHub's own cron runs hours late).
 
 ```
 pip install -r requirements-dev.txt

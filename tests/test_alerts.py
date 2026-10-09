@@ -189,3 +189,17 @@ def test_pre_earnings_expiry_noted_in_alert(rules):
     assert "Expiry ends before earnings 2026-11-04 · take 50% or hold to expiry; don't roll past the report" in body
     t["earnings"]["pre_expiry"] = None
     assert "ends before earnings" not in alerts.build_message(t, "SELL_PUT", rules)["body"]
+
+
+def test_alert_leads_with_suggested_trade(rules):
+    from vol_wheel import scan
+    t = ticker()
+    t["suggestion"] = scan.build_suggestion(t, rules)
+    body = alerts.build_message(t, "SELL_PUT", rules)["body"].splitlines()
+    assert body[0] == "→ Sell NVDA Nov 20 $215 put @ ~$4.45"
+    assert body[1].startswith("Manage: Close at 50% of the credit; decide by 21 DTE")
+    c = ticker(action="SELL_CALL")
+    c["suggestion"] = scan.build_suggestion(c, rules)
+    lines = alerts.build_message(c, "SELL_CALL", rules)["body"].splitlines()
+    assert lines[0] == "→ Sell NVDA Nov 20 $265 call @ ~$2.56"
+    assert lines[1] == "⚠ Only if you hold 100 NVDA shares or a NVDA LEAP per contract; cover at most 50% of them"
