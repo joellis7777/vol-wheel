@@ -1,7 +1,7 @@
 {
  "AMZN": {
   "fetched": "2026-10-09",
-  "implied_move": 0.04820903882735616,
+  "implied_move": 0.04979529933253165,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -70,7 +70,7 @@
  },
  "NVDA": {
   "fetched": "2026-10-09",
-  "implied_move": 0.06756913810799695,
+  "implied_move": 0.06916764654639589,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -100,7 +100,7 @@
  },
  "TSLA": {
   "fetched": "2026-10-09",
-  "implied_move": 0.059113927153942696,
+  "implied_move": 0.059026647337371375,
   "next": {
    "date": "2026-10-21",
    "estimated": true,
