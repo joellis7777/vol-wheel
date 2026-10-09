@@ -64,10 +64,20 @@ changes, update this list in the same change.
 
 ## Open strategy items (keep current)
 
-- Backtests: first pass built 2026-10-09 (`backtest.py`: QQQ core vs basket, spikes vs always-on,
-  regime vs fixed delta, buy-and-hold, 2008/2020/2022). Still to add from the rulebook list: one side
-  vs both; IVR 30/50/70 sweep; 50% vs full call coverage; LEAPs vs shares; VIX-scaled deployment
-  (tastytrade 25–50% by VIX). Real option history is paid.
+- Backtests: first pass built 2026-10-09 (`backtest.py`, results in `docs/backtest/report.md`).
+  Findings, 2007→2026, not yet discussed into decisions:
+  - Spike-only rules mostly end up *holding assigned stock*: calls need an up-spike with IVR ≥ 50,
+    which almost never happens on an index, so QQQ shares are kept (79% of the account in shares,
+    premium ~1%/yr). QQQ spikes 14.5% CAGR / −33% max DD vs QQQ hold 15.4% / −54%.
+  - Writing calls continuously on assigned QQQ (a turning wheel) collapses it to 2% CAGR: called away
+    in rallies, then idle until the next spike. Supports the rulebook's spike-only calls.
+  - Tastytrade-style always-on puts did worse than spikes-only in this cash-secured wheel (QQQ 3.2%,
+    basket 13.0% vs 15.6%, deeper drawdowns).
+  - Basket ≈ index core 50% + satellites (15.6% vs 15.8%); both lean on NVDA/MSTR (hindsight) and on
+    the assumed single-stock IV. 2021→: basket spikes 21% / −14% vs QQQ hold 17% / −36%.
+  - Regime deltas vs fixed 20Δ: no meaningful difference.
+  Still to add: one side vs both; IVR 30/50/70 sweep; 50% vs full call coverage; LEAPs vs shares;
+  VIX-scaled deployment (tastytrade 25–50% by VIX). Real option history is paid.
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
 - Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
