@@ -2,70 +2,79 @@
  "digest_date": "2026-10-08",
  "tickers": {
   "AMZN": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "CEG": {
-   "action": "WATCH",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "GLD": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "GOOG": {
-   "action": "NEUTRAL",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "HOOD": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "IBIT": {
-   "action": "NEUTRAL",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "MRVL": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "MSTR": {
-   "action": "WATCH",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "NVDA": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "QQQ": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "SOFI": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "SPY": {
-   "action": "NO_SHORT",
-   "alerts": {},
-   "seen": "2026-10-08"
-  },
-  "TSLA": {
    "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": true,
+     "date": "2026-10-09",
+     "em": 33.2831,
+     "price": 260.2,
+     "rung": 1,
+     "strike": 305.0
+    }
+   },
+   "seen": "2026-10-09"
+  },
+  "CEG": {
+   "action": "WATCH",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "GLD": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "GOOG": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "HOOD": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "IBIT": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "MRVL": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "MSTR": {
+   "action": "WATCH",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "NVDA": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "QQQ": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "SOFI": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "SPY": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "TSLA": {
+   "action": "NO_SHORT",
+   "alerts": {
+    "EARNINGS_PLAY": {
+     "active": false,
      "date": "2026-10-07",
      "em": 49.8996,
      "price": 377.0,
@@ -73,7 +82,7 @@
      "strike": 460.0
     }
    },
-   "seen": "2026-10-08"
+   "seen": "2026-10-09"
   }
  }
 }

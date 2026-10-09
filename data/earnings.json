@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.04717596694443963,
+  "fetched": "2026-10-09",
+  "implied_move": 0.04957802899373973,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,8 +10,8 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.07607428247451133,
+  "fetched": "2026-10-09",
+  "implied_move": 0.0890038709332121,
   "next": {
    "date": "2026-11-06",
    "estimated": true,
@@ -20,8 +20,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.052803903965261925,
+  "fetched": "2026-10-09",
+  "implied_move": 0.06279830728021481,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -30,8 +30,8 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.07065551234445591,
+  "fetched": "2026-10-09",
+  "implied_move": 0.07256081360647001,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -40,7 +40,7 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-10-08",
+  "fetched": "2026-10-09",
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -49,18 +49,18 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-08",
+  "fetched": "2026-10-09",
   "implied_move": 0.0510603855700259,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
    "source": "nasdaq",
-   "timing": null
+   "timing": "amc"
   }
  },
  "NVDA": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.04931669046990191,
+  "fetched": "2026-10-09",
+  "implied_move": 0.07758413241597631,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -69,8 +69,8 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.09819329699802565,
+  "fetched": "2026-10-09",
+  "implied_move": 0.08807473165536409,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -79,8 +79,8 @@
   }
  },
  "TSLA": {
-  "fetched": "2026-10-08",
-  "implied_move": 0.06519666432524705,
+  "fetched": "2026-10-09",
+  "implied_move": 0.06426346082541988,
   "next": {
    "date": "2026-10-21",
    "estimated": true,
