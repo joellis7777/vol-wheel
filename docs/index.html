@@ -473,7 +473,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       }).join("") + "</div>";
     }
     h += "<h3>Signals</h3><div class=\"kv\">" +
-      kv("IV30", pct(t.iv30, 1) + (t.iv30_ex ? " <small>(ex-earn " + pct(t.iv30_ex, 1) + ")</small>" : "")) + kv("HV20", pct(t.hv20, 1)) +
+      kv("IV30", pct(t.iv30, 1) + (t.iv30_ex ? " <small>(ex-earn " + pct(t.iv30_ex, 1) + ")</small>" : "")) + kv("HV20", pct(t.hv20, 1) + (t.hv20_ref != null && Math.abs(t.hv20_ref - t.hv20) > 0.0005 ? " <small>(pre-move " + pct(t.hv20_ref, 1) + ")</small>" : "")) +
       kv("IV / HV", num(t.iv_hv, 2) + " <small>min " + (t.iv_hv_min || "–") + "</small>") +
       kv("IVR source", esc(t.ivr_source || "–") + (t.iv_history_days != null ? " · " + t.iv_history_days + "d" : "")) +
       kv("Extension", t.extension_pct != null ? num(t.extension_pct) + "th pct" : "–") + kv("Px / SMA200", num(t.price_to_sma200, 3)) +

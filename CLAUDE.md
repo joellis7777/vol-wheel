@@ -36,6 +36,15 @@ changes, update this list in the same change.
   decision rule doesn't apply and they are never rolled past the report. Only if no such expiry
   exists do normal entries pause. The one trade that spans a report is the directional 10–15Δ EARNINGS PLAY
   outside 1.5× the implied move at half size (see below).
+- **IV vs realized measures realized vol from before the move** (decided 2026-10-09,
+  `thresholds.iv_hv_pre_move`): HV20 for the 1.15× check ends `spike_max_days` before today, so a
+  spike doesn't fail the check on its own volatility (CEG +13% on 2026-10-06 read 0.80× instead of
+  1.20×). The same pre-move HV feeds the richness score and the earnings-play IV gate.
+- **Universe:** FNV and RGLD (gold royalties) added 2026-10-09 as opportunistic names in the Hard
+  asset bucket beside GLD (shared 10% cap; spikes only; they have earnings).
+- **No paid IV history for now** (decided 2026-10-09): true IV rank arrives from our own daily
+  readings (60 days ≈ early Jan 2027; full year ≈ Oct 2027). ORATS (~$49–199/mo, history to 2007)
+  is the option if that changes; its license may not allow publishing its data in this public repo.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 
@@ -174,7 +183,8 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 
 ## Actions (`scan.decide_action`, priority order)
 
-1. `SELL_PUT`: IVR ≥ 50 + down-spike (larger of the two if both) + iv30 ≥ 1.15 × HV20.
+1. `SELL_PUT`: IVR ≥ 50 + down-spike (larger of the two if both) + iv30 ≥ 1.15 × HV20 measured
+   before the move (`hv20_ref`; `hv20` is today's, both on the card).
 2. `SELL_CALL`: same with an up-spike, "only if holding shares/LEAPs".
    A spike that fails the IV/HV filter (`thresholds.min_iv_hv_ratio`) or falls in earnings mode
    becomes `WATCH` with the reason spelled out. Cards show IV/HV (green ≥ 1.15, red below).

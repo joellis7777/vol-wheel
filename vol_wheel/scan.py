@@ -146,7 +146,8 @@ def decide_action(ivr: float, spk: dict, regime: str, cons_on: bool, range_pos: 
             "leap_checks": leap_checks}
 
 
-def earnings_play_setup(ectx: dict, close: pd.Series, iv30: float, hv20: float, rules: dict) -> dict | None:
+def earnings_play_setup(ectx: dict, close: pd.Series, iv30: float, hv20: float, rules: dict,
+                        hv_ref: float | None = None) -> dict | None:
     """Directional pre-earnings sale: earnings 1-21 days out and before expiry, an implied move to
     stay outside of, raw IV rich versus realized, and a 5-day run-up (call) or sell-off (put)."""
     ec, th = rules["earnings"], rules["thresholds"]
@@ -157,7 +158,8 @@ def earnings_play_setup(ectx: dict, close: pd.Series, iv30: float, hv20: float, 
     move = earnings.move_for_strikes(ectx.get("implied") or {})
     if not move:
         return None
-    if not (np.isfinite(iv30) and np.isfinite(hv20) and hv20 > 0 and iv30 / hv20 >= th.get("min_iv_hv_ratio", 0)):
+    hv_cmp = hv20 if hv_ref is None or not np.isfinite(hv_ref) else hv_ref
+    if not (np.isfinite(iv30) and np.isfinite(hv_cmp) and hv_cmp > 0 and iv30 / hv_cmp >= th.get("min_iv_hv_ratio", 0)):
         return None
     tr = earnings.trend(close, ec.get("trend_days", 5), hv20)
     if tr["z"] is None or abs(tr["z"]) < ec.get("trend_sigma", 1.0):
@@ -198,6 +200,11 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     th, rg, cc, sc = rules["thresholds"], rules["regime"], rules["consolidation"], rules["strikes"]
     hv20_s = signals.hv(close, th["spike_hv_window"]).dropna()
     hv20 = float(hv20_s.iloc[-1]) if len(hv20_s) else float("nan")
+    # Realized vol the IV/HV check compares against: the 20 days before the spike window, so a big
+    # move doesn't count against itself (thresholds.iv_hv_pre_move).
+    hv_ref = hv20
+    if th.get("iv_hv_pre_move") and len(hv20_s) > th["spike_max_days"]:
+        hv_ref = float(hv20_s.iloc[-1 - th["spike_max_days"]])
 
     expiry, dte, exp_note = (strikes.choose_expiry(opts, sc) if not opts.empty else (None, None, "no chain"))
 
@@ -249,8 +256,8 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     cons = signals.consolidation(close, ivr["ivr"], cc["bb_window"], cc["bb_std"], cc["bb_lookback_days"],
                                  cc["bb_pct_max"], cc["ivr_max"])
     rpos = signals.range_position(hist, cc["range_window"])
-    iv_hv = iv_eff / hv20 if np.isfinite(iv_eff) and hv20 > 0 else None
-    play = earnings_play_setup(ectx, close, iv30, hv20, rules) if ectx.get("applies") else None
+    iv_hv = iv_eff / hv_ref if np.isfinite(iv_eff) and hv_ref > 0 else None
+    play = earnings_play_setup(ectx, close, iv30, hv20, rules, hv_ref) if ectx.get("applies") else None
     earn_flags = {"in_window": spans, "inflated": inflated, "date": nxt.get("date"),
                   "days_to": ectx.get("days_to"), "play": play}
     dec = decide_action(ivr["ivr"], spk, regime, cons["on"], rpos, gate["on"], t["role"], rules, iv_hv, earn_flags)
@@ -273,7 +280,7 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         "symbol": sym, "bucket": t["bucket"], "role": t["role"], "asof": asof.isoformat(),
         **{k: dec[k] for k in ("action", "label", "priority", "reasons", "both_sides", "leap_window", "leap_checks")},
         "price": price, "prev_close": float(close.iloc[-2]) if len(close) > 1 else None,
-        "iv30": iv30, "iv30_ex": iv30_ex, "hv20": hv20, "iv_hv": iv_hv,
+        "iv30": iv30, "iv30_ex": iv30_ex, "hv20": hv20, "hv20_ref": hv_ref, "iv_hv": iv_hv,
         "iv_hv_min": th.get("min_iv_hv_ratio"), "iv_hv_ok": iv_hv is None or iv_hv >= th.get("min_iv_hv_ratio", 0),
         "ivr": ivr["ivr"], "ivr_source": ivr["source"], "ivr_flag": ivr_flag, "iv_history_days": ivr["days"],
         "index_level": ivr.get("index_level"),
@@ -307,7 +314,7 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
         recent = hist.iloc[-ac.get("swing_lookback_days", 252):]
         anchors = [signals.sma(close, 200)] + [v for v in signals.swing_points(
             recent["low"], sc["support"].get("swing_order", 5), "low") if v < price]
-        base_ctx = {"price": price, "iv30": iv_eff, "hv20": hv20, "hist": hist, "expiry": trade_exp,
+        base_ctx = {"price": price, "iv30": iv_eff, "hv20": hv_ref, "hist": hist, "expiry": trade_exp,
                     "dte": trade_dte, "poly": poly, "anchors": anchors}
         # Earnings plays sell through the report, so they always use the usual (spanning) expiry.
         play_ctx = base_ctx if trade_exp == expiry else {**base_ctx, "expiry": expiry, "dte": dte, "poly": fit(expiry)}
@@ -414,7 +421,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "annualized": c["annualized"], "entry_frac": 1.0,
              "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])}",
              "requires": None if is_put else
-             (f"Only if you hold 100 {sym} shares or a {sym} LEAP per contract"
+             (f"Only if you hold 100 {sym} shares (or a LEAP on {sym}) per contract"
               + (f"; cover at most {cover_cap}% of them" if momentum else "")),
              "valid_while": (f"IVR ≥ {th['ivr_sell']}, a {th['spike_sigma']}σ {'down' if is_put else 'up'}-spike "
                              f"in the last {th['spike_max_days']} days and IV/HV ≥ {th['min_iv_hv_ratio']}"),
@@ -440,7 +447,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "annualized": c["annualized"], "entry_frac": frac,
              "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])} · half size",
              "requires": None if is_put else
-             (f"Only if you hold {sym} shares or a {sym} LEAP: cover at most half of them "
+             (f"Only if you hold {sym} shares (or a LEAP on {sym}): cover at most half of them "
               f"(with 100 shares that's 1 contract or skip)"),
              "valid_while": f"earnings {e.get('date')} 1–21 days out, the 5-day move ≥ 1σ and the strike "
                             f"stays outside {ep.get('mult', 1.5)}× the implied move",
