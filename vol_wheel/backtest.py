@@ -297,7 +297,7 @@ class Sim:
                                      "assigned", "called_away", "expired_worthless", "breaker_days")}
         self.premium = 0.0
         self.peak = self.cash
-        self.equity, self.deployed, self.short_open = [], [], []
+        self.equity, self.deployed, self.short_open, self.in_shares = [], [], [], []
 
     # --- helpers
     def _slip(self, sym: str) -> float:
@@ -401,6 +401,7 @@ class Sim:
             self.equity.append(E)
             self.deployed.append(total / E if E > 0 else 0.0)
             self.short_open.append(bool(self.opts))
+            self.in_shares.append(sum(self.shares[s] * prices[s] for s in self.syms) / E if E > 0 else 0.0)
         self.final_prices = {s: (float(self.ffclose[s][-1]) if np.isfinite(self.ffclose[s][-1]) else 0.0)
                              for s in self.syms}
         return self
@@ -573,6 +574,7 @@ class Sim:
         eq = pd.Series(self.equity, index=self.cal)
         out = metrics(eq, self.rates.reindex(self.cal), self.bt)
         out["avg_deployed_pct"] = round(float(np.mean(self.deployed)) * 100, 1)
+        out["avg_shares_pct"] = round(float(np.mean(self.in_shares)) * 100, 1)
         out["days_with_shorts_pct"] = round(float(np.mean(self.short_open)) * 100, 1)
         yrs = max(len(eq) / TD, 1e-9)
         out["premium_per_year_pct"] = round(self.premium / yrs / float(eq.mean()) * 100, 2)
@@ -596,7 +598,8 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
     cal = rates.index[(rates.index >= start) & (rates.index <= end)]
     syms = [s for s in variant["symbols"] if s in frames]
     w = variant.get("weight", 100) / 100
-    closes = pd.DataFrame({s: frames[s]["close"] for s in syms}).reindex(cal)
+    # forward-filled: a missing bar for one name must not value the holding at zero
+    closes = pd.DataFrame({s: frames[s]["close"] for s in syms}).ffill().reindex(cal)
     held = {s: 0.0 for s in syms}
     cash = float(bt["account"])
     eq, prev_d, last_month = [], None, None
@@ -692,6 +695,10 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             df, src = load_history(s, rules["data"], cache)
             df, notes = clean_ticks(df)
             if not s.startswith("_"):
+                floor = (bt.get("listing_dates") or {}).get(s) or bt.get("data_start")
+                if floor and df.index[0] < pd.Timestamp(floor):
+                    df = df.loc[str(floor):]
+                    notes.append(f"bars before {floor} dropped")
                 df, n1 = last_listing(df, bt.get("max_gap_days", 30))
                 df, n2 = fix_splits(df)
                 notes += n1 + n2
@@ -770,12 +777,14 @@ def report(res: dict, rules: dict) -> str:
     lines = ["# vol-wheel backtest", "",
              f"Generated {res['generated']} by `python -m vol_wheel.backtest` (workflow `backtest`). "
              f"Account ${bt['account']:,}, cash yield {res['cash_yield']}. Single-stock IV is modelled as "
-             f"{res['stock_iv_mult']:g}× max(HV20, HV60) unless a row says otherwise.", ""]
+             f"{res['stock_iv_mult']:g}× max(HV20, HV60) unless a row says otherwise.", "",
+             "Deployed = average put collateral + shares as % of the account; In shares = the part held as "
+             "assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.", ""]
     for wname, w in res["windows"].items():
         lines += [f"## {w['label']} ({w['start']} → {w['end']})", "",
                   "| Variant | CAGR | Vol | Sharpe | Max DD | Worst yr | " + " | ".join(pnames)
-                  + " | Deployed | Puts/yr | Assigned |",
-                  "|---|---|---|---|---|---|" + "---|" * len(pnames) + "---|---|---|"]
+                  + " | Deployed | Puts/yr | Assigned | Premium/yr | In shares |",
+                  "|---|---|---|---|---|---|" + "---|" * len(pnames) + "---|---|---|---|---|"]
         for key, v in w["variants"].items():
             per = " | ".join(f"{v['periods'][p]['return_pct']:+.1f}%" if p in v.get("periods", {}) else "–"
                              for p in pnames)
@@ -783,7 +792,8 @@ def report(res: dict, rules: dict) -> str:
             lines.append(f"| {v['label']} | {v['cagr_pct']:.1f}% | {v['vol_pct']:.1f}% | {v['sharpe']:.2f} | "
                          f"{v['max_dd_pct']:.1f}% | {_pct(v['worst_year_pct'])} | "
                          f"{per} | {v['avg_deployed_pct']:.0f}% | {v.get('puts_per_year', '–')} | "
-                         f"{st.get('assigned', '–')} |")
+                         f"{st.get('assigned', '–')} | {_pct(v.get('premium_per_year_pct'))} | "
+                         f"{_pct(v.get('avg_shares_pct'))} |")
         lines.append("")
         for key, v in w["variants"].items():
             if v.get("pnl_by_symbol") and "@" not in key and len(v["pnl_by_symbol"]) > 1:

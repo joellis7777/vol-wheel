@@ -169,3 +169,14 @@ def test_clean_ticks_and_last_listing():
     new = make_history(300, seed=2, end=pd.Timestamp("2026-10-02").date())
     both, notes = B.last_listing(pd.concat([old, new]))
     assert len(both) == 300 and both.index[0] == new.index[0] and notes
+
+
+def test_hold_survives_missing_bars(rules):
+    rules["universe"]["Test"] = {"cap": 100, "core": ["TEST"], "opportunistic": []}
+    rules["backtest"]["min_history_days"] = 1
+    f = _frame(np.linspace(100, 110, 100))
+    f.iloc[50, f.columns.get_loc("close")] = np.nan       # feed missing one day
+    rates = pd.Series(0.0, index=f.index)
+    meta = {"bucket": {"TEST": "Test"}, "index_syms": set(), "vol_index_syms": set(), "first_date": {"TEST": f.index[0]}}
+    res = B.run_hold({"symbols": ["TEST"], "weight": 100}, {"TEST": f}, meta, rates, rules, f.index[0], f.index[-1])
+    assert res["max_dd_pct"] > -1
