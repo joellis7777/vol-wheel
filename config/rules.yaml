@@ -255,6 +255,8 @@ backtest:
   costs: {per_contract: 0.65, slippage_pct_index: 2, slippage_pct_stock: 5}   # % of mid per fill
   decide_itm: hold          # ITM at 21 DTE: hold to expiry and take assignment ("roll" = roll same strike out once)
   max_rolls: 1
+  data_start: "2006-01-03"   # CBOE's pre-2006 stock bars have bad jumps (NVDA +182% on 2006-01-03); ignore them
+  listing_dates: {IBIT: "2024-01-11"}   # CBOE carries pre-launch IBIT bars
   max_gap_days: 30          # a longer gap in the bars = an earlier company on a reused ticker (CEG); dropped
   ladder_spacing_days: 5    # new rung: one 45-day expected move below the last strike, or 5+ trading days later
   call_floor_regimes: [Low, Mid]   # covered-call strike >= net cost per share in these regimes
@@ -264,7 +266,7 @@ backtest:
     "2020": ["2020-02-19", "2020-12-31"]
     "2022": ["2022-01-01", "2022-12-31"]
   windows:
-    full:   {start: "2006-01-03", label: "2006 → today"}
+    full:   {start: "2007-01-03", label: "2007 → today"}
     recent: {start: "2021-01-04", label: "2021 → today (whole basket live)"}
   # mode: spike = the rulebook (sell only on qualifying spikes); always = tastytrade-style, a new
   # put every entry_every_days while IVR >= min_ivr; hold = buy-and-hold at weight% (rest in T-bills).
@@ -275,6 +277,8 @@ backtest:
        caps: {total: 80, per_name: 80, Index: 80}}
     - {name: qqq_spike_20d, label: "QQQ only · spikes · fixed 20Δ", symbols: [QQQ], mode: spike, entry_pct: 15,
        put_delta: 20, call_delta: 20, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_spike_cc, label: "QQQ only · spike puts, calls always on shares", symbols: [QQQ], mode: spike,
+       entry_pct: 15, calls: always, caps: {total: 80, per_name: 80, Index: 80}}
     - {name: qqq_always, label: "QQQ only · always on", symbols: [QQQ], mode: always, entry_pct: 10,
        entry_every_days: 5, min_ivr: 0, caps: {total: 80, per_name: 80, Index: 80}}
     - {name: qqq_always_ivr30, label: "QQQ only · always on, IVR ≥ 30", symbols: [QQQ], mode: always,
