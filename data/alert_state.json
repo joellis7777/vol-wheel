@@ -20,6 +20,11 @@
    "alerts": {},
    "seen": "2026-10-09"
   },
+  "FNV": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
   "GLD": {
    "action": "NO_SHORT",
    "alerts": {},
@@ -56,6 +61,11 @@
    "seen": "2026-10-09"
   },
   "QQQ": {
+   "action": "NO_SHORT",
+   "alerts": {},
+   "seen": "2026-10-09"
+  },
+  "RGLD": {
    "action": "NO_SHORT",
    "alerts": {},
    "seen": "2026-10-09"
