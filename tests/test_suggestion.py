@@ -57,3 +57,16 @@ def test_wide_market_noted_in_suggestion(rules):
     t = ticker()
     t["puts"]["candidates"][0]["wide_spread"] = True
     assert scan.build_suggestion(t, rules)["text"] == "Sell NVDA Nov 20 $215 put @ ~$4.45 · wide market: limit order near the mid"
+
+
+def test_high_regime_call_adds_leap_exit_and_drops_cost_floor(rules):
+    t = ticker(action="SELL_CALL")
+    t["regime"] = "High"
+    s = scan.build_suggestion(t, rules)
+    assert "net cost" not in s["requires"] and "LEAP strike + what you paid" in s["requires"]
+    assert s["also"].startswith("If you hold NVDA LEAPs: close half")
+
+
+def test_caveat_only_for_proxy_ivr(rules):
+    assert "stand-in" in scan.build_suggestion(ticker(src="proxy"), rules)["caveat"]
+    assert "caveat" not in scan.build_suggestion(ticker(src="VIX"), rules)

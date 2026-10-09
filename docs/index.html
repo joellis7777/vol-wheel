@@ -385,6 +385,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       (s.also ? '<div class="meta2">' + esc(s.also) + "</div>" : "") +
       (s.variants && s.variants.length > 1 ? '<div class="meta2">' + esc(s.variants.slice(1).join(" · ")) + "</div>" : "") +
       (s.requires ? '<div class="req">' + esc(s.requires) + "</div>" : "") +
+      (s.caveat ? '<div class="meta2">ℹ ' + esc(s.caveat) + "</div>" : "") +
       (size ? '<div class="size">' + esc(size) + "</div>" : "") +
       '<div class="meta2">Manage: ' + esc(s.manage) + "</div>" +
       '<div class="meta2">Still valid while ' + esc(s.valid_while) + ". Quotes are delayed; confirm the price first.</div></div>";

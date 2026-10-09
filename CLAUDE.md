@@ -50,10 +50,33 @@ changes, update this list in the same change.
   in the band passes it, show the best strikes with spreads up to 40% of mid, flagged "wide market:
   limit order near the mid" (`strikes.wide_spread_fallback`). CEG, FNV and RGLD hit this routinely.
 - **No paid IV history for now** (decided 2026-10-09): true IV rank arrives from our own daily
-  readings (60 days ≈ early Jan 2027; full year ≈ Oct 2027). ORATS (~$49–199/mo, history to 2007)
+  readings (60 trading days ≈ Dec 29 2026 for names tracked since Oct 2; ≈ Jan 8 2027 for FNV; full
+  year ≈ Oct 2027). Until then suggestions carry "check the chain's IV yourself" (`caveat`). ORATS (~$49–199/mo, history to 2007)
   is the option if that changes; its license may not allow publishing its data in this public repo.
+- **Strategy history:** the rulebook came out of a separate claude.ai chat; its summary was pasted
+  here 2026-10-10 and reconciled. Rules the scanner can't apply because they need positions (per-name
+  and bucket caps, 120% beta-weighted delta, 15% LEAP premium cap, circuit breakers, max 3 rungs and
+  staggered expiries, ex-dividend early assignment, LEAP 120-DTE exit) stay manual until private
+  position tracking exists. Call-strike floors (net cost; LEAP strike + debit) and the High-regime
+  LEAP exit ("close half or sell calls") are shown as text in the suggestion.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
+
+## Open strategy items (keep current)
+
+- Backtests (rulebook list: regime vs fixed delta vs buy-and-hold; one side vs both; IVR 30/50/70;
+  50% vs full call coverage; LEAPs vs shares; 2022 stress replay). Cheap first pass = Black-Scholes
+  on free price history + VIX/HV; real option history is paid.
+- Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
+  chains with current IV, not a year of IV history.
+- Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
+  rulebook's Index row but not scanned.
+- Trade journal: log alerts + Jordan's action for 2–3 months, then tune thresholds. Actions are
+  account data → keep them out of this public repo.
+- Position tracking (needs private hosting).
+- Ladder spacing: the rulebook's "new rung only 5+ trading days later with IVR ≥ 50 (or 1 expected
+  move beyond)" is only partly enforced: alerts re-fire at 1 EM within an episode, and any new spike
+  after a lapse alerts regardless of the 5-day spacing.
 
 ## Layout
 

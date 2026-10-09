@@ -197,9 +197,12 @@ def test_alert_leads_with_suggested_trade(rules):
     t["suggestion"] = scan.build_suggestion(t, rules)
     body = alerts.build_message(t, "SELL_PUT", rules)["body"].splitlines()
     assert body[0] == "→ Sell NVDA Nov 20 $215 put @ ~$4.45"
-    assert body[1].startswith("Manage: Close at 50% of the credit; decide by 21 DTE")
+    assert body[1].startswith("ℹ IV rank is a realized-vol stand-in")
+    assert body[2].startswith("Manage: Close at 50% of the credit; decide by 21 DTE")
     c = ticker(action="SELL_CALL")
     c["suggestion"] = scan.build_suggestion(c, rules)
     lines = alerts.build_message(c, "SELL_CALL", rules)["body"].splitlines()
     assert lines[0] == "→ Sell NVDA Nov 20 $265 call @ ~$2.56"
-    assert lines[1] == "⚠ Only if you hold 100 NVDA shares (or a LEAP on NVDA) per contract; cover at most 50% of them"
+    assert lines[1] == ("⚠ Only if you hold 100 NVDA shares (or a LEAP on NVDA) per contract; cover at most 50% "
+                        "of them. Strike must be above your net cost per share (LEAPs: above the LEAP strike + what you paid)")
+    assert lines[2].startswith("ℹ IV rank is a realized-vol stand-in")  # ticker() uses the proxy source

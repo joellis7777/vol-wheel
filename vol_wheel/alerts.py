@@ -151,6 +151,10 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         lines.append("→ " + sg["text"])
         if sg.get("requires"):
             lines.append("⚠ " + sg["requires"])
+        if sg.get("also") and trigger != "PAIR_CALL":
+            lines.append(sg["also"])
+        if sg.get("caveat"):
+            lines.append("ℹ " + sg["caveat"])
         if sg.get("manage"):
             lines.append("Manage: " + sg["manage"])
     lines.append(header_line(t))

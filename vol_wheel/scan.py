@@ -383,6 +383,13 @@ def _exp_txt(iso: str) -> str:
     return f"{d.strftime('%b')} {d.day}"
 
 
+def _add_caveat(s: dict, t: dict) -> None:
+    """Until a name has ~60 days of its own IV history, IV rank is a realized-vol stand-in."""
+    if t.get("ivr_source") == "proxy":
+        s["caveat"] = ("IV rank is a realized-vol stand-in until ~60 days of IV history: "
+                       "check the chain's IV yourself before acting")
+
+
 def build_suggestion(t: dict, rules: dict) -> dict | None:
     """The one trade a card recommends, in plain words, or None (WATCH/WAIT/NO NEW SHORTS).
 
@@ -423,7 +430,10 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
                      + (" · wide market: limit order near the mid" if c.get("wide_spread") else ""),
              "requires": None if is_put else
              (f"Only if you hold 100 {sym} shares (or a LEAP on {sym}) per contract"
-              + (f"; cover at most {cover_cap}% of them" if momentum else "")),
+              + (f"; cover at most {cover_cap}% of them" if momentum else "")
+              + (". Strike must be above your net cost per share" if t.get("regime") in ("Low", "Mid") else "")
+              + (" (LEAPs: above the LEAP strike + what you paid)" if t.get("regime") in ("Low", "Mid")
+                 else ". With a LEAP: strike above the LEAP strike + what you paid")),
              "valid_while": (f"IVR ≥ {th['ivr_sell']}, a {th['spike_sigma']}σ {'down' if is_put else 'up'}-spike "
                              f"in the last {th['spike_max_days']} days and IV/HV ≥ {th['min_iv_hv_ratio']}"),
              "manage": manage(bool(pre))}
@@ -433,6 +443,11 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
             pc = opt("pair_call")
             s["also"] = (f"Optional: also sell {_exp_txt(pc['expiry'])} {_strike_txt(pc['strike'])} call "
                          f"@ ~{_money(pc['mid'])} against shares you hold")
+        if not is_put and t.get("regime") == "High":
+            # Rulebook LEAP exit #1: up-spike in the High regime.
+            s["also"] = (f"If you hold {sym} LEAPs: close half, or sell calls against the rest "
+                         "(IRA LEAPs only; never against taxable LEAPs)")
+        _add_caveat(s, t)
         return s
     if act == "EARNINGS_PLAY":
         ep = t.get("earnings_play") or {}
@@ -456,6 +471,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "manage": manage(False) + "; it sells through the report"}
         if is_put:
             s["collateral"] = c["strike"] * 100
+        _add_caveat(s, t)
         return s
     if act == "LEAP_BUY":
         lines = []
