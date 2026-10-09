@@ -101,7 +101,7 @@ def fix_splits(df: pd.DataFrame, tol: float = 0.03) -> tuple[pd.DataFrame, list[
         if not np.isfinite(r) or 0.55 < r < 1.8:
             continue
         for n in SPLIT_RATIOS:
-            for factor, kind in ((1.0 / n, f"{n}:1 split"), (float(n), f"1:{n} reverse split")):
+            for factor, kind in ((1.0 / n, f"1/{n} drop (split)"), (float(n), f"x{n} jump")):
                 if abs(r - factor) / factor < tol:
                     cols = [col for col in ("open", "high", "low", "close") if col in df]
                     df.iloc[:i, [df.columns.get_loc(col) for col in cols]] *= factor
@@ -112,6 +112,26 @@ def fix_splits(df: pd.DataFrame, tol: float = 0.03) -> tuple[pd.DataFrame, list[
                 continue
             break
     return df, notes
+
+
+def clean_ticks(df: pd.DataFrame, jump: float = 1.8) -> tuple[pd.DataFrame, list[str]]:
+    """Drop one-day bad prints: a close that jumps by `jump`x (or 1/jump) and reverts the next day."""
+    c = df["close"]
+    r_prev, r_next = c / c.shift(1), c / c.shift(-1)
+    bad = ((r_prev > jump) & (r_next > jump)) | ((r_prev < 1 / jump) & (r_next < 1 / jump))
+    notes = [f"{d.date()} bad print dropped ({c[d]:g})" for d in c.index[bad]]
+    return df[~bad], notes
+
+
+def last_listing(df: pd.DataFrame, max_gap_days: int = 30) -> tuple[pd.DataFrame, list[str]]:
+    """Keep the bars after the last gap longer than `max_gap_days`: a reused ticker (CEG was
+    Constellation Energy until 2012, then the 2022 Exelon spin-off) is a different company."""
+    gaps = df.index.to_series().diff().dt.days
+    big = gaps[gaps > max_gap_days]
+    if big.empty:
+        return df, []
+    cut = big.index[-1]
+    return df.loc[cut:], [f"history before {cut.date()} dropped ({int(big.iloc[-1])}-day gap: earlier listing)"]
 
 
 def load_history(sym: str, cfg: dict, cache: Path | None = None) -> tuple[pd.DataFrame, str]:
@@ -135,6 +155,16 @@ def load_history(sym: str, cfg: dict, cache: Path | None = None) -> tuple[pd.Dat
                 df, src = y, "yahoo"
         except Exception as e:  # noqa: BLE001
             log.warning("%s Yahoo history failed: %s", sym, e)
+    elif sym.startswith("_"):
+        # CBOE's VXN/GVZ series start in 2009; Yahoo's go further back. Prepend the older part.
+        try:
+            y = data.fetch_history_yf(sym, period="max")
+            older = y[y.index < df.index[0]]
+            if len(older):
+                df = pd.concat([older[df.columns.intersection(older.columns)], df]).sort_index()
+                src = "yahoo+cboe"
+        except Exception as e:  # noqa: BLE001
+            log.warning("%s Yahoo backfill failed: %s", sym, e)
     if df is None or df.empty:
         raise RuntimeError(f"no history for {sym}")
     df = df[["open", "high", "low", "close"]].astype(float)
@@ -660,13 +690,17 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
     for s in syms + sorted(set(vol_map.values())):
         try:
             df, src = load_history(s, rules["data"], cache)
-            notes = []
+            df, notes = clean_ticks(df)
             if not s.startswith("_"):
-                df, notes = fix_splits(df)
+                df, n1 = last_listing(df, bt.get("max_gap_days", 30))
+                df, n2 = fix_splits(df)
+                notes += n1 + n2
             hists[s] = df
             info[s] = {"source": src, "first": df.index[0].strftime("%Y-%m-%d"),
                        "last": df.index[-1].strftime("%Y-%m-%d"), "bars": len(df), "notes": notes}
+            lr = np.log(df["close"]).diff().abs()
             print(f"data: {s:6s} {src:6s} {info[s]['first']} -> {info[s]['last']} ({len(df)} bars)"
+                  f"  biggest 1-day move {math.expm1(lr.max()) * 100:+.0f}% on {lr.idxmax().date()}"
                   + (f"  {'; '.join(notes)}" if notes else ""), flush=True)
         except Exception as e:  # noqa: BLE001
             info[s] = {"error": str(e)}
