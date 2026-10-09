@@ -419,7 +419,8 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
         s = {"action": act, "tradeable": True, "verb": "Sell", "kind": kind, "strike": c["strike"],
              "expiry": c["expiry"], "dte": c["dte"], "delta": c["delta"], "mid": c["mid"],
              "annualized": c["annualized"], "entry_frac": 1.0,
-             "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])}",
+             "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])}"
+                     + (" · wide market: limit order near the mid" if c.get("wide_spread") else ""),
              "requires": None if is_put else
              (f"Only if you hold 100 {sym} shares (or a LEAP on {sym}) per contract"
               + (f"; cover at most {cover_cap}% of them" if momentum else "")),
@@ -445,7 +446,8 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
         s = {"action": act, "tradeable": True, "verb": "Sell", "kind": kind, "strike": c["strike"],
              "expiry": c["expiry"], "dte": c["dte"], "delta": c["delta"], "mid": c["mid"],
              "annualized": c["annualized"], "entry_frac": frac,
-             "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])} · half size",
+             "text": f"Sell {sym} {_exp_txt(c['expiry'])} {_strike_txt(c['strike'])} {kind} @ ~{_money(c['mid'])} · half size"
+                     + (" · wide market: limit order near the mid" if c.get("wide_spread") else ""),
              "requires": None if is_put else
              (f"Only if you hold {sym} shares (or a LEAP on {sym}): cover at most half of them "
               f"(with 100 shares that's 1 contract or skip)"),

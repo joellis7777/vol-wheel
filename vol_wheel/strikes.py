@@ -231,12 +231,13 @@ def assignment_score(be: float, anchors: list[float], cfg: dict) -> float:
 
 # ---------------------------------------------------------------- filters
 
-def passes_filters(row, side: str, cfg: dict) -> tuple[bool, str]:
+def passes_filters(row, side: str, cfg: dict, max_spread_pct: float | None = None) -> tuple[bool, str]:
     bid, ask, mid = row["bid"], row["ask"], row["mid"]
     if not (np.isfinite(bid) and np.isfinite(ask)) or bid <= 0 or ask <= 0 or mid <= 0:
         return False, "no bid"
     spread = ask - bid
-    if not (spread <= cfg["max_spread_pct"] / 100.0 * mid or spread <= cfg["max_spread_abs"] + 1e-9):
+    limit = cfg["max_spread_pct"] if max_spread_pct is None else max_spread_pct
+    if not (spread <= limit / 100.0 * mid or spread <= cfg["max_spread_abs"] + 1e-9):
         return False, "spread"
     if row["oi"] < cfg["min_open_interest"]:
         return False, "open interest"
@@ -285,6 +286,14 @@ def select_strikes(opts: pd.DataFrame, side: str, target_delta: float, ctx: dict
         else:
             res["rejected"][why] = res["rejected"].get(why, 0) + 1
     res["passed"] = len(keep)
+    wide = False
+    if not keep and res["rejected"].get("spread") and cfg.get("wide_spread_fallback"):
+        # Thin names: nothing passes the normal spread rule. Show the best strikes inside a looser
+        # limit, flagged, rather than nothing (the user works a limit order near the mid).
+        keep = [r for _, r in o.iterrows()
+                if passes_filters(r, side, cfg, cfg.get("wide_spread_max_pct", 40))[0]]
+        wide = bool(keep)
+        res["wide_spread"] = wide
     if not keep:
         return res
 
@@ -311,6 +320,7 @@ def select_strikes(opts: pd.DataFrame, side: str, target_delta: float, ctx: dict
             "strike": K, "expiry": ctx["expiry"].isoformat(), "dte": int(dte),
             "delta": round(float(r["delta"]), 3), "bid": float(r["bid"]), "ask": float(r["ask"]),
             "mid": round(mid, 3), "iv": round(iv, 4), "oi": int(r["oi"]),
+            "spread_pct": (float(r["ask"]) - float(r["bid"])) / mid * 100 if mid > 0 else None, "wide_spread": wide,
             "annualized": ann, "breakeven": round(be, 2), "cushion_moves": cushion,
             "iv_resid_pts": resid * 100 if np.isfinite(resid) else None,
             "level": lv, "level_dist_pct": d,
@@ -325,7 +335,7 @@ def select_strikes(opts: pd.DataFrame, side: str, target_delta: float, ctx: dict
         row["score"] = (w["support"] * row["f_support"] + w["richness"] * row["f_richness"]
                         + w["roc"] * row["f_roc"] + w["cushion"] * row["f_cushion"]
                         + w["assignment"] * row["f_assignment"])
-        row["reason"] = reason(row, side)
+        row["reason"] = reason(row, side) + (f" · wide market ({row['spread_pct']:.0f}% spread)" if wide else "")
     rows.sort(key=lambda x: (-x["score"], -x["annualized"]))
     # Top N, skipping strikes within min_strike_gap_pct of one already picked (SPY's $1 strikes
     # would otherwise give three near-identical picks).

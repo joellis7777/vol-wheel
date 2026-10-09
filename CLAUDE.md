@@ -42,6 +42,9 @@ changes, update this list in the same change.
   1.20×). The same pre-move HV feeds the richness score and the earnings-play IV gate.
 - **Universe:** FNV and RGLD (gold royalties) added 2026-10-09 as opportunistic names in the Hard
   asset bucket beside GLD (shared 10% cap; spikes only; they have earnings).
+- **Thin option markets** (decided 2026-10-09): keep the 10%-of-mid spread rule, but when nothing
+  in the band passes it, show the best strikes with spreads up to 40% of mid, flagged "wide market:
+  limit order near the mid" (`strikes.wide_spread_fallback`). CEG, FNV and RGLD hit this routinely.
 - **No paid IV history for now** (decided 2026-10-09): true IV rank arrives from our own daily
   readings (60 days ≈ early Jan 2027; full year ≈ Oct 2027). ORATS (~$49–199/mo, history to 2007)
   is the option if that changes; its license may not allow publishing its data in this public repo.
@@ -103,8 +106,9 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
   `scan_et`, shown as a header pill) and send alerts. The commit message names the mode.
 - **GitHub's cron is unreliable here** (2026-10-06 → 10-09: the 10:30 ET slot never ran on time,
   post-close started ~21:00 ET). The primary schedule is an outside timer (cron-job.org) calling
-  the workflow_dispatch API every 30 min 10:00–15:30 ET (`mode: intraday`) and at 16:40 ET
-  (`mode: close`); setup in `docs/SCHEDULE.md`. The GitHub crons stay as a backup.
+  the workflow_dispatch API (`mode: intraday`) every 15 min 10:00–15:45 ET (Jordan's setting,
+  live since 2026-10-09; runs take ~45 s) and at 16:40 ET (`mode: close`); setup in
+  `docs/SCHEDULE.md`. The GitHub crons stay as a backup.
 - `latest.json` is written compact (~16 KB/version compressed) because intraday runs commit it.
 
 ## Alerts (`alerts.py`, config `alerts:`)
@@ -245,6 +249,9 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   45; else any expiry in the window; else closest to 45 (noted).
 - Target delta by regime (puts/calls): Low 30/10, Mid 20/20, High 10/30. Band ±7Δ, OTM only.
 - Filters: spread ≤ 10% of mid or ≤ $0.10; OI ≥ 100; puts ≥ 20Δ need mid ≥ 1% of strike, else 0.3%.
+  If nothing passes only because of the spread, the band is re-filtered at ≤ 40% of mid and the
+  picks carry `wide_spread: true` + `spread_pct` (reason "· wide market (N% spread)", suggestion
+  "· wide market: limit order near the mid", a "wide · limit near mid" tag on the card).
 - Scores (0–1) × weights: support/resistance 30%, richness 25%, return on capital 20%,
   cushion 15%, assignment fit 10%.
   - S/R levels: SMA50/100/200, swing lows/highs (120d, 5 bars each side), round numbers
