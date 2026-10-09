@@ -64,9 +64,10 @@ changes, update this list in the same change.
 
 ## Open strategy items (keep current)
 
-- Backtests (rulebook list: regime vs fixed delta vs buy-and-hold; one side vs both; IVR 30/50/70;
-  50% vs full call coverage; LEAPs vs shares; 2022 stress replay). Cheap first pass = Black-Scholes
-  on free price history + VIX/HV; real option history is paid.
+- Backtests: first pass built 2026-10-09 (`backtest.py`: QQQ core vs basket, spikes vs always-on,
+  regime vs fixed delta, buy-and-hold, 2008/2020/2022). Still to add from the rulebook list: one side
+  vs both; IVR 30/50/70 sweep; 50% vs full call coverage; LEAPs vs shares; VIX-scaled deployment
+  (tastytrade 25–50% by VIX). Real option history is paid.
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
 - Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
@@ -96,6 +97,8 @@ vol_wheel/
   earnings.py              earnings dates (Nasdaq → yfinance, cached), implied move, ex-earnings IV,
                            earnings-play setup, post-earnings gap
   alerts.py                ntfy messages, dedup against data/alert_state.json, digest, test alert
+  backtest.py              Black-Scholes wheel simulation of the rulebook on price + vol-index
+                           history: variants from rules.yaml `backtest:`; `python -m vol_wheel.backtest`
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
 data/earnings.json         earnings cache: next/last report date + timing, implied move (workflow-written)
@@ -106,6 +109,7 @@ tests/                     pytest; conftest.py builds synthetic histories + Blac
 .github/workflows/scan.yml post-close 21:35 UTC + intraday 10:30/15:30 ET + manual; commits data
 .github/workflows/alert-test.yml  manual "send test alert" to the NTFY_TOPIC phone topic
 .github/workflows/tests.yml pytest on push/PR
+.github/workflows/backtest.yml  manual: run the backtest, commit docs/backtest/{results.json,report.md}
 ```
 
 ## Running
@@ -312,6 +316,23 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   a put/rung is "CSP ok" when strike × 100 ≤ entry, else "spread / PMCC". Computed client-side.
 - Cards sorted by action priority, then spike size, then IVR. Tap to expand.
 - Theme follows the OS; the toggle overrides via `data-theme` on <html>.
+
+## Backtest (`backtest.py`, config `backtest:`)
+
+- Runs on Actions only (workflow `backtest`, manual; the sandbox can't reach CBOE/Yahoo). ~1 min of
+  data download, then every variant x window; the job log prints one line per run plus the report.
+- Signals are the scanner's, vectorized per day (`signal_frame`; a test checks they equal
+  `signals.spike`/`proxy_ivr` on the last bar). QQQ/SPY/GLD price options off VXN/VIX/GVZ x
+  `vol_index_atm_ratio` and get true IVR + the IV/HV gate. Other names: IV = `stock_iv_mult` x
+  max(HV20, HV60), proxy IVR, no gate; run at each of `stock_iv_mults` because that multiple *is*
+  the single-stock edge and it's assumed.
+- Lifecycle: 45 DTE, close at `management.take_profit_pct`, at `decide_dte` close if OTM else hold
+  to expiry and take assignment (`decide_itm: roll` rolls once), covered calls on assigned shares
+  (spike mode: on up-spikes; always mode: continuously; momentum names 50%; strike ≥ net cost in
+  Low/Mid), caps per name/bucket/total, circuit breakers. Fractional contracts, T-bill yield on cash.
+- Modes: `spike` (rulebook), `always` (a put every `entry_every_days` while IVR ≥ `min_ivr`,
+  tastytrade-style), `hold` (buy-and-hold at `weight`%, monthly rebalance).
+- Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions
 

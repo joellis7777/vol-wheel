@@ -183,20 +183,20 @@ def yahoo_symbol(sym: str) -> str:
     return "^" + sym[1:] if sym.startswith("_") else sym
 
 
-def fetch_history_yf(sym: str) -> pd.DataFrame:
+def fetch_history_yf(sym: str, period: str = "5y") -> pd.DataFrame:
     """Daily OHLC from Yahoo: yfinance if installed, else the public chart endpoint."""
     ysym = yahoo_symbol(sym)
     try:
         import yfinance as yf  # optional dependency
 
-        h = yf.Ticker(ysym).history(period="5y", auto_adjust=False)
+        h = yf.Ticker(ysym).history(period=period, auto_adjust=False)
         if h is not None and not h.empty:
             h = h.rename(columns=str.lower)[["open", "high", "low", "close", "volume"]]
             h.index = pd.DatetimeIndex([pd.Timestamp(d.date()) for d in h.index], name="date")
             return _finish_history(h.reset_index())
     except Exception as e:  # noqa: BLE001
         log.warning("yfinance %s failed: %s", ysym, e)
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ysym}?range=5y&interval=1d"
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ysym}?range={period}&interval=1d"
     j = get_json(url, retries=2)
     res = j["chart"]["result"][0]
     q = res["indicators"]["quote"][0]
