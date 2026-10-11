@@ -148,7 +148,7 @@ class Target:
                 frac = min(frac, self.cfg["trend_cap_pct"] / 100)
             tgt = frac * E
             cur = self.shares * S
-            regime = row.get("regime") or "Mid"
+            regime = row.get("regime") if isinstance(row.get("regime"), str) else "Mid"
             if self.cfg.get("exec", "options") == "stock":
                 if abs(tgt - cur) > band * E:
                     dq = (tgt - cur) / S

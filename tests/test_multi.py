@@ -54,3 +54,11 @@ def test_fully_invested_options_cannot_sell_puts_without_cash(rules):
     f = {"A": _frame(np.full(60, 100.0)), "B": _frame(np.linspace(100, 70, 60))}
     s = _run(rules, f, exec="options", band_pct=2, slice_pct=5)
     assert s.stats["puts_sold"] == 0                  # no cash to secure them
+
+
+def test_missing_regime_defaults_to_mid(rules):
+    a = _frame(np.linspace(100, 160, 120))
+    b = _frame(np.linspace(100, 80, 120))
+    a.loc[a.index[60:], "regime"] = np.nan         # a gap in one asset's signals
+    s = _run(rules, {"A": a, "B": b}, exec="options", band_pct=2, slice_pct=5, invested_pct=80)
+    assert s.stats["calls_sold"] >= 1
