@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T02:49Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T02:51Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -24,7 +24,7 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | QQQ LEAP · Tom's filter + exits, no calls | 7.7% | 14.9% | 0.47 | -33.2% | -23.7% | -7.4% | +22.4% | -24.5% | 88% | – | – | 0.0% | – |
 | QQQ LEAP held (rolled at 120 DTE), no calls | 8.4% | 18.7% | 0.44 | -55.4% | -42.6% | -23.0% | +25.0% | -38.3% | 102% | – | – | 0.0% | – |
 | QQQ LEAP held · calls only on up-spikes | 8.3% | 18.3% | 0.44 | -53.8% | -41.5% | -21.8% | +26.8% | -37.1% | 102% | – | – | 1.5% | – |
-| QQQ shares · Tom's trend calls | 10.2% | 23.2% | 0.47 | -55.0% | -45.1% | +1.2% | +36.3% | -46.0% | 162% | – | – | 105.7% | – |
+| QQQ shares · Tom's trend calls | 7.0% | 13.2% | 0.47 | -32.3% | -25.2% | +3.8% | +17.1% | -25.9% | 100% | – | – | 56.3% | – |
 | QQQ + SPY · spikes | 12.7% | 17.3% | 0.69 | -34.5% | -26.4% | +2.5% | +24.3% | -27.0% | 83% | 2.1 | 6 | 0.9% | 81.2% |
 | Basket · spikes (current rules) (stock IV 1x HV) | 14.6% | 16.1% | 0.83 | -33.0% | -30.3% | +27.3% | +42.8% | -31.5% | 62% | 32.4 | 36 | 7.7% | 54.7% |
 | Basket · spikes (current rules) | 15.6% | 16.5% | 0.87 | -34.6% | -31.7% | +35.6% | +45.8% | -33.0% | 62% | 32.1 | 33 | 9.1% | 55.1% |
@@ -68,7 +68,7 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 - QQQ LEAP · Tom's filter + exits, no calls: in the market 87% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 34 entries; exits: target 0, early 6, stop 10, LEAP at 120 DTE 17
 - QQQ LEAP held (rolled at 120 DTE), no calls: in the market 100% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 30 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 29
 - QQQ LEAP held · calls only on up-spikes: in the market 100% of days, call premium 1.5%/yr, call P&L +0.1%/yr, 30 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 29
-- QQQ shares · Tom's trend calls: in the market 100% of days, call premium 105.7%/yr, call P&L -19.3%/yr, 1 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 0
+- QQQ shares · Tom's trend calls: in the market 100% of days, call premium 56.3%/yr, call P&L -9.6%/yr, 1 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 0
 
 - **QQQ + SPY · spikes** P&L by name (excl. interest): SPY +1,189k, QQQ +3,547k
 - **Basket · spikes (current rules)** P&L by name (excl. interest): IBIT -41k, HOOD +2k, GLD +43k, SOFI +50k, CEG +122k, FNV +180k, SPY +290k, AMZN +447k, GOOG +448k, MRVL +728k, TSLA +782k, QQQ +1,252k, MSTR +1,297k, NVDA +2,197k
@@ -96,7 +96,7 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | QQQ LEAP · Tom's filter + exits, no calls | 8.6% | 15.2% | 0.40 | -27.0% | -23.8% | – | – | -24.5% | 84% | – | – | 0.0% | – |
 | QQQ LEAP held (rolled at 120 DTE), no calls | 9.4% | 20.1% | 0.38 | -40.8% | -37.9% | – | – | -38.5% | 102% | – | – | 0.0% | – |
 | QQQ LEAP held · calls only on up-spikes | 10.2% | 19.5% | 0.43 | -39.6% | -36.7% | – | – | -37.3% | 102% | – | – | 1.6% | – |
-| QQQ shares · Tom's trend calls | 7.2% | 16.8% | 0.30 | -31.1% | -27.1% | – | – | -27.8% | 128% | – | – | 74.2% | – |
+| QQQ shares · Tom's trend calls | 5.9% | 13.0% | 0.25 | -29.1% | -25.2% | – | – | -25.9% | 100% | – | – | 59.4% | – |
 | QQQ + SPY · spikes | 7.4% | 4.1% | 0.96 | -5.1% | 0.3% | – | – | +4.4% | 18% | 7.7 | 1 | 2.1% | 13.9% |
 | Basket · spikes (current rules) (stock IV 1x HV) | 19.7% | 15.4% | 1.03 | -15.3% | -6.5% | – | – | -6.5% | 47% | 52.2 | 17 | 10.7% | 35.4% |
 | Basket · spikes (current rules) | 21.0% | 15.3% | 1.11 | -13.8% | -4.9% | – | – | -4.9% | 47% | 52.7 | 16 | 12.8% | 35.1% |
@@ -140,7 +140,7 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 - QQQ LEAP · Tom's filter + exits, no calls: in the market 83% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 11 entries; exits: target 0, early 3, stop 4, LEAP at 120 DTE 3
 - QQQ LEAP held (rolled at 120 DTE), no calls: in the market 100% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 9 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 8
 - QQQ LEAP held · calls only on up-spikes: in the market 100% of days, call premium 1.6%/yr, call P&L +0.8%/yr, 9 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 8
-- QQQ shares · Tom's trend calls: in the market 100% of days, call premium 74.2%/yr, call P&L -13.6%/yr, 1 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 0
+- QQQ shares · Tom's trend calls: in the market 100% of days, call premium 59.4%/yr, call P&L -10.8%/yr, 1 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 0
 
 - **QQQ + SPY · spikes** P&L by name (excl. interest): SPY +17k, QQQ +143k
 - **Basket · spikes (current rules)** P&L by name (excl. interest): IBIT -4k, GLD +2k, MRVL +2k, SPY +6k, HOOD +15k, SOFI +24k, CEG +28k, FNV +34k, GOOG +48k, TSLA +49k, QQQ +52k, AMZN +58k, MSTR +104k, NVDA +486k
