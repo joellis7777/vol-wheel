@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T18:41Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T20:54Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -68,6 +68,17 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | Mix · QQQ 60 / GLD 25 / XLE 15 (2007→) | 13.3% | 17.1% | 0.72 | -42.7% | -30.7% | +1.1% | +19.4% | -15.0% | 100% | – | – | – | – |
 | Mix · QQQ 60 / GLD 25 / TLT 15 (2007→) | 12.3% | 13.9% | 0.80 | -34.8% | -25.4% | +6.7% | +26.4% | -25.2% | 100% | – | – | – | – |
 | Mix · QQQ 60 / GLD 40 (2007→) | 13.9% | 15.4% | 0.82 | -37.1% | -24.1% | +12.4% | +27.5% | -20.8% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC (monthly rebalance) | 39.5% | 26.2% | 1.32 | -44.8% | -35.2% | – | +77.0% | -35.1% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · below 200-day -> T-bills | 33.5% | 21.7% | 1.34 | -28.5% | -18.6% | – | +66.8% | -8.9% | 100% | – | – | – | – |
+| QQQ / GLD / BTC 30 each + XLE 10 | 36.8% | 24.4% | 1.32 | -38.4% | -29.3% | – | +62.8% | -28.7% | 100% | – | – | – | – |
+| QQQ / GLD / BTC 30 + XLE 10 · 200-day exit | 31.1% | 19.9% | 1.35 | -27.1% | -17.8% | – | +59.5% | -3.4% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC (from 2020-09) | 26.9% | 24.8% | 0.96 | -44.8% | -35.2% | – | +40.0% | -35.1% | 100% | – | – | – | – |
+| Equal QQQ / GLD / MSTR (from 2020-09) | 37.1% | 37.5% | 0.95 | -51.8% | -37.9% | – | +45.6% | -38.2% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · 200-day exit (from 2020-09) | 26.8% | 20.0% | 1.14 | -23.1% | -8.5% | – | +40.0% | -8.9% | 100% | – | – | – | – |
+| Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09) | 40.1% | 29.6% | 1.18 | -38.2% | -2.4% | – | +45.6% | -3.4% | 100% | – | – | – | – |
+| Equal QQQ / GLD (2007→) | 13.3% | 14.7% | 0.82 | -33.8% | -19.3% | +18.3% | +26.1% | -17.4% | 100% | – | – | – | – |
+| Equal QQQ / GLD · 200-day exit (2007→) | 10.3% | 11.8% | 0.76 | -18.2% | -8.9% | +23.5% | +16.7% | -6.0% | 100% | – | – | – | – |
+| QQQ · 200-day exit to T-bills (2007→) | 12.7% | 17.1% | 0.69 | -28.6% | -15.6% | +10.7% | +13.5% | -7.2% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 69.9% | 65.4% | 1.11 | -83.0% | -74.5% | – | +201.1% | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 19.8% | 22.1% | 0.83 | -35.6% | -33.1% | – | +32.4% | -33.7% | 100% | – | – | – | – |
 | Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band) | 29.2% | 19.3% | 1.31 | -35.6% | -30.0% | – | +54.4% | -30.2% | 99% | – | 0 | 0.0% | – |
@@ -143,6 +154,12 @@ Rotation variants (share of months holding each):
 
 - Rotate · QQQ or GLD by 12-month momentum (else T-bills): QQQ 57%, GLD 35%, T-bills 8%
 - Rotate · QQQ / GLD / BTC by 12-month momentum: QQQ 14%, GLD 11%, BTC-USD 66%, T-bills 8%
+- Equal QQQ / GLD / BTC · below 200-day -> T-bills: QQQ 27%, GLD 24%, BTC-USD 24%, T-bills 25%
+- QQQ / GLD / BTC 30 + XLE 10 · 200-day exit: QQQ 20%, GLD 18%, BTC-USD 18%, XLE 15%, T-bills 29%
+- Equal QQQ / GLD / BTC · 200-day exit (from 2020-09): QQQ 27%, GLD 25%, BTC-USD 23%, T-bills 25%
+- Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09): QQQ 27%, GLD 25%, MSTR 21%, T-bills 27%
+- Equal QQQ / GLD · 200-day exit (2007→): QQQ 41%, GLD 34%, T-bills 25%
+- QQQ · 200-day exit to T-bills (2007→): QQQ 82%, T-bills 18%
 
 Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):
 
@@ -248,6 +265,17 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | Mix · QQQ 60 / GLD 25 / XLE 15 (2007→) | 18.1% | 16.2% | 0.91 | -21.0% | -14.4% | – | – | -15.0% | 100% | – | – | – | – |
 | Mix · QQQ 60 / GLD 25 / TLT 15 (2007→) | 11.9% | 15.3% | 0.60 | -29.7% | -25.4% | – | – | -25.2% | 100% | – | – | – | – |
 | Mix · QQQ 60 / GLD 40 (2007→) | 16.2% | 16.3% | 0.80 | -26.3% | -20.8% | – | – | -20.8% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC (monthly rebalance) | 20.4% | 24.5% | 0.75 | -44.8% | -35.2% | – | – | -35.1% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · below 200-day -> T-bills | 20.3% | 19.2% | 0.89 | -23.1% | -8.5% | – | – | -8.9% | 100% | – | – | – | – |
+| QQQ / GLD / BTC 30 each + XLE 10 | 21.3% | 22.7% | 0.82 | -38.4% | -28.5% | – | – | -28.7% | 100% | – | – | – | – |
+| QQQ / GLD / BTC 30 + XLE 10 · 200-day exit | 20.4% | 17.7% | 0.95 | -17.7% | -2.7% | – | – | -3.4% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC (from 2020-09) | 20.4% | 24.5% | 0.75 | -44.8% | -35.2% | – | – | -35.1% | 100% | – | – | – | – |
+| Equal QQQ / GLD / MSTR (from 2020-09) | 30.1% | 37.7% | 0.80 | -51.8% | -37.9% | – | – | -38.2% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · 200-day exit (from 2020-09) | 20.3% | 19.2% | 0.89 | -23.1% | -8.5% | – | – | -8.9% | 100% | – | – | – | – |
+| Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09) | 33.0% | 29.2% | 1.01 | -38.2% | -2.4% | – | – | -3.4% | 100% | – | – | – | – |
+| Equal QQQ / GLD (2007→) | 15.9% | 15.5% | 0.82 | -24.0% | -17.6% | – | – | -17.4% | 100% | – | – | – | – |
+| Equal QQQ / GLD · 200-day exit (2007→) | 12.6% | 12.4% | 0.76 | -17.0% | -5.6% | – | – | -6.0% | 100% | – | – | – | – |
+| QQQ · 200-day exit to T-bills (2007→) | 16.2% | 16.3% | 0.81 | -15.6% | -6.3% | – | – | -7.2% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 17.7% | 57.1% | 0.51 | -76.6% | -64.1% | – | – | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 16.6% | 22.4% | 0.65 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
 | Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band) | 18.3% | 19.5% | 0.79 | -36.7% | -30.6% | – | – | -30.8% | 99% | – | 0 | 0.0% | – |
@@ -323,6 +351,12 @@ Rotation variants (share of months holding each):
 
 - Rotate · QQQ or GLD by 12-month momentum (else T-bills): QQQ 47%, GLD 40%, T-bills 13%
 - Rotate · QQQ / GLD / BTC by 12-month momentum: QQQ 9%, GLD 21%, BTC-USD 57%, T-bills 13%
+- Equal QQQ / GLD / BTC · below 200-day -> T-bills: QQQ 26%, GLD 24%, BTC-USD 23%, T-bills 27%
+- QQQ / GLD / BTC 30 + XLE 10 · 200-day exit: QQQ 20%, GLD 18%, BTC-USD 17%, XLE 21%, T-bills 24%
+- Equal QQQ / GLD / BTC · 200-day exit (from 2020-09): QQQ 26%, GLD 24%, BTC-USD 23%, T-bills 27%
+- Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09): QQQ 26%, GLD 24%, MSTR 20%, T-bills 29%
+- Equal QQQ / GLD · 200-day exit (2007→): QQQ 39%, GLD 36%, T-bills 24%
+- QQQ · 200-day exit to T-bills (2007→): QQQ 79%, T-bills 21%
 
 Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):
 
