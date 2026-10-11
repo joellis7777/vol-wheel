@@ -164,7 +164,7 @@ class Multi:
                     iv = self._iv(s, i)
                     if iv is None:
                         continue
-                    regime = row.get("regime") or "Mid"
+                    regime = row.get("regime") if isinstance(row.get("regime"), str) else "Mid"
                     free_cash = self.cash - sum(put_notional.values())
                     deficit = tgt - cur - put_notional[s]
                     if deficit > band * E and (i - self.last_put[s] >= every or (row.get("down") or 0) >= sigma):
