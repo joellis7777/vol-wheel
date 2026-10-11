@@ -435,6 +435,28 @@ backtest:
        weights: {QQQ: 60, GLD: 25, TLT: 15}}
     - {name: mix_qg_6040, label: "Mix · QQQ 60 / GLD 40 (2007→)", symbols: [QQQ, GLD], mode: hold,
        weights: {QQQ: 60, GLD: 40}}
+    # Equal-weight core and a mechanical defensive exit (Jordan 2026-10-12: protect bull-run gains into
+    # the expected late-2029 bear). trend_sma: a name below its 200-day at the monthly check -> T-bills.
+    - {name: eq_qgb, label: "Equal QQQ / GLD / BTC (monthly rebalance)", symbols: [QQQ, GLD, BTC-USD], mode: hold,
+       weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, start: "2015-10-01"}
+    - {name: eq_qgb_trend, label: "Equal QQQ / GLD / BTC · below 200-day -> T-bills", symbols: [QQQ, GLD, BTC-USD],
+       mode: hold, weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200, start: "2015-10-01"}
+    - {name: eq_qgbx, label: "QQQ / GLD / BTC 30 each + XLE 10", symbols: [QQQ, GLD, BTC-USD, XLE], mode: hold,
+       weights: {QQQ: 30, GLD: 30, BTC-USD: 30, XLE: 10}, start: "2015-10-01"}
+    - {name: eq_qgbx_trend, label: "QQQ / GLD / BTC 30 + XLE 10 · 200-day exit", symbols: [QQQ, GLD, BTC-USD, XLE],
+       mode: hold, weights: {QQQ: 30, GLD: 30, BTC-USD: 30, XLE: 10}, trend_sma: 200, start: "2015-10-01"}
+    - {name: eq_qg_btc_2020, label: "Equal QQQ / GLD / BTC (from 2020-09)", symbols: [QQQ, GLD, BTC-USD], mode: hold,
+       weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, start: "2020-09-01"}
+    - {name: eq_qg_mstr_2020, label: "Equal QQQ / GLD / MSTR (from 2020-09)", symbols: [QQQ, GLD, MSTR], mode: hold,
+       weights: {QQQ: 1, GLD: 1, MSTR: 1}, start: "2020-09-01"}
+    - {name: eq_qg_btc_2020_trend, label: "Equal QQQ / GLD / BTC · 200-day exit (from 2020-09)", symbols: [QQQ, GLD, BTC-USD],
+       mode: hold, weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200, start: "2020-09-01"}
+    - {name: eq_qg_mstr_2020_trend, label: "Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09)", symbols: [QQQ, GLD, MSTR],
+       mode: hold, weights: {QQQ: 1, GLD: 1, MSTR: 1}, trend_sma: 200, start: "2020-09-01"}
+    - {name: eq_qg_2007, label: "Equal QQQ / GLD (2007→)", symbols: [QQQ, GLD], mode: hold, weights: {QQQ: 1, GLD: 1}}
+    - {name: eq_qg_2007_trend, label: "Equal QQQ / GLD · 200-day exit (2007→)", symbols: [QQQ, GLD], mode: hold,
+       weights: {QQQ: 1, GLD: 1}, trend_sma: 200}
+    - {name: qqq_trend_2007, label: "QQQ · 200-day exit to T-bills (2007→)", symbols: [QQQ], mode: hold, trend_sma: 200}
     - {name: btc_hold, label: "Buy & hold BTC 100%", symbols: [BTC-USD], mode: hold, weight: 100, start: "2015-10-01"}
     - {name: qqq_hold_2015, label: "Buy & hold QQQ 100% (from 2015-10)", symbols: [QQQ], mode: hold, weight: 100,
        start: "2015-10-01"}

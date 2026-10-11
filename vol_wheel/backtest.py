@@ -679,7 +679,8 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
     """Buy-and-hold at `weight`% (rest in T-bills), monthly rebalance. Weights: equal across eligible
     names, or `weights` {sym: %} renormalized over the eligible ones. `rotate` {lookback, top, abs}:
     each month hold only the `top` names with the best trailing `lookback`-day return, and only those
-    beating T-bills over the same span when `abs` (dual momentum); otherwise T-bills."""
+    beating T-bills over the same span when `abs` (dual momentum); otherwise T-bills. `trend_sma`:
+    at each monthly rebalance a name closing below its N-day average gets its weight in T-bills."""
     bt = rules["backtest"]
     cal = rates.index[(rates.index >= start) & (rates.index <= end)]
     syms = [s for s in variant["symbols"] if s in frames]
@@ -705,6 +706,16 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
         if d.month != last_month:
             last_month = d.month
             elig = [s for s in px_ok if frames[s]["close"].loc[meta["first_date"][s]:d].count() >= min_bars]
+            tsma = variant.get("trend_sma")
+            elig_all = elig
+            if tsma and elig:
+                past = closes_all.loc[:d]
+                off = [s for s in elig if past[s].count() >= tsma and past[s].iloc[-1] < past[s].iloc[-tsma:].mean()]
+                months_cash += len(off)   # name-months in T-bills
+                for s in elig:
+                    if s not in off:
+                        months_in[s] += 1
+                elig = [s for s in elig if s not in off]
             if rot and elig:
                 lb = rot.get("lookback", 252)
                 past = closes_all.loc[:d]
@@ -721,11 +732,12 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
                     cash += held[s] * px_ok[s]
                     held[s] = 0.0
             if elig:
+                base = elig_all if tsma else elig
                 if weights:
-                    tot = sum(weights.get(s, 0) for s in elig) or 1.0
+                    tot = sum(weights.get(s, 0) for s in base) or 1.0
                     wts = {s: weights.get(s, 0) / tot for s in elig}
                 else:
-                    wts = {s: 1 / len(elig) for s in elig}
+                    wts = {s: 1 / len(base) for s in elig}
                 for s in elig:
                     tgt = E * w * wts[s]
                     held[s] = tgt / px_ok[s]
@@ -734,7 +746,7 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
     eqs = pd.Series(eq, index=cal)
     out = metrics(eqs, rates.reindex(cal), bt)
     out["avg_deployed_pct"] = round(w * 100, 1)
-    if rot:
+    if rot or variant.get("trend_sma"):
         n = max(sum(months_in.values()) + months_cash, 1)
         out["months_held_pct"] = {**{s: round(100 * c / n) for s, c in months_in.items()},
                                   "T-bills": round(100 * months_cash / n)}
