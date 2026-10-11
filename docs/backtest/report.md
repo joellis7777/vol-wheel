@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T18:02Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T18:41Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -70,6 +70,25 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | Mix · QQQ 60 / GLD 40 (2007→) | 13.9% | 15.4% | 0.82 | -37.1% | -24.1% | +12.4% | +27.5% | -20.8% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 69.9% | 65.4% | 1.11 | -83.0% | -74.5% | – | +201.1% | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 19.8% | 22.1% | 0.83 | -35.6% | -33.1% | – | +32.4% | -33.7% | 100% | – | – | – | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band) | 29.2% | 19.3% | 1.31 | -35.6% | -30.0% | – | +54.4% | -30.2% | 99% | – | 0 | 0.0% | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with options (stock IV 1x HV) | 27.9% | 19.0% | 1.28 | -36.0% | -29.0% | – | +49.3% | -29.3% | 88% | – | 9 | 2.6% | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with options | 28.3% | 19.2% | 1.28 | -35.4% | -28.4% | – | +49.8% | -28.7% | 87% | – | 8 | 3.2% | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with options (stock IV 1.3x HV) | 30.0% | 19.6% | 1.33 | -35.8% | -29.1% | – | +53.2% | -29.3% | 88% | – | 13 | 2.7% | – |
+| Core +XLE 50/20/15/15 · rebalanced with stock | 27.9% | 18.9% | 1.28 | -30.5% | -20.8% | – | +38.7% | -21.4% | 98% | – | 0 | 0.0% | – |
+| Core +XLE 50/20/15/15 · rebalanced with options (stock IV 1x HV) | 27.0% | 19.2% | 1.23 | -31.0% | -22.6% | – | +41.7% | -23.0% | 91% | – | 11 | 2.1% | – |
+| Core +XLE 50/20/15/15 · rebalanced with options | 28.1% | 19.3% | 1.27 | -31.2% | -21.4% | – | +41.8% | -21.9% | 91% | – | 12 | 2.5% | – |
+| Core +XLE 50/20/15/15 · rebalanced with options (stock IV 1.3x HV) | 28.3% | 19.2% | 1.28 | -31.1% | -20.9% | – | +42.1% | -21.4% | 90% | – | 11 | 2.7% | – |
+| Core +XLE · options, stock for gaps > 8% (stock IV 1x HV) | 26.6% | 18.3% | 1.27 | -29.8% | -19.6% | – | +41.1% | -20.1% | 91% | – | 9 | 2.5% | – |
+| Core +XLE · options, stock for gaps > 8% | 26.8% | 18.4% | 1.26 | -30.3% | -19.4% | – | +40.4% | -19.9% | 92% | – | 8 | 2.6% | – |
+| Core +XLE · options, stock for gaps > 8% (stock IV 1.3x HV) | 27.1% | 18.4% | 1.28 | -30.2% | -19.0% | – | +40.7% | -19.5% | 91% | – | 8 | 2.7% | – |
+| Core +XLE · options · 80% invested (20% SGOV) (stock IV 1x HV) | 22.7% | 15.5% | 1.26 | -24.8% | -16.7% | – | +33.2% | -17.2% | 74% | – | 6 | 2.0% | – |
+| Core +XLE · options · 80% invested (20% SGOV) | 22.0% | 15.5% | 1.22 | -25.7% | -17.9% | – | +34.4% | -18.3% | 76% | – | 4 | 1.3% | – |
+| Core +XLE · options · 80% invested (20% SGOV) (stock IV 1.3x HV) | 22.2% | 15.4% | 1.24 | -25.1% | -17.1% | – | +35.4% | -17.6% | 75% | – | 4 | 1.6% | – |
+| Mix · core +XLE · monthly rebalance · 80% invested | 22.4% | 15.3% | 1.26 | -24.9% | -17.5% | – | +31.4% | -17.9% | 80% | – | – | – | – |
+| Core QQQ 60/GLD 25/XLE 15 · stock (2007→) | 13.1% | 17.1% | 0.72 | -43.6% | -31.7% | -0.9% | +20.1% | -15.0% | 98% | – | 0 | 0.0% | – |
+| Core QQQ 60/GLD 25/XLE 15 · options (2007→) (stock IV 1x HV) | 13.4% | 16.5% | 0.75 | -41.5% | -29.4% | -0.0% | +22.9% | -14.3% | 96% | – | 10 | 0.8% | – |
+| Core QQQ 60/GLD 25/XLE 15 · options (2007→) | 13.6% | 16.4% | 0.76 | -41.5% | -29.3% | +0.0% | +23.1% | -13.5% | 97% | – | 10 | 0.6% | – |
+| Core QQQ 60/GLD 25/XLE 15 · options (2007→) (stock IV 1.3x HV) | 13.5% | 16.5% | 0.75 | -41.5% | -29.3% | +0.1% | +21.1% | -13.7% | 97% | – | 9 | 0.7% | – |
 | QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -2.4% | 9.6% | -0.36 | -53.0% | -23.1% | -13.6% | +7.8% | -23.8% | 95% | – | – | 45.7% | – |
 | QQQ PMCC · trend calls, no filter/exits | 0.1% | 10.8% | -0.08 | -35.7% | -31.6% | -9.2% | +9.3% | -32.2% | 105% | – | – | 58.4% | – |
@@ -124,6 +143,17 @@ Rotation variants (share of months holding each):
 
 - Rotate · QQQ or GLD by 12-month momentum (else T-bills): QQQ 57%, GLD 35%, T-bills 8%
 - Rotate · QQQ / GLD / BTC by 12-month momentum: QQQ 14%, GLD 11%, BTC-USD 66%, T-bills 8%
+
+Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):
+
+- Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band): QQQ 60% · GLD 24% · BTC-USD 15%; premium 0.0%/yr, stock turnover 28%/yr, 0 puts / 0 calls, assigned 0, called away 0; positive months 67%, worst 12 months -35.3%
+- Core QQQ 60/GLD 25/BTC 15 · rebalanced with options: QQQ 52% · GLD 17% · BTC-USD 18%; premium 3.2%/yr, stock turnover 1%/yr, 406 puts / 95 calls, assigned 8, called away 10; positive months 65%, worst 12 months -35.0%
+- Core +XLE 50/20/15/15 · rebalanced with stock: QQQ 50% · GLD 19% · BTC-USD 15% · XLE 14%; premium 0.0%/yr, stock turnover 30%/yr, 0 puts / 0 calls, assigned 0, called away 0; positive months 65%, worst 12 months -27.5%
+- Core +XLE 50/20/15/15 · rebalanced with options: QQQ 44% · GLD 16% · BTC-USD 18% · XLE 12%; premium 2.5%/yr, stock turnover 2%/yr, 286 puts / 97 calls, assigned 12, called away 12; positive months 66%, worst 12 months -28.6%
+- Core +XLE · options, stock for gaps > 8%: QQQ 48% · GLD 18% · BTC-USD 14% · XLE 12%; premium 2.6%/yr, stock turnover 6%/yr, 276 puts / 47 calls, assigned 8, called away 6; positive months 67%, worst 12 months -25.2%
+- Core +XLE · options · 80% invested (20% SGOV): QQQ 38% · GLD 14% · BTC-USD 14% · XLE 10%; premium 1.3%/yr, stock turnover 2%/yr, 130 puts / 73 calls, assigned 4, called away 9; positive months 65%, worst 12 months -24.5%
+- Core QQQ 60/GLD 25/XLE 15 · stock (2007→): QQQ 61% · GLD 24% · XLE 13%; premium 0.0%/yr, stock turnover 13%/yr, 0 puts / 0 calls, assigned 0, called away 0; positive months 65%, worst 12 months -39.0%
+- Core QQQ 60/GLD 25/XLE 15 · options (2007→): QQQ 60% · GLD 24% · XLE 12%; premium 0.6%/yr, stock turnover 1%/yr, 181 puts / 122 calls, assigned 10, called away 10; positive months 65%, worst 12 months -37.1%
 
 Target-allocation variants (shares held by distance below the high; consistency = % of positive months and the worst 12-month return):
 
@@ -220,6 +250,25 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | Mix · QQQ 60 / GLD 40 (2007→) | 16.2% | 16.3% | 0.80 | -26.3% | -20.8% | – | – | -20.8% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 17.7% | 57.1% | 0.51 | -76.6% | -64.1% | – | – | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 16.6% | 22.4% | 0.65 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band) | 18.3% | 19.5% | 0.79 | -36.7% | -30.6% | – | – | -30.8% | 99% | – | 0 | 0.0% | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with options (stock IV 1x HV) | 16.8% | 19.9% | 0.72 | -38.6% | -32.1% | – | – | -32.3% | 97% | – | 1 | 1.1% | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with options | 16.8% | 19.9% | 0.72 | -38.8% | -32.1% | – | – | -32.3% | 97% | – | 1 | 1.1% | – |
+| Core QQQ 60/GLD 25/BTC 15 · rebalanced with options (stock IV 1.3x HV) | 16.8% | 19.9% | 0.71 | -38.6% | -32.0% | – | – | -32.2% | 98% | – | 1 | 1.1% | – |
+| Core +XLE 50/20/15/15 · rebalanced with stock | 20.2% | 18.5% | 0.92 | -29.2% | -20.9% | – | – | -21.5% | 99% | – | 0 | 0.0% | – |
+| Core +XLE 50/20/15/15 · rebalanced with options (stock IV 1x HV) | 18.5% | 18.7% | 0.83 | -29.7% | -20.6% | – | – | -21.3% | 96% | – | 4 | 1.2% | – |
+| Core +XLE 50/20/15/15 · rebalanced with options | 18.8% | 18.7% | 0.84 | -29.4% | -20.1% | – | – | -20.7% | 95% | – | 3 | 1.6% | – |
+| Core +XLE 50/20/15/15 · rebalanced with options (stock IV 1.3x HV) | 19.3% | 18.6% | 0.86 | -29.1% | -19.3% | – | – | -20.0% | 95% | – | 2 | 1.9% | – |
+| Core +XLE · options, stock for gaps > 8% (stock IV 1x HV) | 19.9% | 18.5% | 0.90 | -28.6% | -19.4% | – | – | -20.1% | 94% | – | 4 | 1.9% | – |
+| Core +XLE · options, stock for gaps > 8% | 19.9% | 18.4% | 0.90 | -28.4% | -19.1% | – | – | -19.7% | 94% | – | 4 | 2.0% | – |
+| Core +XLE · options, stock for gaps > 8% (stock IV 1.3x HV) | 19.9% | 18.5% | 0.90 | -27.9% | -18.4% | – | – | -19.1% | 94% | – | 3 | 2.5% | – |
+| Core +XLE · options · 80% invested (20% SGOV) (stock IV 1x HV) | 16.0% | 14.9% | 0.85 | -23.4% | -14.7% | – | – | -15.3% | 77% | – | 1 | 1.3% | – |
+| Core +XLE · options · 80% invested (20% SGOV) | 15.4% | 15.1% | 0.81 | -22.8% | -14.1% | – | – | -14.7% | 77% | – | 0 | 1.5% | – |
+| Core +XLE · options · 80% invested (20% SGOV) (stock IV 1.3x HV) | 15.4% | 15.1% | 0.81 | -22.8% | -14.0% | – | – | -14.6% | 77% | – | 0 | 1.7% | – |
+| Mix · core +XLE · monthly rebalance · 80% invested | 17.1% | 15.0% | 0.91 | -23.4% | -17.5% | – | – | -17.9% | 80% | – | – | – | – |
+| Core QQQ 60/GLD 25/XLE 15 · stock (2007→) | 17.9% | 16.2% | 0.90 | -21.7% | -14.8% | – | – | -15.4% | 100% | – | 0 | 0.0% | – |
+| Core QQQ 60/GLD 25/XLE 15 · options (2007→) (stock IV 1x HV) | 17.4% | 16.1% | 0.87 | -20.3% | -13.2% | – | – | -13.9% | 96% | – | 2 | 0.6% | – |
+| Core QQQ 60/GLD 25/XLE 15 · options (2007→) | 17.4% | 16.1% | 0.88 | -20.2% | -13.0% | – | – | -13.7% | 96% | – | 2 | 0.7% | – |
+| Core QQQ 60/GLD 25/XLE 15 · options (2007→) (stock IV 1.3x HV) | 17.6% | 16.3% | 0.87 | -20.0% | -12.5% | – | – | -13.3% | 99% | – | 1 | 0.5% | – |
 | QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -1.8% | 9.5% | -0.49 | -29.4% | -19.3% | – | – | -20.0% | 88% | – | – | 43.6% | – |
 | QQQ PMCC · trend calls, no filter/exits | -0.9% | 11.3% | -0.32 | -35.6% | -31.1% | – | – | -31.8% | 106% | – | – | 64.2% | – |
@@ -274,6 +323,17 @@ Rotation variants (share of months holding each):
 
 - Rotate · QQQ or GLD by 12-month momentum (else T-bills): QQQ 47%, GLD 40%, T-bills 13%
 - Rotate · QQQ / GLD / BTC by 12-month momentum: QQQ 9%, GLD 21%, BTC-USD 57%, T-bills 13%
+
+Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):
+
+- Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band): QQQ 60% · GLD 24% · BTC-USD 15%; premium 0.0%/yr, stock turnover 26%/yr, 0 puts / 0 calls, assigned 0, called away 0; positive months 65%, worst 12 months -36.4%
+- Core QQQ 60/GLD 25/BTC 15 · rebalanced with options: QQQ 59% · GLD 22% · BTC-USD 16%; premium 1.1%/yr, stock turnover 12%/yr, 69 puts / 29 calls, assigned 1, called away 1; positive months 64%, worst 12 months -38.5%
+- Core +XLE 50/20/15/15 · rebalanced with stock: QQQ 49% · GLD 20% · BTC-USD 15% · XLE 15%; premium 0.0%/yr, stock turnover 26%/yr, 0 puts / 0 calls, assigned 0, called away 0; positive months 64%, worst 12 months -28.0%
+- Core +XLE 50/20/15/15 · rebalanced with options: QQQ 48% · GLD 16% · BTC-USD 17% · XLE 15%; premium 1.6%/yr, stock turnover 11%/yr, 78 puts / 47 calls, assigned 3, called away 3; positive months 64%, worst 12 months -27.7%
+- Core +XLE · options, stock for gaps > 8%: QQQ 48% · GLD 16% · BTC-USD 15% · XLE 14%; premium 2.0%/yr, stock turnover 12%/yr, 117 puts / 33 calls, assigned 4, called away 3; positive months 64%, worst 12 months -26.7%
+- Core +XLE · options · 80% invested (20% SGOV): QQQ 38% · GLD 14% · BTC-USD 14% · XLE 12%; premium 1.5%/yr, stock turnover 9%/yr, 31 puts / 46 calls, assigned 0, called away 1; positive months 64%, worst 12 months -21.3%
+- Core QQQ 60/GLD 25/XLE 15 · stock (2007→): QQQ 61% · GLD 24% · XLE 14%; premium 0.0%/yr, stock turnover 21%/yr, 0 puts / 0 calls, assigned 0, called away 0; positive months 70%, worst 12 months -17.2%
+- Core QQQ 60/GLD 25/XLE 15 · options (2007→): QQQ 60% · GLD 22% · XLE 14%; premium 0.7%/yr, stock turnover 11%/yr, 65 puts / 13 calls, assigned 2, called away 2; positive months 70%, worst 12 months -15.4%
 
 Target-allocation variants (shares held by distance below the high; consistency = % of positive months and the worst 12-month return):
 
