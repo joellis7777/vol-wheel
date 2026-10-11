@@ -107,6 +107,12 @@ changes, update this list in the same change.
     vs stock 23.4% / −79% (options better on a high-IV name; 23–34% across IV mults), hold 46.7% /
     −82%. Being light near highs costs return on a trending index (best QQQ wheel 15.2% / −39%);
     drawdown-based buying on MSTR hits 100% at −70% and then rides the rest of a −90% fall.
+  - MSTR target 2022 diagnosis (monthly trace): ~0% shares Sep 2020–Nov 2021 (puts never assigned in
+    the 10× run), then assigned all the way down: 2% Dec 2021 → 40% Feb → 67% Mar → ~90% Jun–Dec 2022
+    (plus ITM puts acting like shares) → 2022 −62%, 2023 +326%. Fixes: deeper schedule (100% only at
+    −88%) 25.3% / −42% (2022 −35%, 2023 +181%); + trend cap 40% below a falling 200-day 20.0% / −35%
+    (2022 −27%, 2023 +105%); + 10Δ core calls in the Low regime 18.4% / −34% (premium helped 2022 by
+    ~1 pt, capped the 2023 rebound). QQQ trend cap 60%: 11.2% / −32% vs 11.9% / −40%.
   - Nithu Sezni (@nithusezni, "The Orange Pill Investor", the "Soliel" Jordan follows): posted
     rules = calls only after a rally with IVR > 50 and ~20% upside buffer, Friday rolls, LEAPs after
     dips at low IVR with > 90 DTE (OTM LEAPs closed ~90 days out, deep-ITM ones become PMCCs),
