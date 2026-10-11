@@ -804,7 +804,8 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
         rules["universe"].get("Index", {}).get("opportunistic", []) or [])
     vol_map = dict(bt.get("vol_index", {}))
     variants = bt["variants"]
-    syms = sorted({s for v in variants for s in resolve_symbols(v["symbols"], rules)})
+    syms = sorted({s for v in variants for s in resolve_symbols(v["symbols"], rules)}
+                  | set(bt.get("correlation_symbols") or []))
     hists, info = {}, {}
     for s in syms + sorted(set(vol_map.values())):
         try:
@@ -851,7 +852,22 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             "vol_index_syms": {s for s in vol_map if vol_map[s] in hists},
             "first_date": {s: hists[s].index[0] for s in syms if s in hists}}
 
-    results = {"generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "data": info,
+    corr_syms = [s for s in (bt.get("correlation_symbols") or []) if s in hists]
+    corr = {}
+    if corr_syms:
+        m = pd.DataFrame({s: hists[s]["close"] for s in corr_syms})
+        m = m[m.index >= pd.Timestamp(bt.get("correlation_start", "2015-10-01"))]
+        mret = m.groupby([m.index.year, m.index.month]).last().pct_change(fill_method=None)
+        c = mret.corr(min_periods=24).round(2)
+        y22 = {s: round(float(m[s].loc["2022"].dropna().iloc[-1] / m[s].loc["2021"].dropna().iloc[-1] - 1) * 100, 1)
+               for s in corr_syms if m[s].loc["2021"].notna().any() and m[s].loc["2022"].notna().any()}
+        corr = {"symbols": corr_syms, "matrix": c.where(c.notna(), None).values.tolist(), "y2022": y22,
+                "start": bt.get("correlation_start", "2015-10-01")}
+        print("correlations (monthly returns since " + corr["start"] + "):", flush=True)
+        print(c.to_string(), flush=True)
+        print("2022 returns:", y22, flush=True)
+
+    results = {"generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "data": info, "correlations": corr,
                "cash_yield": rate_src, "stock_iv_mult": base_mult, "windows": {}}
     for wname, w in bt["windows"].items():
         start = pd.Timestamp(w["start"])
@@ -967,6 +983,15 @@ def report(res: dict, rules: dict) -> str:
             if v.get("pnl_by_symbol") and "@" not in key and len(v["pnl_by_symbol"]) > 1:
                 parts = ", ".join(f"{s} {p / 1000:+,.0f}k" for s, p in v["pnl_by_symbol"].items())
                 lines.append(f"- **{v['label']}** P&L by name (excl. interest): {parts}")
+        lines.append("")
+    cr = res.get("correlations") or {}
+    if cr.get("symbols"):
+        ss = cr["symbols"]
+        lines += [f"## Correlations (monthly returns since {cr['start']}) and 2022 returns", "",
+                  "| | " + " | ".join(ss) + " | 2022 |", "|---|" + "---|" * (len(ss) + 1)]
+        for s, row in zip(ss, cr["matrix"]):
+            cells = " | ".join("–" if x is None else f"{x:.2f}" for x in row)
+            lines.append(f"| {s} | {cells} | {cr['y2022'].get(s, '–')}% |")
         lines.append("")
     lines += ["## Data", ""]
     for s, i in res["data"].items():
