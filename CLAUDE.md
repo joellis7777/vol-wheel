@@ -171,6 +171,7 @@ vol_wheel/
                            history: variants from rules.yaml `backtest:`; `python -m vol_wheel.backtest`
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
   target.py                target-allocation scaling by drawdown, via options or stock (`mode: target`)
+  multi.py                 multi-asset core at fixed weights, rebalanced with options or stock (`mode: multi`)
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
 data/earnings.json         earnings cache: next/last report date + timing, implied move (workflow-written)
@@ -426,6 +427,12 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   puts on the shortfall, calls only on the excess, one slice per `every_days` plus one on a spike
   day, each struck off that day's price). Report adds shares held by drawdown bucket, positive
   months and worst 12 months.
+- `mode: multi` (`vol_wheel/multi.py`): a few assets at fixed `weights` of `invested_pct` of the
+  account, bought with stock on day one, then kept within `band_pct` either by trading stock
+  (`exec: stock`) or with options (`exec: options`: puts on underweights, secured by spare cash only,
+  calls on the overweight excess only; `stock_gap_pct` = hybrid, stock for big gaps). At 100%
+  invested there is no cash to secure puts, so options rebalancing only buys after calls are
+  exercised; `invested_pct: 80` (the SGOV reserve) is the realistic setting.
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions

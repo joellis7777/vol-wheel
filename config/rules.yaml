@@ -286,6 +286,7 @@ backtest:
     dte: 45
     stock_cost_bps: 5       # stock execution: cost per trade (bps of notional)
     high_lookback_days: null   # drawdown measured from the all-time high (or a rolling window)
+  liquid_option_syms: [QQQ, SPY, GLD, XLE, TLT]   # index-style slippage in mode: multi (others: stock slippage)
   # Extra symbols loaded only for the report's correlation table (diversifier candidates).
   correlation_symbols: [QQQ, SPY, GLD, BTC-USD, XLE, TLT, XLP, XLU, XLV, FNV, SLV, IEF]
   correlation_start: "2015-10-01"
@@ -437,6 +438,33 @@ backtest:
     - {name: btc_hold, label: "Buy & hold BTC 100%", symbols: [BTC-USD], mode: hold, weight: 100, start: "2015-10-01"}
     - {name: qqq_hold_2015, label: "Buy & hold QQQ 100% (from 2015-10)", symbols: [QQQ], mode: hold, weight: 100,
        start: "2015-10-01"}
+    # Core portfolio rebalanced with options vs stock (mode: multi; Jordan 2026-10-12). Starts fully invested
+    # at the weights; band 2% of the account; options = puts on underweights, calls on overweight excess.
+    - {name: mb_qgb_stock, label: "Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band)",
+       symbols: [QQQ, GLD, BTC-USD], mode: multi, exec: stock, weights: {QQQ: 60, GLD: 25, BTC-USD: 15},
+       start: "2015-10-01"}
+    - {name: mb_qgb_opts, label: "Core QQQ 60/GLD 25/BTC 15 · rebalanced with options",
+       symbols: [QQQ, GLD, BTC-USD], mode: multi, exec: options, weights: {QQQ: 60, GLD: 25, BTC-USD: 15},
+       start: "2015-10-01"}
+    - {name: mb_qgbx_stock, label: "Core +XLE 50/20/15/15 · rebalanced with stock",
+       symbols: [QQQ, GLD, BTC-USD, XLE], mode: multi, exec: stock,
+       weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLE: 15}, start: "2015-10-01"}
+    - {name: mb_qgbx_opts, label: "Core +XLE 50/20/15/15 · rebalanced with options",
+       symbols: [QQQ, GLD, BTC-USD, XLE], mode: multi, exec: options,
+       weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLE: 15}, start: "2015-10-01"}
+    - {name: mb_qgbx_hybrid, label: "Core +XLE · options, stock for gaps > 8%",
+       symbols: [QQQ, GLD, BTC-USD, XLE], mode: multi, exec: options, stock_gap_pct: 8,
+       weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLE: 15}, start: "2015-10-01"}
+    - {name: mb_qgbx_opts80, label: "Core +XLE · options · 80% invested (20% SGOV)",
+       symbols: [QQQ, GLD, BTC-USD, XLE], mode: multi, exec: options, invested_pct: 80,
+       weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLE: 15}, start: "2015-10-01"}
+    - {name: mix_qgb_xle_80, label: "Mix · core +XLE · monthly rebalance · 80% invested",
+       symbols: [QQQ, GLD, BTC-USD, XLE], mode: hold, weight: 80,
+       weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLE: 15}, start: "2015-10-01"}
+    - {name: mb_qgx_stock, label: "Core QQQ 60/GLD 25/XLE 15 · stock (2007→)", symbols: [QQQ, GLD, XLE],
+       mode: multi, exec: stock, weights: {QQQ: 60, GLD: 25, XLE: 15}}
+    - {name: mb_qgx_opts, label: "Core QQQ 60/GLD 25/XLE 15 · options (2007→)", symbols: [QQQ, GLD, XLE],
+       mode: multi, exec: options, weights: {QQQ: 60, GLD: 25, XLE: 15}}
     # Tom King's dynamic poor man's covered call (Theta Profits, 2026-03-29) and comparisons, sized
     # to 100% notional QQQ exposure (LEAP debit ~15-25% of the account, the rest in T-bills).
     - {name: qqq_pmcc_tom, label: "QQQ PMCC · Tom King rules", symbols: [QQQ], mode: pmcc, long: leap,
