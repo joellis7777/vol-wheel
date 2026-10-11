@@ -276,7 +276,8 @@ backtest:
   # mode: spike = the rulebook (sell only on qualifying spikes); always = tastytrade-style, a new
   # put every entry_every_days while IVR >= min_ivr; hold = buy-and-hold at weight% (rest in T-bills).
   # Optional per variant: entry_pct (number or {bucket: pct, default: pct}), caps ({total, per_name,
-  # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed), calls.
+  # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed or by
+  # regime), calls (spike|always), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps.
   variants:
     - {name: qqq_spike, label: "QQQ only · spikes", symbols: [QQQ], mode: spike, entry_pct: 15,
        caps: {total: 80, per_name: 80, Index: 80}}
@@ -297,6 +298,16 @@ backtest:
        caps: {total: 80, per_name: 80, Index: 80}}
     - {name: qqq_scale_ivr30, label: "QQQ scale in/out · VIX cap · puts only at IVR ≥ 30", symbols: [QQQ],
        mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 30, vix_caps: true,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    # Which side costs the return? Same always-on puts, different call policies.
+    - {name: qqq_puts_hold, label: "QQQ puts always on · calls only on up-spikes", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_scale_half, label: "QQQ scale in/out · calls on half the shares", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, call_coverage: 50,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_scale_high, label: "QQQ scale in/out · calls only in High regime", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, call_regimes: [High],
        caps: {total: 80, per_name: 80, Index: 80}}
     - {name: index_spike, label: "QQQ + SPY · spikes", symbols: [QQQ, SPY], mode: spike, entry_pct: 15,
        caps: {total: 80, per_name: 40, Index: 80}}
