@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T17:05Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T17:37Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -55,6 +55,14 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | MSTR target · deeper + trend cap + core calls at lows | 18.4% | 25.4% | 0.67 | -34.4% | -26.1% | – | +1.4% | -26.6% | 25% | – | 13 | 14.6% | 24.8% |
 | MSTR target · deeper + trend cap + core calls at lows (stock IV 1.3x HV) | 23.4% | 27.0% | 0.80 | -33.4% | -24.2% | – | +1.7% | -24.7% | 27% | – | 12 | 18.9% | 27.1% |
 | QQQ target 60%→100% · trend cap 60% below a falling 200-day | 11.2% | 14.2% | 0.71 | -32.3% | -23.4% | +4.7% | +22.5% | -23.9% | 62% | – | 9 | 1.4% | 61.8% |
+| Mix · QQQ 70 / GLD 30 (monthly rebalance) | 14.4% | 16.6% | 0.80 | -41.3% | -28.7% | +6.3% | +28.9% | -24.1% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 50 | 13.3% | 14.7% | 0.82 | -33.8% | -19.3% | +18.3% | +26.1% | -17.4% | 100% | – | – | – | – |
+| Rotate · QQQ or GLD by 12-month momentum (else T-bills) | 11.2% | 19.3% | 0.57 | -32.8% | -19.2% | +25.1% | +12.9% | -19.7% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 25 / BTC 15 | 28.7% | 19.3% | 1.29 | -36.5% | -30.8% | – | +50.5% | -31.0% | 100% | – | – | – | – |
+| Mix · QQQ 80 / BTC 20 | 33.4% | 24.6% | 1.21 | -44.8% | -39.5% | – | +61.0% | -40.0% | 100% | – | – | – | – |
+| Rotate · QQQ / GLD / BTC by 12-month momentum | 56.1% | 57.6% | 1.03 | -82.2% | -61.0% | – | +160.6% | -26.4% | 100% | – | – | – | – |
+| Buy & hold BTC 100% | 69.9% | 65.4% | 1.11 | -83.0% | -74.5% | – | +201.1% | -64.3% | 100% | – | – | – | – |
+| Buy & hold QQQ 100% (from 2015-10) | 19.8% | 22.1% | 0.83 | -35.6% | -33.1% | – | +32.4% | -33.7% | 100% | – | – | – | – |
 | QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -2.4% | 9.6% | -0.36 | -53.0% | -23.1% | -13.6% | +7.8% | -23.8% | 95% | – | – | 45.7% | – |
 | QQQ PMCC · trend calls, no filter/exits | 0.1% | 10.8% | -0.08 | -35.7% | -31.6% | -9.2% | +9.3% | -32.2% | 105% | – | – | 58.4% | – |
@@ -104,6 +112,11 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - Index core 50% + satellites · spikes: Low 55% · Mid 67% · High 73%
 - Basket · always on: Low 45% · Mid 31% · High 30%
 - Basket scale in/out · VIX-scaled cap: Low 39% · Mid 26% · High 25%
+
+Rotation variants (share of months holding each):
+
+- Rotate · QQQ or GLD by 12-month momentum (else T-bills): QQQ 57%, GLD 35%, T-bills 8%
+- Rotate · QQQ / GLD / BTC by 12-month momentum: QQQ 14%, GLD 11%, BTC-USD 66%, T-bills 8%
 
 Target-allocation variants (shares held by distance below the high; consistency = % of positive months and the worst 12-month return):
 
@@ -185,6 +198,14 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | MSTR target · deeper + trend cap + core calls at lows | 19.3% | 26.1% | 0.68 | -34.4% | -26.1% | – | – | -26.6% | 26% | – | 13 | 14.8% | 26.2% |
 | MSTR target · deeper + trend cap + core calls at lows (stock IV 1.3x HV) | 24.6% | 27.8% | 0.82 | -33.4% | -24.2% | – | – | -24.7% | 29% | – | 12 | 19.2% | 28.7% |
 | QQQ target 60%→100% · trend cap 60% below a falling 200-day | 11.9% | 13.2% | 0.68 | -15.8% | -13.0% | – | – | -13.0% | 51% | – | 7 | 2.6% | 51.0% |
+| Mix · QQQ 70 / GLD 30 (monthly rebalance) | 16.4% | 17.4% | 0.77 | -28.6% | -24.0% | – | – | -24.1% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 50 | 15.9% | 15.5% | 0.82 | -24.0% | -17.6% | – | – | -17.4% | 100% | – | – | – | – |
+| Rotate · QQQ or GLD by 12-month momentum (else T-bills) | 14.2% | 19.2% | 0.62 | -26.1% | -18.9% | – | – | -19.7% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 25 / BTC 15 | 18.7% | 19.7% | 0.81 | -36.5% | -30.8% | – | – | -31.0% | 100% | – | – | – | – |
+| Mix · QQQ 80 / BTC 20 | 19.4% | 24.6% | 0.71 | -44.8% | -39.5% | – | – | -40.0% | 100% | – | – | – | – |
+| Rotate · QQQ / GLD / BTC by 12-month momentum | 20.1% | 46.3% | 0.56 | -59.2% | -26.2% | – | – | -26.4% | 100% | – | – | – | – |
+| Buy & hold BTC 100% | 17.7% | 57.1% | 0.51 | -76.6% | -64.1% | – | – | -64.3% | 100% | – | – | – | – |
+| Buy & hold QQQ 100% (from 2015-10) | 16.6% | 22.4% | 0.65 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
 | QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -1.8% | 9.5% | -0.49 | -29.4% | -19.3% | – | – | -20.0% | 88% | – | – | 43.6% | – |
 | QQQ PMCC · trend calls, no filter/exits | -0.9% | 11.3% | -0.32 | -35.6% | -31.1% | – | – | -31.8% | 106% | – | – | 64.2% | – |
@@ -235,6 +256,11 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - Basket · always on: Low 47% · Mid 28% · High 34%
 - Basket scale in/out · VIX-scaled cap: Low 38% · Mid 26% · High 33%
 
+Rotation variants (share of months holding each):
+
+- Rotate · QQQ or GLD by 12-month momentum (else T-bills): QQQ 47%, GLD 40%, T-bills 13%
+- Rotate · QQQ / GLD / BTC by 12-month momentum: QQQ 9%, GLD 21%, BTC-USD 57%, T-bills 13%
+
 Target-allocation variants (shares held by distance below the high; consistency = % of positive months and the worst 12-month return):
 
 - QQQ target 40%→100% shares by drawdown · via options: in shares near high (<10%) 38% · 10-30% down 53% · >30% down 69%; positive months 67%, worst 12 months -14.2%; premium 3.1%/yr, 134 puts / 59 calls, assigned 9, called away 7
@@ -267,6 +293,7 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 ## Data
 
 - AMZN: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
+- BTC-USD: yahoo 2014-09-17 → 2026-10-11 (4408 bars)
 - CEG: cboe 2022-02-02 → 2026-10-08 (1176 bars); history before 2022-02-02 dropped (3614-day gap: earlier listing)
 - FNV: cboe 2011-09-08 → 2026-10-08 (3795 bars)
 - GLD: cboe 2006-01-03 → 2026-10-08 (5226 bars); bars before 2006-01-03 dropped
