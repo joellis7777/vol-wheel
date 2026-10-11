@@ -256,6 +256,17 @@ def signal_frame(hist: pd.DataFrame, rules: dict, vol_index: pd.Series | None = 
 
 # ---------------------------------------------------------------- engine
 
+def vix_cap(vix: float, bands: list) -> float | None:
+    """Total-deployment cap (% of account) for a VIX level: bands = [[vix_at_or_above, cap_pct], ...]."""
+    if vix is None or not np.isfinite(vix) or not bands:
+        return None
+    cap = None
+    for lo, pct in sorted(bands):
+        if vix >= lo:
+            cap = pct
+    return cap
+
+
 @dataclass
 class Opt:
     sym: str
@@ -286,6 +297,12 @@ class Sim:
             valid = frames[s]["close"].dropna()
             self.elig_from[s] = valid.index[min_bars - 1] if len(valid) >= min_bars else None
         self.last_atm: dict = {}
+        vix = meta.get("vix")
+        self.vix = (vix.reindex(vix.index.union(self.cal)).ffill().reindex(self.cal).to_numpy()
+                    if vix is not None else np.full(len(self.cal), np.nan))
+        bands = variant.get("vix_caps")
+        self.vix_bands = rules.get("deployment", {}).get("vix_caps") if bands is True else bands
+        self.lead_regime: list = []        # regime of the first symbol, for the scaling check
         self.cash = float(self.bt["account"])
         self.shares = {s: 0.0 for s in self.syms}
         self.basis = {s: 0.0 for s in self.syms}
@@ -348,6 +365,10 @@ class Sim:
         name_cap = self._cap(sym, self._cap("per_name", name_cap)) / 100
         bcap = self._cap(bucket, u["universe"].get(bucket, {}).get("cap", 100)) / 100
         tcap = self._cap("total", u["total_deployed_cap"]) / 100
+        if self.vix_bands:
+            vc = vix_cap(self.vix[self.i], self.vix_bands)
+            if vc is not None:
+                tcap = vc / 100
         in_bucket = sum(v for s, v in by_sym.items() if self.meta["bucket"].get(s) == bucket)
         collateral = sum(o.strike * o.qty for o in self.opts if o.cp == "P")
         free_cash = self.cash - collateral
@@ -358,12 +379,13 @@ class Sim:
         rules, th, bt = self.rules, self.rules["thresholds"], self.bt
         mgmt = rules["management"]
         tp = mgmt["take_profit_pct"] / 100
-        decide_dte = mgmt["decide_dte"]
+        decide_dte = self.v.get("decide_dte", mgmt["decide_dte"])
         dte = bt.get("dte", rules["strikes"]["dte_target"])
         mode = self.v["mode"]
         cb = bt.get("circuit_breakers") or {}
         prev_d = None
         for i, d in enumerate(self.cal):
+            self.i = i
             r = float(self.rates.loc[d])
             if prev_d is not None:
                 self.cash *= 1 + r * (d - prev_d).days / 365.0
@@ -393,8 +415,8 @@ class Sim:
                 row = rows[s]
                 if row is None or prices[s] <= 0 or not self._eligible(s, d):
                     continue
-                self._maybe_put(s, row, d, i, E, prices, r, dte, size_mult, index_only, mode)
-                self._maybe_call(s, row, d, i, E, r, dte, mode)
+                self._maybe_put(s, row, d, i, E, prices, r, self._dte(row["regime"], dte), size_mult, index_only, mode)
+                self._maybe_call(s, row, d, i, E, r, self._dte(row["regime"], dte), mode)
 
             E = self._equity(d, prices, atms, r)
             by_sym, total = self._exposure(prices)
@@ -402,6 +424,8 @@ class Sim:
             self.deployed.append(total / E if E > 0 else 0.0)
             self.short_open.append(bool(self.opts))
             self.in_shares.append(sum(self.shares[s] * prices[s] for s in self.syms) / E if E > 0 else 0.0)
+            lead = rows.get(self.syms[0]) if self.syms else None
+            self.lead_regime.append(lead["regime"] if lead is not None else None)
         self.final_prices = {s: (float(self.ffclose[s][-1]) if np.isfinite(self.ffclose[s][-1]) else 0.0)
                              for s in self.syms}
         return self
@@ -484,6 +508,12 @@ class Sim:
         if count:
             self.stats["puts_sold" if cp == "P" else "calls_sold"] += 1
         return o
+
+    def _dte(self, regime: str, default: int) -> int:
+        d = self.v.get("dte")
+        if d is None:
+            return default
+        return int(d.get(regime, default)) if isinstance(d, dict) else int(d)
 
     def _put_delta(self, regime: str) -> float:
         pd_ = self.v.get("put_delta")
@@ -575,6 +605,10 @@ class Sim:
         out = metrics(eq, self.rates.reindex(self.cal), self.bt)
         out["avg_deployed_pct"] = round(float(np.mean(self.deployed)) * 100, 1)
         out["avg_shares_pct"] = round(float(np.mean(self.in_shares)) * 100, 1)
+        sh = pd.Series(self.in_shares)
+        rg = pd.Series(self.lead_regime)
+        out["shares_by_regime_pct"] = {k: round(float(sh[rg == k].mean()) * 100, 1)
+                                       for k in ("Low", "Mid", "High") if (rg == k).any()}
         out["days_with_shorts_pct"] = round(float(np.mean(self.short_open)) * 100, 1)
         yrs = max(len(eq) / TD, 1e-9)
         out["premium_per_year_pct"] = round(self.premium / yrs / float(eq.mean()) * 100, 2)
@@ -731,6 +765,7 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
 
     frames_by_mult = {m: frames_for(m) for m in sorted(set(mults) | {base_mult})}
     meta = {"bucket": bucket, "index_syms": index_syms,
+            "vix": hists["_VIX"]["close"] if "_VIX" in hists else None,
             "vol_index_syms": {s for s in vol_map if vol_map[s] in hists},
             "first_date": {s: hists[s].index[0] for s in syms if s in hists}}
 
@@ -795,6 +830,12 @@ def report(res: dict, rules: dict) -> str:
                          f"{st.get('assigned', '–')} | {_pct(v.get('premium_per_year_pct'))} | "
                          f"{_pct(v.get('avg_shares_pct'))} |")
         lines.append("")
+        scal = [f"{v['label']}: Low {v['shares_by_regime_pct'].get('Low', 0):.0f}% · "
+                f"Mid {v['shares_by_regime_pct'].get('Mid', 0):.0f}% · High {v['shares_by_regime_pct'].get('High', 0):.0f}%"
+                for k, v in w["variants"].items() if v.get("shares_by_regime_pct") and "@" not in k]
+        if scal:
+            lines += [f"Share of the account held as stock, by the first name's regime (scaling in at lows, out at highs):", ""]
+            lines += [f"- {x}" for x in scal] + [""]
         for key, v in w["variants"].items():
             if v.get("pnl_by_symbol") and "@" not in key and len(v["pnl_by_symbol"]) > 1:
                 parts = ", ".join(f"{s} {p / 1000:+,.0f}k" for s, p in v["pnl_by_symbol"].items())
