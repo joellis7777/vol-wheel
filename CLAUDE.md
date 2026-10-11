@@ -367,6 +367,11 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   extrinsic captured), `spike` (rulebook) or `none`; optional entry filter (close > SMA200,
   RSI14 > 35, EMA8 > EMA21) and exits (+100%, +50% in half the time, −30% of the LEAP debit).
   Weekly calls are priced off the 30-day IV × `weekly_iv_ratio`.
+- `roll_itm` ("roll until you're right"): at the 21-DTE decision an ITM option is rolled `dte` days out
+  to the best strike that still nets a credit (puts down, calls up), up to `max_rolls`, calls only in
+  `call_regimes`; no credit = held to expiry. Options opened at or inside `decide_dte` (short-DTE
+  variants) skip the decision and run to expiry. A variant's `start` clips the window (MSTR from
+  2020-09-01, its bitcoin-treasury era).
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions

@@ -277,7 +277,8 @@ backtest:
   # put every entry_every_days while IVR >= min_ivr; hold = buy-and-hold at weight% (rest in T-bills).
   # Optional per variant: entry_pct (number or {bucket: pct, default: pct}), caps ({total, per_name,
   # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed or by
-  # regime), calls (spike|always), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps.
+  # regime), calls (spike|always), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps,
+  # roll_itm {puts, calls, max_rolls, dte, call_regimes}, start (later window start for this variant).
   pmcc:                     # defaults for mode: pmcc variants (vol_wheel/pmcc.py)
     exposure_pct: 100       # long-leg notional (shares controlled x price) as % of the account
     leap_delta: 85
@@ -325,6 +326,43 @@ backtest:
     - {name: qqq_scale_high, label: "QQQ scale in/out · calls only in High regime", symbols: [QQQ], mode: always,
        entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, call_regimes: [High],
        caps: {total: 80, per_name: 80, Index: 80}}
+    # Jordan 2026-10-11: TA-style strikes and "roll until you're right" (Soliel). roll_itm rolls an ITM
+    # option at the 21-DTE decision to roll_itm.dte days out at the best strike that still nets a
+    # credit (puts down, calls up), up to max_rolls; call_regimes limits call rolls to those regimes.
+    - {name: qqq_roll_both, label: "QQQ puts+calls always · roll ITM both sides for credit", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true,
+       roll_itm: {puts: true, calls: true, max_rolls: 8, dte: 45}, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_calls_top, label: "QQQ puts always · 5–10Δ calls rolled up, assigned only in High regime",
+       symbols: [QQQ], mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true,
+       call_delta: {Low: 5, Mid: 10, High: 30}, roll_itm: {calls: true, call_regimes: [Low, Mid], max_rolls: 8, dte: 45},
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_lows_short, label: "QQQ puts always · 21-DTE 40Δ puts at lows · calls on up-spikes", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       dte: {Low: 21}, put_delta: {Low: 40, Mid: 20, High: 10}, caps: {total: 80, per_name: 80, Index: 80}}
+    # MSTR only, from its bitcoin-treasury era (Aug 2020). Soliel-style: heavy puts at lows, far-OTM calls
+    # rolled up and out to avoid assignment except near tops (High regime). Single-stock IV is modelled
+    # (stock_iv_mults sensitivity); momentum rule keeps calls on <= 50% of shares.
+    - {name: mstr_hold, label: "MSTR · buy & hold 80%", symbols: [MSTR], mode: hold, weight: 80, start: "2020-09-01"}
+    - {name: mstr_spike, label: "MSTR · spikes (current rules)", symbols: [MSTR], mode: spike, entry_pct: 15,
+       start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_puts_hold, label: "MSTR · puts always · calls on up-spikes", symbols: [MSTR], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, calls: spike, start: "2020-09-01",
+       caps: {total: 80, per_name: 80, Crypto: 80}}
+    # Nithu Sezni ("Soliel", The Orange Pill Investor) per his X posts: calls only after a rally with IVR > 50,
+    # ~20% above the price, rolled on Fridays; called away when a surge makes rolling unaffordable.
+    - {name: mstr_nithu, label: "MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up)", symbols: [MSTR],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, calls: spike, call_delta: 20,
+       roll_itm: {calls: true, max_rolls: 8, dte: 45}, start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_soliel, label: "MSTR · as described (40Δ puts at lows, calls rolled up until tops)",
+       symbols: [MSTR], mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, start: "2020-09-01",
+       put_delta: {Low: 40, Mid: 25, High: 15}, call_delta: {Low: 5, Mid: 10, High: 30},
+       roll_itm: {calls: true, call_regimes: [Low, Mid], max_rolls: 8, dte: 45},
+       caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_soliel_rollputs, label: "MSTR · as described + puts rolled down & out", symbols: [MSTR],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, start: "2020-09-01",
+       put_delta: {Low: 40, Mid: 25, High: 15}, call_delta: {Low: 5, Mid: 10, High: 30},
+       roll_itm: {puts: true, calls: true, call_regimes: [Low, Mid], max_rolls: 8, dte: 45},
+       caps: {total: 80, per_name: 80, Crypto: 80}}
     # Tom King's dynamic poor man's covered call (Theta Profits, 2026-03-29) and comparisons, sized
     # to 100% notional QQQ exposure (LEAP debit ~15-25% of the account, the rest in T-bills).
     - {name: qqq_pmcc_tom, label: "QQQ PMCC · Tom King rules", symbols: [QQQ], mode: pmcc, long: leap,

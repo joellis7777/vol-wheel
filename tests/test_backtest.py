@@ -224,3 +224,37 @@ def test_call_coverage_and_regimes(rules):
     assert calls and sum(o.qty for o in calls) == pytest.approx(half.shares["TEST"] * 0.5)
     none = _sim(rules, f, {"calls": "always", "call_regimes": ["Low"]})
     assert none.stats["calls_sold"] == 0
+
+
+def test_roll_until_right_puts_down_and_out(rules):
+    closes = np.r_[np.full(5, 100.0), np.full(80, 90.0)]       # put goes ITM and stays there
+    f = _frame(closes)
+    f.loc[f.index[0], "down"] = 2.0
+    held = _sim(rules, f)
+    assert held.stats["assigned"] == 1
+    rolled = _sim(rules, f, {"roll_itm": {"puts": True, "max_rolls": 6}})
+    assert rolled.stats["rolled_puts"] >= 1 and rolled.stats["assigned"] == 0
+    # stop just after the roll (24 calendar days in = 17 sessions): the new put is lower and later
+    just = _sim(rules, f.iloc[:19], {"roll_itm": {"puts": True, "max_rolls": 6}})
+    first = _sim(rules, f.iloc[:5])
+    k0 = first.opts[0].strike
+    puts = [o for o in just.opts if o.cp == "P"]
+    assert puts and puts[0].rolls == 1 and puts[0].strike < k0
+
+
+def test_roll_calls_only_outside_top_regime(rules):
+    closes = np.r_[np.full(5, 100.0), np.full(30, 70.0), np.full(5, 72.0), np.full(60, 95.0)]
+    f = _frame(closes, regime="High")
+    f.loc[f.index[0], "down"] = 2.0
+    base = {"calls": "always"}
+    rolled = _sim(rules, f, {**base, "roll_itm": {"calls": True, "call_regimes": ["Low", "Mid", "High"]}})
+    kept = _sim(rules, f, {**base, "roll_itm": {"calls": True, "call_regimes": ["Low", "Mid"]}})
+    assert rolled.stats["rolled_calls"] >= 1
+    assert kept.stats["rolled_calls"] == 0 and kept.stats["called_away"] >= 1
+
+
+def test_short_dte_entries_hold_to_expiry(rules):
+    f = _frame(np.full(12, 100.0), regime="Low")
+    f.loc[f.index[0], "down"] = 2.0
+    s = _sim(rules, f, {"dte": {"Low": 21}})
+    assert s.stats["closed_21dte"] == 0
