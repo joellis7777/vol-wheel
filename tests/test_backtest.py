@@ -287,3 +287,57 @@ def test_hold_trend_exit_moves_to_tbills(rules):
     trend = B.run_hold({"symbols": ["A"], "trend_sma": 200}, frames, meta, rates, rules, idx[0], idx[-1])
     assert trend["max_dd_pct"] > hold["max_dd_pct"]          # exits in the fall
     assert trend["months_held_pct"]["T-bills"] > 0
+
+
+def test_hold_trend_arm_and_falling(rules):
+    rules["backtest"]["min_history_days"] = 1
+    idx = pd.bdate_range("2020-01-01", periods=600)
+    closes = np.r_[np.linspace(100, 200, 300), np.linspace(200, 100, 300)]
+    frames = {"A": _frame(closes, regime="Mid").set_axis(idx)}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0]}}
+    base = {"symbols": ["A"], "trend_sma": 200}
+    plain = B.run_hold(base, frames, meta, rates, rules, idx[0], idx[-1])
+    # never stretched (always Mid) -> an armed exit never fires
+    armed = B.run_hold({**base, "trend_arm": {"high_within_days": 126}}, frames, meta, rates, rules, idx[0], idx[-1])
+    assert armed["months_held_pct"]["T-bills"] == 0 and plain["months_held_pct"]["T-bills"] > 0
+    hi = frames["A"].copy()
+    hi.iloc[250:320, hi.columns.get_loc("regime")] = "High"
+    armed_hi = B.run_hold({**base, "trend_arm": {"high_within_days": 126}}, {"A": hi}, meta, rates, rules,
+                          idx[0], idx[-1])
+    assert armed_hi["months_held_pct"]["T-bills"] > 0
+    falling = B.run_hold({**base, "trend_falling": True}, frames, meta, rates, rules, idx[0], idx[-1])
+    assert 0 < falling["months_held_pct"]["T-bills"] <= plain["months_held_pct"]["T-bills"]
+
+
+def test_hold_trend_to_defensive(rules):
+    rules["backtest"]["min_history_days"] = 1
+    idx = pd.bdate_range("2020-01-01", periods=600)
+    a = np.r_[np.linspace(100, 200, 300), np.linspace(200, 100, 300)]
+    bond = np.r_[np.full(300, 100.0), np.linspace(100, 150, 300)]      # rallies while A falls
+    frames = {"A": _frame(a).set_axis(idx), "TLT": _frame(bond).set_axis(idx)}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0], "TLT": idx[0]}}
+    tb = B.run_hold({"symbols": ["A"], "trend_sma": 200}, frames, meta, rates, rules, idx[0], idx[-1])
+    to = B.run_hold({"symbols": ["A"], "trend_sma": 200, "trend_to": {"symbols": ["TLT"], "lookback": 60}},
+                    frames, meta, rates, rules, idx[0], idx[-1])
+    assert to["final"] > tb["final"] and to["months_held_pct"]["TLT"] > 0
+
+
+def test_hold_collar_limits_the_fall(rules):
+    rules["backtest"]["min_history_days"] = 1
+    rules["backtest"]["costs"]["per_contract"] = 0.0
+    idx = pd.bdate_range("2020-01-01", periods=300)
+    closes = np.r_[np.full(100, 100.0), np.linspace(100, 60, 200)]
+    frames = {"A": _frame(closes, iv=0.2).set_axis(idx)}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0]}, "vol_index_syms": {"A"}, "index_syms": {"A"}}
+    hold = B.run_hold({"symbols": ["A"]}, frames, meta, rates, rules, idx[0], idx[-1])
+    col = B.run_hold({"symbols": ["A"], "collar": {"put_otm_pct": 10, "dte": 182, "roll_days": 91}},
+                     frames, meta, rates, rules, idx[0], idx[-1])
+    assert col["max_dd_pct"] > hold["max_dd_pct"] + 10 and col["collar_pnl_per_year_pct"] > 0
+    # zero-cost call: premium matches the put's
+    S, T, iv, slope = 100.0, 0.5, 0.2, 0.8
+    put = B.bs_price(S, 90, T, B.skew_iv(iv, S, 90, slope), "P", 0.0)
+    K = B._zero_cost_call(S, T, iv, slope, 0.0, put)
+    assert K > S and B.bs_price(S, K, T, B.skew_iv(iv, S, K, slope), "C", 0.0) == pytest.approx(put, rel=1e-3)
