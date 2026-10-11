@@ -78,3 +78,10 @@ def test_entry_filter_waits_for_uptrend(rules):
     s = _run(rules, f, {"long": "leap", "calls": "none", "entry_filter": "tom"})
     first_in = next(i for i, x in enumerate(s.exposure) if x > 0)
     assert first_in > 250                             # not while below the 200-day / in a downtrend
+
+
+def test_shares_stay_at_target_exposure(rules):
+    f = _frame(100 * 1.05 ** (np.arange(120) // 5))
+    s = _run(rules, f, {"long": "shares", "calls": "trend"})
+    assert s.cash >= -1e-6                            # buybacks never borrow
+    assert max(s.exposure) < 1.15
