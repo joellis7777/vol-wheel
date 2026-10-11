@@ -146,6 +146,20 @@ changes, update this list in the same change.
     2015-16, 2019, 2025); QQQ/GLD equal 13.3% / −34% vs exit 10.3% / −18%. A monthly check misses
     fast crashes (2020 drawdown unchanged). Equal weight with BTC's hindsight 2017 (+224% for the mix)
     is why 2015→ CAGRs are so high.
+  - Defensive-exit refinements (2026-10-12; hold `trend_arm`, `trend_falling`, `trend_to`, `collar`):
+    (a) Arming the exit only after a High regime (stretched market) misses tops that weren't stretched:
+    QQQ 2007→ 11.8% / −54% (2008 −42%, not caught) vs plain exit 12.7% / −29%. Exiting only below a
+    *falling* 200-day is the best QQQ rule: 14.7% / −29% vs hold 15.4% / −54% (2008 −21%, 2022 −18% vs
+    −34%; ~11% of months out). On the BTC core it is slower: equal QQQ/GLD/BTC falling 34.9% / −31%
+    (2022 −18%) vs plain 33.5% / −29% (2022 −9%); QQQ/GLD 2007→ 11.5% / −21% vs plain 10.3% / −18%.
+    Untested: plain exit for BTC + falling exit for QQQ/GLD. (b) Exited weight to the best-trending
+    of TLT / UUP instead of T-bills: ~+1%/yr on mixes (QQQ/GLD 11.4% vs 10.3%, worst 12m −7.5% vs
+    −12.6%; core 34.4% vs 33.5%), nothing on QQQ alone (TLT/UUP fell in the 2009 rebound); + XLE as a
+    destination 36.8% / −36% (2022 +11%, but 2018 −26%). (c) Collars (10% put, zero-cost call, 6m,
+    re-struck quarterly, skew scaled by √(45/DTE)): always-on QQQ 6.0% / −25% (≈ −10%/yr option
+    P&L); only in the High regime 12.2% / −54% (didn't cover 2008/2022); 10% puts only in High 14.7%
+    / −54% (−0.8%/yr, 2020 +44% vs +32%, nothing in slow bears); on the BTC core collars cost
+    ~19%/yr (2017 +24% vs +224%). Fast crashes are what the monthly trend exit misses and puts catch.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
@@ -452,6 +466,13 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   calls on the overweight excess only; `stock_gap_pct` = hybrid, stock for big gaps). At 100%
   invested there is no cash to secure puts, so options rebalancing only buys after calls are
   exercised; `invested_pct: 80` (the SGOV reserve) is the realistic setting.
+- Hold mode (`run_hold`) defensive knobs, checked at the monthly rebalance: `trend_sma` (below the
+  N-day average → T-bills until back above), `trend_falling` (only while that average is falling),
+  `trend_arm` {symbols, high_within_days} (exit needs a High regime in the window), `trend_to`
+  {symbols, lookback} (exited weight to the best-trending defensive name if it beats T-bills),
+  `collar` {put_otm_pct, dte, roll_days, call, call_otm_pct, regimes} (puts financed by zero-cost
+  calls, legs resized to the holding at each rebalance; longer-dated skew = slope × √(45/DTE),
+  `skew_term_days`).
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions
