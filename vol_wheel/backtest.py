@@ -277,6 +277,7 @@ class Opt:
     expiry: pd.Timestamp
     entry_mid: float
     rolls: int = 0
+    dte0: int = 45   # DTE at entry; options opened at or inside the decision DTE are held to expiry
 
 
 class Sim:
@@ -311,6 +312,7 @@ class Sim:
         self.last_call_day: dict = {}
         self.cf = {s: 0.0 for s in self.syms}   # per-name cash flow (P&L attribution)
         self.stats = {k: 0 for k in ("puts_sold", "calls_sold", "closed_profit", "closed_21dte", "rolled",
+                                     "rolled_puts", "rolled_calls",
                                      "assigned", "called_away", "expired_worthless", "breaker_days")}
         self.premium = 0.0
         self.peak = self.cash
@@ -459,13 +461,16 @@ class Sim:
                 keep.append(o)
                 continue
             mark = self._mark(o, S, atm, d, r)
+            decide = left <= decide_dte and o.dte0 > decide_dte
             if mark <= (1 - tp) * o.entry_mid:
                 self._buy_back(o, mark)
                 self.stats["closed_profit"] += 1
-            elif left <= decide_dte and not itm:
+            elif decide and itm and self._roll_itm_ok(o, i):
+                keep.append(self._roll_for_credit(o, mark, S, atm, d, r) or o)
+            elif decide and not itm:
                 self._buy_back(o, mark)
                 self.stats["closed_21dte"] += 1
-            elif left <= decide_dte and self.bt.get("decide_itm") == "roll" and o.rolls < self.bt.get("max_rolls", 1):
+            elif decide and self.bt.get("decide_itm") == "roll" and o.rolls < self.bt.get("max_rolls", 1):
                 self._buy_back(o, mark)
                 self.stats["rolled"] += 1
                 reopen.append((o, atm))
@@ -476,6 +481,46 @@ class Sim:
             n = self._sell(o.sym, o.cp, o.strike, o.qty, d, atm, r, dte, count=False)
             if n:
                 n.rolls = o.rolls + 1
+
+    def _roll_itm_ok(self, o: Opt, i: int) -> bool:
+        """'Roll until you're right': variant roll_itm = {puts, calls, max_rolls, call_regimes}."""
+        ri = self.v.get("roll_itm")
+        if not ri or o.rolls >= ri.get("max_rolls", 6):
+            return False
+        if o.cp == "P":
+            return bool(ri.get("puts"))
+        if not ri.get("calls"):
+            return False
+        regimes = ri.get("call_regimes")
+        row = self.recs[o.sym][i]
+        return not regimes or row["regime"] in regimes
+
+    def _roll_for_credit(self, o: Opt, mark: float, S: float, atm: float, d, r: float) -> "Opt | None":
+        """Buy back an ITM option and sell the same side `roll_itm.dte` days out at the most favourable strike
+        (lower for puts, higher for calls) that still takes in at least the buyback cost. None (and
+        nothing traded) when no strike gives a net credit; the option is then held to expiry."""
+        ri = self.v["roll_itm"]
+        dte = ri.get("dte", 45)
+        T = dte / 365.0
+        slope = self._slope(o.sym)
+        cost = mark + max(mark * self._slip(o.sym), 0.01) + self._comm()
+
+        def credit(K):
+            mid = bs_price(S, K, T, skew_iv(atm, S, K, slope), o.cp, r)
+            return mid - max(mid * self._slip(o.sym), 0.01) - self._comm(), mid
+
+        if credit(o.strike)[0] < cost:
+            return None
+        step = 0.005 * S * (-1 if o.cp == "P" else 1)
+        K = o.strike
+        while 0 < K + step and credit(K + step)[0] >= cost:
+            K += step
+        cr, mid = credit(K)
+        self.cash += (cr - cost) * o.qty
+        self.cf[o.sym] += (cr - cost) * o.qty
+        self.premium += cr * o.qty
+        self.stats["rolled_" + ("puts" if o.cp == "P" else "calls")] += 1
+        return Opt(o.sym, o.cp, K, o.qty, d, d + pd.Timedelta(days=dte), mid, o.rolls + 1, dte)
 
     def _assign(self, o: Opt, S: float):
         s = o.sym
@@ -500,7 +545,7 @@ class Sim:
         px = mid - max(mid * self._slip(sym), 0.01) - self._comm()
         if px <= 0:
             return None
-        o = Opt(sym, cp, K, qty, d, d + pd.Timedelta(days=dte), mid)
+        o = Opt(sym, cp, K, qty, d, d + pd.Timedelta(days=dte), mid, dte0=dte)
         self.opts.append(o)
         self.cash += px * qty
         self.cf[sym] += px * qty
@@ -786,14 +831,15 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             for m in run_mults:
                 key = v["name"] if m == base_mult else f"{v['name']}@{m:g}"
                 fr = frames_by_mult[m]
+                vs = max(start, pd.Timestamp(v["start"])) if v.get("start") else start
                 if v["mode"] == "hold":
-                    res = run_hold(v, fr, meta, rates, rules, start, end)
+                    res = run_hold(v, fr, meta, rates, rules, vs, end)
                 elif v["mode"] == "pmcc":
                     from .pmcc import PMCC
                     sym = v["symbols"][0]
-                    res = PMCC(v, fr[sym], rates, rules, start, end, bt["skew_slope"]["index"]).run().result()
+                    res = PMCC(v, fr[sym], rates, rules, vs, end, bt["skew_slope"]["index"]).run().result()
                 else:
-                    res = Sim(v, fr, meta, rates, rules, start, end).run().result()
+                    res = Sim(v, fr, meta, rates, rules, vs, end).run().result()
                 res["label"] = v.get("label", v["name"]) + ("" if m == base_mult else f" (stock IV {m:g}x HV)")
                 res["stock_iv_mult"] = m if uses_stock_iv else None
                 if m != base_mult:
