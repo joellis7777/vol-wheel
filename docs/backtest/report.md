@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T17:37Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T18:02Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -61,6 +61,13 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | Mix · QQQ 60 / GLD 25 / BTC 15 | 28.7% | 19.3% | 1.29 | -36.5% | -30.8% | – | +50.5% | -31.0% | 100% | – | – | – | – |
 | Mix · QQQ 80 / BTC 20 | 33.4% | 24.6% | 1.21 | -44.8% | -39.5% | – | +61.0% | -40.0% | 100% | – | – | – | – |
 | Rotate · QQQ / GLD / BTC by 12-month momentum | 56.1% | 57.6% | 1.03 | -82.2% | -61.0% | – | +160.6% | -26.4% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 20 / BTC 15 / XLE 15 | 27.6% | 19.2% | 1.25 | -30.7% | -22.1% | – | +38.9% | -22.7% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 20 / BTC 15 / TLT 15 | 25.1% | 17.3% | 1.25 | -37.8% | -32.1% | – | +48.0% | -32.0% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 20 / BTC 15 / XLP 15 | 26.7% | 18.3% | 1.27 | -33.5% | -28.3% | – | +46.1% | -28.4% | 100% | – | – | – | – |
+| Mix · QQQ 45 / GLD 20 / BTC 15 / XLE 10 / TLT 10 | 25.5% | 17.5% | 1.26 | -31.9% | -25.5% | – | +41.1% | -25.7% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 25 / XLE 15 (2007→) | 13.3% | 17.1% | 0.72 | -42.7% | -30.7% | +1.1% | +19.4% | -15.0% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 25 / TLT 15 (2007→) | 12.3% | 13.9% | 0.80 | -34.8% | -25.4% | +6.7% | +26.4% | -25.2% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 40 (2007→) | 13.9% | 15.4% | 0.82 | -37.1% | -24.1% | +12.4% | +27.5% | -20.8% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 69.9% | 65.4% | 1.11 | -83.0% | -74.5% | – | +201.1% | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 19.8% | 22.1% | 0.83 | -35.6% | -33.1% | – | +32.4% | -33.7% | 100% | – | – | – | – |
 | QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
@@ -204,6 +211,13 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | Mix · QQQ 60 / GLD 25 / BTC 15 | 18.7% | 19.7% | 0.81 | -36.5% | -30.8% | – | – | -31.0% | 100% | – | – | – | – |
 | Mix · QQQ 80 / BTC 20 | 19.4% | 24.6% | 0.71 | -44.8% | -39.5% | – | – | -40.0% | 100% | – | – | – | – |
 | Rotate · QQQ / GLD / BTC by 12-month momentum | 20.1% | 46.3% | 0.56 | -59.2% | -26.2% | – | – | -26.4% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 20 / BTC 15 / XLE 15 | 20.5% | 18.7% | 0.92 | -28.9% | -22.1% | – | – | -22.7% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 20 / BTC 15 / TLT 15 | 14.2% | 17.8% | 0.65 | -37.8% | -32.1% | – | – | -32.0% | 100% | – | – | – | – |
+| Mix · QQQ 50 / GLD 20 / BTC 15 / XLP 15 | 17.0% | 18.0% | 0.78 | -33.5% | -28.3% | – | – | -28.4% | 100% | – | – | – | – |
+| Mix · QQQ 45 / GLD 20 / BTC 15 / XLE 10 / TLT 10 | 16.8% | 17.4% | 0.79 | -31.9% | -25.5% | – | – | -25.7% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 25 / XLE 15 (2007→) | 18.1% | 16.2% | 0.91 | -21.0% | -14.4% | – | – | -15.0% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 25 / TLT 15 (2007→) | 11.9% | 15.3% | 0.60 | -29.7% | -25.4% | – | – | -25.2% | 100% | – | – | – | – |
+| Mix · QQQ 60 / GLD 40 (2007→) | 16.2% | 16.3% | 0.80 | -26.3% | -20.8% | – | – | -20.8% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 17.7% | 57.1% | 0.51 | -76.6% | -64.1% | – | – | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 16.6% | 22.4% | 0.65 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
 | QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
@@ -290,6 +304,23 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 - **Basket · always on** P&L by name (excl. interest): GLD +4k, IBIT +4k, SPY +22k, FNV +23k, SOFI +25k, GOOG +31k, QQQ +32k, HOOD +42k, AMZN +60k, TSLA +63k, MRVL +74k, CEG +91k, NVDA +129k, MSTR +243k
 - **Basket scale in/out · VIX-scaled cap** P&L by name (excl. interest): IBIT +1k, GLD +8k, SOFI +11k, FNV +12k, GOOG +14k, SPY +21k, QQQ +28k, HOOD +29k, NVDA +29k, AMZN +35k, CEG +56k, TSLA +58k, MRVL +97k, MSTR +275k
 
+## Correlations (monthly returns since 2015-10-01) and 2022 returns
+
+| | QQQ | SPY | GLD | BTC-USD | XLE | TLT | XLP | XLU | XLV | FNV | SLV | IEF | 2022 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| QQQ | 1.00 | 0.91 | 0.07 | 0.30 | 0.30 | 0.23 | 0.43 | 0.32 | 0.54 | 0.14 | 0.22 | 0.22 | -33.1% |
+| SPY | 0.91 | 1.00 | 0.11 | 0.32 | 0.54 | 0.16 | 0.63 | 0.47 | 0.70 | 0.23 | 0.28 | 0.16 | -19.5% |
+| GLD | 0.07 | 0.11 | 1.00 | 0.09 | -0.00 | 0.39 | 0.31 | 0.35 | 0.19 | 0.73 | 0.77 | 0.43 | -0.8% |
+| BTC-USD | 0.30 | 0.32 | 0.09 | 1.00 | 0.15 | 0.10 | 0.15 | 0.22 | 0.12 | 0.20 | 0.10 | 0.06 | -64.3% |
+| XLE | 0.30 | 0.54 | -0.00 | 0.15 | 1.00 | -0.21 | 0.40 | 0.22 | 0.41 | 0.20 | 0.17 | -0.19 | 57.6% |
+| TLT | 0.23 | 0.16 | 0.39 | 0.10 | -0.21 | 1.00 | 0.23 | 0.33 | 0.19 | 0.34 | 0.23 | 0.94 | -32.8% |
+| XLP | 0.43 | 0.63 | 0.31 | 0.15 | 0.40 | 0.23 | 1.00 | 0.66 | 0.64 | 0.40 | 0.31 | 0.26 | -3.3% |
+| XLU | 0.32 | 0.47 | 0.35 | 0.22 | 0.22 | 0.33 | 0.66 | 1.00 | 0.41 | 0.41 | 0.31 | 0.34 | -1.5% |
+| XLV | 0.54 | 0.70 | 0.19 | 0.12 | 0.41 | 0.19 | 0.64 | 0.41 | 1.00 | 0.37 | 0.29 | 0.20 | -3.6% |
+| FNV | 0.14 | 0.23 | 0.73 | 0.20 | 0.20 | 0.34 | 0.40 | 0.41 | 0.37 | 1.00 | 0.57 | 0.35 | -1.3% |
+| SLV | 0.22 | 0.28 | 0.77 | 0.10 | 0.17 | 0.23 | 0.31 | 0.31 | 0.29 | 0.57 | 1.00 | 0.26 | 2.4% |
+| IEF | 0.22 | 0.16 | 0.43 | 0.06 | -0.19 | 0.94 | 0.26 | 0.34 | 0.20 | 0.35 | 0.26 | 1.00 | -16.7% |
+
 ## Data
 
 - AMZN: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
@@ -300,13 +331,20 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 - GOOG: cboe 2006-01-03 → 2026-10-08 (5224 bars)
 - HOOD: cboe 2021-07-29 → 2026-10-08 (1306 bars)
 - IBIT: cboe 2024-01-11 → 2026-10-08 (689 bars); bars before 2024-01-11 dropped
+- IEF: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
 - MRVL: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped; 2006-07-25 x2 jump adjusted
 - MSTR: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
 - NVDA: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped; 2006-04-07 x2 jump adjusted
 - QQQ: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
+- SLV: cboe 2006-11-01 → 2026-10-08 (5016 bars); 2008-07-24 x10 jump adjusted
 - SOFI: cboe 2020-11-30 → 2026-10-08 (1472 bars)
 - SPY: cboe 2006-01-03 → 2026-10-08 (5226 bars); bars before 2006-01-03 dropped
+- TLT: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
 - TSLA: cboe 2010-06-29 → 2026-10-08 (4096 bars)
+- XLE: cboe 2006-01-03 → 2026-10-08 (5224 bars); 2018-11-22 bad print dropped (65.98); 2025-05-26 bad print dropped (81.99); bars before 2006-01-03 dropped
+- XLP: cboe 2006-01-03 → 2026-10-08 (5226 bars); bars before 2006-01-03 dropped
+- XLU: cboe 2006-01-03 → 2026-10-08 (5224 bars); 2018-11-22 bad print dropped (54.08); 2025-05-26 bad print dropped (81.06); bars before 2006-01-03 dropped
+- XLV: cboe 2006-01-03 → 2026-10-08 (5226 bars); bars before 2006-01-03 dropped
 - _GVZ: yahoo+cboe 2008-06-03 → 2026-10-09 (4616 bars)
 - _VIX: cboe 1990-01-02 → 2026-10-09 (9291 bars)
 - _VXN: yahoo+cboe 2001-01-23 → 2026-10-09 (6469 bars)
