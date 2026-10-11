@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T00:51Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T02:49Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -18,6 +18,13 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | QQQ puts always on · calls only on up-spikes | 14.8% | 18.9% | 0.75 | -38.7% | -30.8% | +5.7% | +31.5% | -31.4% | 87% | 6.4 | 9 | 1.1% | 84.0% |
 | QQQ scale in/out · calls on half the shares | 6.5% | 10.9% | 0.50 | -38.3% | -26.8% | -1.9% | +15.6% | -14.5% | 51% | 76.9 | 38 | 8.6% | 21.7% |
 | QQQ scale in/out · calls only in High regime | 8.1% | 12.0% | 0.58 | -38.7% | -26.5% | -6.8% | +14.7% | -14.2% | 55% | 60.8 | 34 | 6.5% | 31.3% |
+| QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
+| QQQ PMCC · Tom King rules · weekly IV 0.9x | -2.4% | 9.6% | -0.36 | -53.0% | -23.1% | -13.6% | +7.8% | -23.8% | 95% | – | – | 45.7% | – |
+| QQQ PMCC · trend calls, no filter/exits | 0.1% | 10.8% | -0.08 | -35.7% | -31.6% | -9.2% | +9.3% | -32.2% | 105% | – | – | 58.4% | – |
+| QQQ LEAP · Tom's filter + exits, no calls | 7.7% | 14.9% | 0.47 | -33.2% | -23.7% | -7.4% | +22.4% | -24.5% | 88% | – | – | 0.0% | – |
+| QQQ LEAP held (rolled at 120 DTE), no calls | 8.4% | 18.7% | 0.44 | -55.4% | -42.6% | -23.0% | +25.0% | -38.3% | 102% | – | – | 0.0% | – |
+| QQQ LEAP held · calls only on up-spikes | 8.3% | 18.3% | 0.44 | -53.8% | -41.5% | -21.8% | +26.8% | -37.1% | 102% | – | – | 1.5% | – |
+| QQQ shares · Tom's trend calls | 10.2% | 23.2% | 0.47 | -55.0% | -45.1% | +1.2% | +36.3% | -46.0% | 162% | – | – | 105.7% | – |
 | QQQ + SPY · spikes | 12.7% | 17.3% | 0.69 | -34.5% | -26.4% | +2.5% | +24.3% | -27.0% | 83% | 2.1 | 6 | 0.9% | 81.2% |
 | Basket · spikes (current rules) (stock IV 1x HV) | 14.6% | 16.1% | 0.83 | -33.0% | -30.3% | +27.3% | +42.8% | -31.5% | 62% | 32.4 | 36 | 7.7% | 54.7% |
 | Basket · spikes (current rules) | 15.6% | 16.5% | 0.87 | -34.6% | -31.7% | +35.6% | +45.8% | -33.0% | 62% | 32.1 | 33 | 9.1% | 55.1% |
@@ -53,6 +60,16 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - Basket · always on: Low 45% · Mid 31% · High 30%
 - Basket scale in/out · VIX-scaled cap: Low 39% · Mid 26% · High 25%
 
+LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium kept after buybacks, per year as % of equity):
+
+- QQQ PMCC · Tom King rules: in the market 90% of days, call premium 47.7%/yr, call P&L -6.7%/yr, 30 entries; exits: target 0, early 1, stop 7, LEAP at 120 DTE 21
+- QQQ PMCC · Tom King rules · weekly IV 0.9x: in the market 90% of days, call premium 45.7%/yr, call P&L -10.2%/yr, 31 entries; exits: target 0, early 0, stop 9, LEAP at 120 DTE 21
+- QQQ PMCC · trend calls, no filter/exits: in the market 100% of days, call premium 58.4%/yr, call P&L -8.5%/yr, 30 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 29
+- QQQ LEAP · Tom's filter + exits, no calls: in the market 87% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 34 entries; exits: target 0, early 6, stop 10, LEAP at 120 DTE 17
+- QQQ LEAP held (rolled at 120 DTE), no calls: in the market 100% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 30 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 29
+- QQQ LEAP held · calls only on up-spikes: in the market 100% of days, call premium 1.5%/yr, call P&L +0.1%/yr, 30 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 29
+- QQQ shares · Tom's trend calls: in the market 100% of days, call premium 105.7%/yr, call P&L -19.3%/yr, 1 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 0
+
 - **QQQ + SPY · spikes** P&L by name (excl. interest): SPY +1,189k, QQQ +3,547k
 - **Basket · spikes (current rules)** P&L by name (excl. interest): IBIT -41k, HOOD +2k, GLD +43k, SOFI +50k, CEG +122k, FNV +180k, SPY +290k, AMZN +447k, GOOG +448k, MRVL +728k, TSLA +782k, QQQ +1,252k, MSTR +1,297k, NVDA +2,197k
 - **Index core 50% + satellites · spikes** P&L by name (excl. interest): IBIT -51k, HOOD +19k, GLD +37k, SOFI +46k, FNV +49k, CEG +99k, MRVL +105k, GOOG +293k, MSTR +309k, TSLA +329k, AMZN +458k, SPY +711k, QQQ +1,986k, NVDA +3,783k
@@ -73,6 +90,13 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 | QQQ puts always on · calls only on up-spikes | 13.1% | 14.3% | 0.70 | -17.2% | -14.0% | – | – | -14.1% | 67% | 28.9 | 8 | 3.5% | 55.5% |
 | QQQ scale in/out · calls on half the shares | 8.7% | 10.5% | 0.54 | -16.6% | -13.8% | – | – | -13.9% | 54% | 73.2 | 13 | 8.8% | 25.3% |
 | QQQ scale in/out · calls only in High regime | 13.5% | 13.7% | 0.76 | -17.2% | -14.2% | – | – | -14.2% | 67% | 28.7 | 8 | 5.2% | 55.1% |
+| QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
+| QQQ PMCC · Tom King rules · weekly IV 0.9x | -1.8% | 9.5% | -0.49 | -29.4% | -19.3% | – | – | -20.0% | 88% | – | – | 43.6% | – |
+| QQQ PMCC · trend calls, no filter/exits | -0.9% | 11.3% | -0.32 | -35.6% | -31.1% | – | – | -31.8% | 106% | – | – | 64.2% | – |
+| QQQ LEAP · Tom's filter + exits, no calls | 8.6% | 15.2% | 0.40 | -27.0% | -23.8% | – | – | -24.5% | 84% | – | – | 0.0% | – |
+| QQQ LEAP held (rolled at 120 DTE), no calls | 9.4% | 20.1% | 0.38 | -40.8% | -37.9% | – | – | -38.5% | 102% | – | – | 0.0% | – |
+| QQQ LEAP held · calls only on up-spikes | 10.2% | 19.5% | 0.43 | -39.6% | -36.7% | – | – | -37.3% | 102% | – | – | 1.6% | – |
+| QQQ shares · Tom's trend calls | 7.2% | 16.8% | 0.30 | -31.1% | -27.1% | – | – | -27.8% | 128% | – | – | 74.2% | – |
 | QQQ + SPY · spikes | 7.4% | 4.1% | 0.96 | -5.1% | 0.3% | – | – | +4.4% | 18% | 7.7 | 1 | 2.1% | 13.9% |
 | Basket · spikes (current rules) (stock IV 1x HV) | 19.7% | 15.4% | 1.03 | -15.3% | -6.5% | – | – | -6.5% | 47% | 52.2 | 17 | 10.7% | 35.4% |
 | Basket · spikes (current rules) | 21.0% | 15.3% | 1.11 | -13.8% | -4.9% | – | – | -4.9% | 47% | 52.7 | 16 | 12.8% | 35.1% |
@@ -107,6 +131,16 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - Index core 50% + satellites · spikes: Low 27% · Mid 41% · High 50%
 - Basket · always on: Low 47% · Mid 28% · High 34%
 - Basket scale in/out · VIX-scaled cap: Low 38% · Mid 26% · High 33%
+
+LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium kept after buybacks, per year as % of equity):
+
+- QQQ PMCC · Tom King rules: in the market 84% of days, call premium 44.3%/yr, call P&L -6.8%/yr, 10 entries; exits: target 0, early 1, stop 4, LEAP at 120 DTE 4
+- QQQ PMCC · Tom King rules · weekly IV 0.9x: in the market 84% of days, call premium 43.6%/yr, call P&L -9.9%/yr, 10 entries; exits: target 0, early 0, stop 4, LEAP at 120 DTE 5
+- QQQ PMCC · trend calls, no filter/exits: in the market 100% of days, call premium 64.2%/yr, call P&L -10.3%/yr, 9 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 8
+- QQQ LEAP · Tom's filter + exits, no calls: in the market 83% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 11 entries; exits: target 0, early 3, stop 4, LEAP at 120 DTE 3
+- QQQ LEAP held (rolled at 120 DTE), no calls: in the market 100% of days, call premium 0.0%/yr, call P&L +0.0%/yr, 9 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 8
+- QQQ LEAP held · calls only on up-spikes: in the market 100% of days, call premium 1.6%/yr, call P&L +0.8%/yr, 9 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 8
+- QQQ shares · Tom's trend calls: in the market 100% of days, call premium 74.2%/yr, call P&L -13.6%/yr, 1 entries; exits: target 0, early 0, stop 0, LEAP at 120 DTE 0
 
 - **QQQ + SPY · spikes** P&L by name (excl. interest): SPY +17k, QQQ +143k
 - **Basket · spikes (current rules)** P&L by name (excl. interest): IBIT -4k, GLD +2k, MRVL +2k, SPY +6k, HOOD +15k, SOFI +24k, CEG +28k, FNV +34k, GOOG +48k, TSLA +49k, QQQ +52k, AMZN +58k, MSTR +104k, NVDA +486k
