@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T16:39Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T17:05Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -45,6 +45,16 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | MSTR target 15%→100% shares by drawdown · via options | 28.0% | 59.5% | 0.66 | -66.7% | -62.4% | – | +2.1% | -62.8% | 52% | – | 25 | 22.8% | 52.1% |
 | MSTR target 15%→100% shares by drawdown · via options (stock IV 1.3x HV) | 33.6% | 59.4% | 0.73 | -61.9% | -57.0% | – | +2.5% | -57.4% | 54% | – | 25 | 24.1% | 53.8% |
 | MSTR target 15%→100% shares by drawdown · via stock | 23.4% | 68.7% | 0.60 | -78.7% | -71.1% | – | +31.7% | -71.6% | 70% | – | 0 | 0.0% | 70.5% |
+| MSTR target · deeper schedule (100% only at -88%) (stock IV 1x HV) | 22.6% | 36.5% | 0.66 | -42.2% | -36.7% | – | +1.1% | -37.1% | 33% | – | 21 | 15.8% | 33.0% |
+| MSTR target · deeper schedule (100% only at -88%) | 25.3% | 36.8% | 0.72 | -42.1% | -35.0% | – | +1.4% | -35.5% | 34% | – | 21 | 17.9% | 33.9% |
+| MSTR target · deeper schedule (100% only at -88%) (stock IV 1.3x HV) | 30.1% | 36.7% | 0.82 | -39.8% | -30.4% | – | +1.7% | -30.8% | 34% | – | 20 | 22.1% | 34.2% |
+| MSTR target · deeper + trend cap 40% below a falling 200-day (stock IV 1x HV) | 17.9% | 26.7% | 0.63 | -34.2% | -28.7% | – | +1.1% | -29.2% | 26% | – | 14 | 11.1% | 26.0% |
+| MSTR target · deeper + trend cap 40% below a falling 200-day | 20.0% | 27.0% | 0.70 | -34.8% | -26.8% | – | +1.4% | -27.3% | 27% | – | 13 | 13.1% | 26.7% |
+| MSTR target · deeper + trend cap 40% below a falling 200-day (stock IV 1.3x HV) | 23.5% | 27.6% | 0.79 | -34.3% | -25.4% | – | +1.7% | -25.9% | 28% | – | 13 | 16.0% | 27.6% |
+| MSTR target · deeper + trend cap + core calls at lows (stock IV 1x HV) | 16.2% | 25.1% | 0.60 | -33.6% | -28.2% | – | +1.1% | -28.7% | 24% | – | 14 | 12.3% | 24.1% |
+| MSTR target · deeper + trend cap + core calls at lows | 18.4% | 25.4% | 0.67 | -34.4% | -26.1% | – | +1.4% | -26.6% | 25% | – | 13 | 14.6% | 24.8% |
+| MSTR target · deeper + trend cap + core calls at lows (stock IV 1.3x HV) | 23.4% | 27.0% | 0.80 | -33.4% | -24.2% | – | +1.7% | -24.7% | 27% | – | 12 | 18.9% | 27.1% |
+| QQQ target 60%→100% · trend cap 60% below a falling 200-day | 11.2% | 14.2% | 0.71 | -32.3% | -23.4% | +4.7% | +22.5% | -23.9% | 62% | – | 9 | 1.4% | 61.8% |
 | QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -2.4% | 9.6% | -0.36 | -53.0% | -23.1% | -13.6% | +7.8% | -23.8% | 95% | – | – | 45.7% | – |
 | QQQ PMCC · trend calls, no filter/exits | 0.1% | 10.8% | -0.08 | -35.7% | -31.6% | -9.2% | +9.3% | -32.2% | 105% | – | – | 58.4% | – |
@@ -103,6 +113,10 @@ Target-allocation variants (shares held by distance below the high; consistency 
 - QQQ target 60%→100% shares by drawdown · via stock: in shares near high (<10%) 64% · 10-30% down 78% · >30% down 95%; positive months 66%, worst 12 months -42.0%; stock turnover 67%/yr
 - MSTR target 15%→100% shares by drawdown · via options: in shares near high (<10%) 36% · 10-30% down 31% · >30% down 59%; positive months 62%, worst 12 months -63.8%; premium 22.8%/yr, 180 puts / 53 calls, assigned 25, called away 12
 - MSTR target 15%→100% shares by drawdown · via stock: in shares near high (<10%) 19% · 10-30% down 35% · >30% down 84%; positive months 55%, worst 12 months -73.6%; stock turnover 498%/yr
+- MSTR target · deeper schedule (100% only at -88%): in shares near high (<10%) 26% · 10-30% down 27% · >30% down 36%; positive months 59%, worst 12 months -38.9%; premium 17.9%/yr, 159 puts / 79 calls, assigned 21, called away 10
+- MSTR target · deeper + trend cap 40% below a falling 200-day: in shares near high (<10%) 26% · 10-30% down 27% · >30% down 27%; positive months 59%, worst 12 months -31.5%; premium 13.1%/yr, 146 puts / 52 calls, assigned 13, called away 7
+- MSTR target · deeper + trend cap + core calls at lows: in shares near high (<10%) 24% · 10-30% down 26% · >30% down 24%; positive months 59%, worst 12 months -31.0%; premium 14.6%/yr, 157 puts / 122 calls, assigned 13, called away 7
+- QQQ target 60%→100% · trend cap 60% below a falling 200-day: in shares near high (<10%) 62% · 10-30% down 61% · >30% down 61%; positive months 65%, worst 12 months -27.5%; premium 1.4%/yr, 232 puts / 169 calls, assigned 9, called away 10
 
 LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium kept after buybacks, per year as % of equity):
 
@@ -161,6 +175,16 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | MSTR target 15%→100% shares by drawdown · via options | 29.4% | 61.2% | 0.68 | -66.7% | -62.4% | – | – | -62.8% | 55% | – | 25 | 23.1% | 55.1% |
 | MSTR target 15%→100% shares by drawdown · via options (stock IV 1.3x HV) | 35.3% | 61.1% | 0.75 | -61.9% | -57.0% | – | – | -57.4% | 57% | – | 25 | 24.3% | 56.9% |
 | MSTR target 15%→100% shares by drawdown · via stock | 18.8% | 70.5% | 0.55 | -78.7% | -71.1% | – | – | -71.6% | 73% | – | 0 | 0.0% | 72.8% |
+| MSTR target · deeper schedule (100% only at -88%) (stock IV 1x HV) | 23.9% | 37.6% | 0.67 | -42.2% | -36.7% | – | – | -37.1% | 35% | – | 21 | 16.0% | 34.9% |
+| MSTR target · deeper schedule (100% only at -88%) | 26.7% | 37.9% | 0.73 | -42.1% | -35.0% | – | – | -35.5% | 36% | – | 21 | 18.2% | 35.8% |
+| MSTR target · deeper schedule (100% only at -88%) (stock IV 1.3x HV) | 31.8% | 37.7% | 0.84 | -39.8% | -30.4% | – | – | -30.8% | 36% | – | 20 | 22.4% | 36.2% |
+| MSTR target · deeper + trend cap 40% below a falling 200-day (stock IV 1x HV) | 18.9% | 27.5% | 0.65 | -34.2% | -28.7% | – | – | -29.2% | 28% | – | 14 | 11.2% | 27.5% |
+| MSTR target · deeper + trend cap 40% below a falling 200-day | 21.0% | 27.8% | 0.71 | -34.8% | -26.8% | – | – | -27.3% | 28% | – | 13 | 13.3% | 28.3% |
+| MSTR target · deeper + trend cap 40% below a falling 200-day (stock IV 1.3x HV) | 24.7% | 28.4% | 0.80 | -34.3% | -25.4% | – | – | -25.9% | 29% | – | 13 | 16.1% | 29.2% |
+| MSTR target · deeper + trend cap + core calls at lows (stock IV 1x HV) | 17.1% | 25.8% | 0.62 | -33.6% | -28.2% | – | – | -28.7% | 26% | – | 14 | 12.5% | 25.5% |
+| MSTR target · deeper + trend cap + core calls at lows | 19.3% | 26.1% | 0.68 | -34.4% | -26.1% | – | – | -26.6% | 26% | – | 13 | 14.8% | 26.2% |
+| MSTR target · deeper + trend cap + core calls at lows (stock IV 1.3x HV) | 24.6% | 27.8% | 0.82 | -33.4% | -24.2% | – | – | -24.7% | 29% | – | 12 | 19.2% | 28.7% |
+| QQQ target 60%→100% · trend cap 60% below a falling 200-day | 11.9% | 13.2% | 0.68 | -15.8% | -13.0% | – | – | -13.0% | 51% | – | 7 | 2.6% | 51.0% |
 | QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -1.8% | 9.5% | -0.49 | -29.4% | -19.3% | – | – | -20.0% | 88% | – | – | 43.6% | – |
 | QQQ PMCC · trend calls, no filter/exits | -0.9% | 11.3% | -0.32 | -35.6% | -31.1% | – | – | -31.8% | 106% | – | – | 64.2% | – |
@@ -219,6 +243,10 @@ Target-allocation variants (shares held by distance below the high; consistency 
 - QQQ target 60%→100% shares by drawdown · via stock: in shares near high (<10%) 64% · 10-30% down 80% · >30% down 90%; positive months 65%, worst 12 months -26.4%; stock turnover 75%/yr
 - MSTR target 15%→100% shares by drawdown · via options: in shares near high (<10%) 50% · 10-30% down 38% · >30% down 59%; positive months 59%, worst 12 months -63.8%; premium 23.1%/yr, 161 puts / 53 calls, assigned 25, called away 12
 - MSTR target 15%→100% shares by drawdown · via stock: in shares near high (<10%) 18% · 10-30% down 35% · >30% down 85%; positive months 52%, worst 12 months -73.6%; stock turnover 498%/yr
+- MSTR target · deeper schedule (100% only at -88%): in shares near high (<10%) 36% · 10-30% down 32% · >30% down 37%; positive months 56%, worst 12 months -38.9%; premium 18.2%/yr, 145 puts / 79 calls, assigned 21, called away 10
+- MSTR target · deeper + trend cap 40% below a falling 200-day: in shares near high (<10%) 36% · 10-30% down 32% · >30% down 27%; positive months 56%, worst 12 months -31.5%; premium 13.3%/yr, 132 puts / 52 calls, assigned 13, called away 7
+- MSTR target · deeper + trend cap + core calls at lows: in shares near high (<10%) 34% · 10-30% down 32% · >30% down 25%; positive months 56%, worst 12 months -31.0%; premium 14.8%/yr, 143 puts / 122 calls, assigned 13, called away 7
+- QQQ target 60%→100% · trend cap 60% below a falling 200-day: in shares near high (<10%) 49% · 10-30% down 54% · >30% down 63%; positive months 65%, worst 12 months -14.2%; premium 2.6%/yr, 124 puts / 34 calls, assigned 7, called away 3
 
 LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium kept after buybacks, per year as % of equity):
 
