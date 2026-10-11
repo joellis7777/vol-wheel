@@ -286,6 +286,9 @@ backtest:
     dte: 45
     stock_cost_bps: 5       # stock execution: cost per trade (bps of notional)
     high_lookback_days: null   # drawdown measured from the all-time high (or a rolling window)
+  # Extra symbols loaded only for the report's correlation table (diversifier candidates).
+  correlation_symbols: [QQQ, SPY, GLD, BTC-USD, XLE, TLT, XLP, XLU, XLV, FNV, SLV, IEF]
+  correlation_start: "2015-10-01"
   pmcc:                     # defaults for mode: pmcc variants (vol_wheel/pmcc.py)
     exposure_pct: 100       # long-leg notional (shares controlled x price) as % of the account
     leap_delta: 85
@@ -415,6 +418,22 @@ backtest:
        weights: {QQQ: 80, BTC-USD: 20}, start: "2015-10-01"}
     - {name: rot_qqq_gld_btc, label: "Rotate · QQQ / GLD / BTC by 12-month momentum", symbols: [QQQ, GLD, BTC-USD],
        mode: hold, rotate: {lookback: 252, top: 1, abs: true}, start: "2015-10-01"}
+    # Candidate fourth/fifth assets for the QQQ / gold / bitcoin core (liquid options only).
+    - {name: mix_qgb_xle, label: "Mix · QQQ 50 / GLD 20 / BTC 15 / XLE 15", symbols: [QQQ, GLD, BTC-USD, XLE],
+       mode: hold, weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLE: 15}, start: "2015-10-01"}
+    - {name: mix_qgb_tlt, label: "Mix · QQQ 50 / GLD 20 / BTC 15 / TLT 15", symbols: [QQQ, GLD, BTC-USD, TLT],
+       mode: hold, weights: {QQQ: 50, GLD: 20, BTC-USD: 15, TLT: 15}, start: "2015-10-01"}
+    - {name: mix_qgb_xlp, label: "Mix · QQQ 50 / GLD 20 / BTC 15 / XLP 15", symbols: [QQQ, GLD, BTC-USD, XLP],
+       mode: hold, weights: {QQQ: 50, GLD: 20, BTC-USD: 15, XLP: 15}, start: "2015-10-01"}
+    - {name: mix_qgb_xle_tlt, label: "Mix · QQQ 45 / GLD 20 / BTC 15 / XLE 10 / TLT 10",
+       symbols: [QQQ, GLD, BTC-USD, XLE, TLT], mode: hold,
+       weights: {QQQ: 45, GLD: 20, BTC-USD: 15, XLE: 10, TLT: 10}, start: "2015-10-01"}
+    - {name: mix_qg_xle, label: "Mix · QQQ 60 / GLD 25 / XLE 15 (2007→)", symbols: [QQQ, GLD, XLE], mode: hold,
+       weights: {QQQ: 60, GLD: 25, XLE: 15}}
+    - {name: mix_qg_tlt, label: "Mix · QQQ 60 / GLD 25 / TLT 15 (2007→)", symbols: [QQQ, GLD, TLT], mode: hold,
+       weights: {QQQ: 60, GLD: 25, TLT: 15}}
+    - {name: mix_qg_6040, label: "Mix · QQQ 60 / GLD 40 (2007→)", symbols: [QQQ, GLD], mode: hold,
+       weights: {QQQ: 60, GLD: 40}}
     - {name: btc_hold, label: "Buy & hold BTC 100%", symbols: [BTC-USD], mode: hold, weight: 100, start: "2015-10-01"}
     - {name: qqq_hold_2015, label: "Buy & hold QQQ 100% (from 2015-10)", symbols: [QQQ], mode: hold, weight: 100,
        start: "2015-10-01"}
