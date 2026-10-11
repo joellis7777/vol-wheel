@@ -62,6 +62,23 @@ changes, update this list in the same change.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 
+## Jordan's thesis and goals (views, not decisions — keep current)
+
+- **Cycle thesis (2026-10-12):** a market dump in Q4 2026 → easing and more money printing (like
+  the Covid response) → a 2027–2029 bull like 2020–21 (BTC best, then gold, then QQQ; likely rising
+  together) → inflation forces a tightening cycle and a 2022-style bear in 2030 (late 2029 top).
+  Gold tends to recover first. Matches bitcoin's halving cycle (2028 halving → top ~late 2029).
+  Pushback given: single-analog forecast; the plan must still work if the timing is wrong, so
+  mechanical trend exits trigger the defence and the calendar only sets readiness.
+- **Goals:** consistent income/gains from a large account over catching every bit of upside;
+  believes in BTC and wants real exposure; likes tastytrade's mechanical, everyday approach;
+  wants roughly equal QQQ / GLD / bitcoin (IBIT or MSTR), less XLE for now.
+- **Leanings under discussion (not decided):** defend a 2022-type bear with energy/commodities,
+  the dollar and T-bills rather than TLT; deep-OTM LEAP calls (Soliel-style, e.g. MSTR 2028) as a
+  small convexity sleeve; LEAP puts vs short puts vs defensive weights as bear preparation.
+- **Wants a research "brain":** Soliel (Nithu Sezni) and Tom Sosnoff/tastylive videos plus this
+  project's debate, ingested and testable. Handoff steps and prompt: `docs/HANDOFF.md`.
+
 ## Open strategy items (keep current)
 
 - Backtests: first pass built 2026-10-09 (`backtest.py`, results in `docs/backtest/report.md`).
@@ -211,6 +228,7 @@ data/earnings.json         earnings cache: next/last report date + timing, impli
 docs/index.html            static phone-first dashboard (vanilla JS, light/dark) -> data/latest.json
 docs/data/latest.json      written by the scan workflow (do not hand-edit)
 docs/.nojekyll             serve docs/ as-is on GitHub Pages
+docs/HANDOFF.md            moving the work to the laptop (Cowork / Claude Code) + the research-brain prompt
 tests/                     pytest; conftest.py builds synthetic histories + Black-Scholes chains
 .github/workflows/scan.yml post-close 21:35 UTC + intraday 10:30/15:30 ET + manual; commits data
 .github/workflows/alert-test.yml  manual "send test alert" to the NTFY_TOPIC phone topic
