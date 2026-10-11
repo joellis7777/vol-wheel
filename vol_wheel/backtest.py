@@ -676,14 +676,22 @@ class Sim:
 
 
 def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: dict, start, end) -> dict:
-    """Buy-and-hold at `weight`% (rest in T-bills), equal weight across eligible names, monthly rebalance."""
+    """Buy-and-hold at `weight`% (rest in T-bills), monthly rebalance. Weights: equal across eligible
+    names, or `weights` {sym: %} renormalized over the eligible ones. `rotate` {lookback, top, abs}:
+    each month hold only the `top` names with the best trailing `lookback`-day return, and only those
+    beating T-bills over the same span when `abs` (dual momentum); otherwise T-bills."""
     bt = rules["backtest"]
     cal = rates.index[(rates.index >= start) & (rates.index <= end)]
     syms = [s for s in variant["symbols"] if s in frames]
     w = variant.get("weight", 100) / 100
     # forward-filled: a missing bar for one name must not value the holding at zero
-    closes = pd.DataFrame({s: frames[s]["close"] for s in syms}).ffill().reindex(cal)
+    closes_all = pd.DataFrame({s: frames[s]["close"] for s in syms}).ffill()
+    closes = closes_all.reindex(cal)
     held = {s: 0.0 for s in syms}
+    weights = variant.get("weights")
+    rot = variant.get("rotate")
+    months_in = {s: 0 for s in syms}
+    months_cash = 0
     cash = float(bt["account"])
     eq, prev_d, last_month = [], None, None
     min_bars = bt.get("min_history_days", 260)
@@ -697,19 +705,39 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
         if d.month != last_month:
             last_month = d.month
             elig = [s for s in px_ok if frames[s]["close"].loc[meta["first_date"][s]:d].count() >= min_bars]
-            if elig:
-                for s in syms:
-                    if held[s] and s in px_ok:
-                        cash += held[s] * px_ok[s]
-                        held[s] = 0.0
-                tgt = E * w / len(elig)
+            if rot and elig:
+                lb = rot.get("lookback", 252)
+                past = closes_all.loc[:d]
+                mom = {s: past[s].iloc[-1] / past[s].iloc[-1 - lb] - 1 for s in elig if past[s].count() > lb}
+                rf = float(rates.loc[:d].iloc[-lb:].mean()) * lb / 252 if len(rates.loc[:d]) else 0.0
+                ranked = sorted(mom, key=mom.get, reverse=True)[:rot.get("top", 1)]
+                elig = [s for s in ranked if not rot.get("abs", True) or mom[s] > rf]
                 for s in elig:
+                    months_in[s] += 1
+                if not elig:
+                    months_cash += 1
+            for s in syms:
+                if held[s] and s in px_ok:
+                    cash += held[s] * px_ok[s]
+                    held[s] = 0.0
+            if elig:
+                if weights:
+                    tot = sum(weights.get(s, 0) for s in elig) or 1.0
+                    wts = {s: weights.get(s, 0) / tot for s in elig}
+                else:
+                    wts = {s: 1 / len(elig) for s in elig}
+                for s in elig:
+                    tgt = E * w * wts[s]
                     held[s] = tgt / px_ok[s]
                     cash -= tgt
         eq.append(cash + sum(held[s] * px_ok.get(s, 0.0) for s in syms))
     eqs = pd.Series(eq, index=cal)
     out = metrics(eqs, rates.reindex(cal), bt)
     out["avg_deployed_pct"] = round(w * 100, 1)
+    if rot:
+        n = max(sum(months_in.values()) + months_cash, 1)
+        out["months_held_pct"] = {**{s: round(100 * c / n) for s, c in months_in.items()},
+                                  "T-bills": round(100 * months_cash / n)}
     out["equity_weekly"] = weekly(eqs)
     return out
 
@@ -906,6 +934,11 @@ def report(res: dict, rules: dict) -> str:
         if scal:
             lines += [f"Share of the account held as stock, by the first name's regime (scaling in at lows, out at highs):", ""]
             lines += [f"- {x}" for x in scal] + [""]
+        rt = [(k, v) for k, v in w["variants"].items() if "months_held_pct" in v]
+        if rt:
+            lines += ["Rotation variants (share of months holding each):", ""]
+            lines += [f"- {v['label']}: " + ", ".join(f"{s} {p}%" for s, p in v["months_held_pct"].items())
+                      for k, v in rt] + [""]
         tg = [(k, v) for k, v in w["variants"].items() if "shares_by_drawdown_pct" in v and "@" not in k]
         if tg:
             lines += ["Target-allocation variants (shares held by distance below the high; consistency = % of "

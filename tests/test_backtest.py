@@ -258,3 +258,19 @@ def test_short_dte_entries_hold_to_expiry(rules):
     f.loc[f.index[0], "down"] = 2.0
     s = _sim(rules, f, {"dte": {"Low": 21}})
     assert s.stats["closed_21dte"] == 0
+
+
+def test_hold_weights_and_rotation(rules):
+    rules["backtest"]["min_history_days"] = 1
+    idx = pd.bdate_range("2020-01-01", periods=600)
+    up = _frame(np.linspace(100, 200, 600)).set_axis(idx)
+    flat = _frame(np.full(600, 100.0)).set_axis(idx)
+    frames = {"A": up, "B": flat}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0], "B": idx[0]}}
+    mix = B.run_hold({"symbols": ["A", "B"], "weights": {"A": 75, "B": 25}}, frames, meta, rates, rules, idx[0], idx[-1])
+    eq = B.run_hold({"symbols": ["A", "B"]}, frames, meta, rates, rules, idx[0], idx[-1])
+    assert mix["final"] > eq["final"]
+    rot = B.run_hold({"symbols": ["A", "B"], "rotate": {"lookback": 252, "top": 1, "abs": True}},
+                     frames, meta, rates, rules, idx[0], idx[-1])
+    assert rot["months_held_pct"]["A"] > 0 and rot["months_held_pct"]["B"] == 0
