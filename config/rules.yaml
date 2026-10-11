@@ -400,6 +400,24 @@ backtest:
        trend_cap_pct: 40, core_calls: {delta: 10, max_pct: 25, regimes: [Low]}, start: "2020-09-01"}
     - {name: qqq_target_trend, label: "QQQ target 60%→100% · trend cap 60% below a falling 200-day", symbols: [QQQ],
        mode: target, exec: options, alloc: [[0, 60], [10, 70], [20, 80], [30, 90], [50, 100]], trend_cap_pct: 60}
+    # Diversify / rotate (2026-10-12): QQQ with gold (and bitcoin, Yahoo BTC-USD from 2014-09; IBIT only
+    # exists from 2024). Static mixes rebalance monthly; rotation = dual momentum (hold the stronger of
+    # the set by 12-month return if it beats T-bills, else T-bills).
+    - {name: mix_qqq_gld_7030, label: "Mix · QQQ 70 / GLD 30 (monthly rebalance)", symbols: [QQQ, GLD], mode: hold,
+       weights: {QQQ: 70, GLD: 30}}
+    - {name: mix_qqq_gld_5050, label: "Mix · QQQ 50 / GLD 50", symbols: [QQQ, GLD], mode: hold,
+       weights: {QQQ: 50, GLD: 50}}
+    - {name: rot_qqq_gld, label: "Rotate · QQQ or GLD by 12-month momentum (else T-bills)", symbols: [QQQ, GLD],
+       mode: hold, rotate: {lookback: 252, top: 1, abs: true}}
+    - {name: mix_qqq_gld_btc, label: "Mix · QQQ 60 / GLD 25 / BTC 15", symbols: [QQQ, GLD, BTC-USD], mode: hold,
+       weights: {QQQ: 60, GLD: 25, BTC-USD: 15}, start: "2015-10-01"}
+    - {name: mix_qqq_btc, label: "Mix · QQQ 80 / BTC 20", symbols: [QQQ, BTC-USD], mode: hold,
+       weights: {QQQ: 80, BTC-USD: 20}, start: "2015-10-01"}
+    - {name: rot_qqq_gld_btc, label: "Rotate · QQQ / GLD / BTC by 12-month momentum", symbols: [QQQ, GLD, BTC-USD],
+       mode: hold, rotate: {lookback: 252, top: 1, abs: true}, start: "2015-10-01"}
+    - {name: btc_hold, label: "Buy & hold BTC 100%", symbols: [BTC-USD], mode: hold, weight: 100, start: "2015-10-01"}
+    - {name: qqq_hold_2015, label: "Buy & hold QQQ 100% (from 2015-10)", symbols: [QQQ], mode: hold, weight: 100,
+       start: "2015-10-01"}
     # Tom King's dynamic poor man's covered call (Theta Profits, 2026-03-29) and comparisons, sized
     # to 100% notional QQQ exposure (LEAP debit ~15-25% of the account, the rest in T-bills).
     - {name: qqq_pmcc_tom, label: "QQQ PMCC · Tom King rules", symbols: [QQQ], mode: pmcc, long: leap,
