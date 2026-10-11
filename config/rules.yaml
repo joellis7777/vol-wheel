@@ -278,6 +278,22 @@ backtest:
   # Optional per variant: entry_pct (number or {bucket: pct, default: pct}), caps ({total, per_name,
   # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed or by
   # regime), calls (spike|always), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps.
+  pmcc:                     # defaults for mode: pmcc variants (vol_wheel/pmcc.py)
+    exposure_pct: 100       # long-leg notional (shares controlled x price) as % of the account
+    leap_delta: 85
+    leap_dte: 365
+    leap_exit_dte: 120      # close the LEAP (and reopen) at 120 DTE, as in the rulebook
+    slippage_pct_leap: 1.0  # % of the LEAP's mid per fill
+    ema_fast: 8
+    ema_slow: 21
+    neutral_band_pct: 0.5   # |EMA8/EMA21 - 1| below this = neutral
+    rsi_n: 14
+    rsi_min: 35
+    trend_call_delta: {up: 25, neutral: 50, down: 65}
+    call_dte: 10            # 1-2 week calls
+    roll_at_captured_pct: 85   # buy back once 85% of the extrinsic is captured (or the day before expiry)
+    call_coverage: 100
+    weekly_iv_ratio: 1.0    # short-call IV = this x the 30-day IV (VXN-based); < 1 = calm-market term structure
   variants:
     - {name: qqq_spike, label: "QQQ only · spikes", symbols: [QQQ], mode: spike, entry_pct: 15,
        caps: {total: 80, per_name: 80, Index: 80}}
@@ -309,6 +325,23 @@ backtest:
     - {name: qqq_scale_high, label: "QQQ scale in/out · calls only in High regime", symbols: [QQQ], mode: always,
        entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, call_regimes: [High],
        caps: {total: 80, per_name: 80, Index: 80}}
+    # Tom King's dynamic poor man's covered call (Theta Profits, 2026-03-29) and comparisons, sized
+    # to 100% notional QQQ exposure (LEAP debit ~15-25% of the account, the rest in T-bills).
+    - {name: qqq_pmcc_tom, label: "QQQ PMCC · Tom King rules", symbols: [QQQ], mode: pmcc, long: leap,
+       entry_filter: tom, calls: trend, exits: {target_pct: 100, stop_pct: -30, expected_days: 365}}
+    - {name: qqq_pmcc_tom_iv90, label: "QQQ PMCC · Tom King rules · weekly IV 0.9x", symbols: [QQQ], mode: pmcc,
+       long: leap, entry_filter: tom, calls: trend, weekly_iv_ratio: 0.9,
+       exits: {target_pct: 100, stop_pct: -30, expected_days: 365}}
+    - {name: qqq_pmcc_tom_noexit, label: "QQQ PMCC · trend calls, no filter/exits", symbols: [QQQ], mode: pmcc,
+       long: leap, calls: trend}
+    - {name: qqq_leap_tom, label: "QQQ LEAP · Tom's filter + exits, no calls", symbols: [QQQ], mode: pmcc,
+       long: leap, entry_filter: tom, calls: none, exits: {target_pct: 100, stop_pct: -30, expected_days: 365}}
+    - {name: qqq_leap_hold, label: "QQQ LEAP held (rolled at 120 DTE), no calls", symbols: [QQQ], mode: pmcc,
+       long: leap, calls: none}
+    - {name: qqq_leap_spikecalls, label: "QQQ LEAP held · calls only on up-spikes", symbols: [QQQ], mode: pmcc,
+       long: leap, calls: spike}
+    - {name: qqq_shares_trendcalls, label: "QQQ shares · Tom's trend calls", symbols: [QQQ], mode: pmcc,
+       long: shares, calls: trend}
     - {name: index_spike, label: "QQQ + SPY · spikes", symbols: [QQQ, SPY], mode: spike, entry_pct: 15,
        caps: {total: 80, per_name: 40, Index: 80}}
     - {name: basket_spike, label: "Basket · spikes (current rules)", symbols: universe, mode: spike}

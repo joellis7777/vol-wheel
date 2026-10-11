@@ -788,6 +788,10 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
                 fr = frames_by_mult[m]
                 if v["mode"] == "hold":
                     res = run_hold(v, fr, meta, rates, rules, start, end)
+                elif v["mode"] == "pmcc":
+                    from .pmcc import PMCC
+                    sym = v["symbols"][0]
+                    res = PMCC(v, fr[sym], rates, rules, start, end, bt["skew_slope"]["index"]).run().result()
                 else:
                     res = Sim(v, fr, meta, rates, rules, start, end).run().result()
                 res["label"] = v.get("label", v["name"]) + ("" if m == base_mult else f" (stock IV {m:g}x HV)")
@@ -840,6 +844,17 @@ def report(res: dict, rules: dict) -> str:
         if scal:
             lines += [f"Share of the account held as stock, by the first name's regime (scaling in at lows, out at highs):", ""]
             lines += [f"- {x}" for x in scal] + [""]
+        pm = [(k, v) for k, v in w["variants"].items() if "call_pnl_per_year_pct" in v]
+        if pm:
+            lines += ["LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium "
+                      "kept after buybacks, per year as % of equity):", ""]
+            for k, v in pm:
+                st = v["stats"]
+                lines.append(f"- {v['label']}: in the market {v['in_market_pct']:.0f}% of days, call premium "
+                             f"{v['premium_per_year_pct']:.1f}%/yr, call P&L {v['call_pnl_per_year_pct']:+.1f}%/yr, "
+                             f"{st['entries']} entries; exits: target {st['exit_target']}, early {st['exit_half']}, "
+                             f"stop {st['exit_stop']}, LEAP at 120 DTE {st['exit_dte']}")
+            lines.append("")
         for key, v in w["variants"].items():
             if v.get("pnl_by_symbol") and "@" not in key and len(v["pnl_by_symbol"]) > 1:
                 parts = ", ".join(f"{s} {p / 1000:+,.0f}k" for s, p in v["pnl_by_symbol"].items())
