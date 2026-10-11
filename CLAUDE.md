@@ -100,6 +100,13 @@ changes, update this list in the same change.
     as Jordan described (40Δ puts at lows, calls rolled until tops) 28.2% / −65%; + puts rolled
     23.0% / −61%; Nithu Sezni's posted call rule 22.9% / −68%; spikes only 12.3% / −40%. Single
     path, modelled IV (18.8–34% across IV mults for the described version).
+  - Target allocation by drawdown (2026-10-12, `mode: target`; Jordan's scale-in/out plan as a rule):
+    QQQ 40%→100% shares: options 9.6% / −37% (vol 13%, 2008 +12%, worst 12m −32%) vs stock 10.1% /
+    −41% (2008 +2%, worst 12m −38%); 60%→100%: options 11.9% / −40% vs stock 12.0% / −46%. Same
+    return either way, options smoother. MSTR 15%→100% (from the 1000-day high): options 28.0% / −67%
+    vs stock 23.4% / −79% (options better on a high-IV name; 23–34% across IV mults), hold 46.7% /
+    −82%. Being light near highs costs return on a trending index (best QQQ wheel 15.2% / −39%);
+    drawdown-based buying on MSTR hits 100% at −70% and then rides the rest of a −90% fall.
   - Nithu Sezni (@nithusezni, "The Orange Pill Investor", the "Soliel" Jordan follows): posted
     rules = calls only after a rally with IVR > 50 and ~20% upside buffer, Friday rolls, LEAPs after
     dips at low IVR with > 90 DTE (OTM LEAPs closed ~90 days out, deep-ITM ones become PMCCs),
