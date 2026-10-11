@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T14:59Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T16:39Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -37,6 +37,14 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | MSTR · as described + puts rolled down & out (stock IV 1x HV) | 20.4% | 49.1% | 0.56 | -64.3% | -58.0% | – | +6.1% | -58.7% | 69% | 44.5 | 19 | 48.4% | 46.8% |
 | MSTR · as described + puts rolled down & out | 23.0% | 44.1% | 0.62 | -60.7% | -54.2% | – | +7.1% | -54.9% | 70% | 57.7 | 23 | 68.4% | 37.8% |
 | MSTR · as described + puts rolled down & out (stock IV 1.3x HV) | 29.0% | 41.9% | 0.75 | -57.5% | -50.3% | – | +8.6% | -51.1% | 70% | 64.1 | 24 | 83.2% | 34.4% |
+| QQQ target 40%→100% shares by drawdown · via options | 9.6% | 13.0% | 0.65 | -36.8% | -22.9% | +11.9% | +15.9% | -18.5% | 50% | – | 16 | 2.1% | 50.1% |
+| QQQ target 40%→100% shares by drawdown · via stock | 10.1% | 14.5% | 0.63 | -41.2% | -29.8% | +2.3% | +22.1% | -19.5% | 52% | – | 0 | 0.0% | 51.9% |
+| QQQ target 60%→100% shares by drawdown · via options | 11.9% | 15.8% | 0.69 | -39.9% | -26.4% | +9.2% | +22.4% | -23.7% | 65% | – | 14 | 1.6% | 64.9% |
+| QQQ target 60%→100% shares by drawdown · via stock | 12.0% | 17.0% | 0.66 | -45.8% | -34.6% | -2.5% | +26.2% | -24.9% | 69% | – | 0 | 0.0% | 68.6% |
+| MSTR target 15%→100% shares by drawdown · via options (stock IV 1x HV) | 23.0% | 60.6% | 0.60 | -69.5% | -65.4% | – | +1.6% | -65.8% | 54% | – | 25 | 17.8% | 53.8% |
+| MSTR target 15%→100% shares by drawdown · via options | 28.0% | 59.5% | 0.66 | -66.7% | -62.4% | – | +2.1% | -62.8% | 52% | – | 25 | 22.8% | 52.1% |
+| MSTR target 15%→100% shares by drawdown · via options (stock IV 1.3x HV) | 33.6% | 59.4% | 0.73 | -61.9% | -57.0% | – | +2.5% | -57.4% | 54% | – | 25 | 24.1% | 53.8% |
+| MSTR target 15%→100% shares by drawdown · via stock | 23.4% | 68.7% | 0.60 | -78.7% | -71.1% | – | +31.7% | -71.6% | 70% | – | 0 | 0.0% | 70.5% |
 | QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -2.4% | 9.6% | -0.36 | -53.0% | -23.1% | -13.6% | +7.8% | -23.8% | 95% | – | – | 45.7% | – |
 | QQQ PMCC · trend calls, no filter/exits | 0.1% | 10.8% | -0.08 | -35.7% | -31.6% | -9.2% | +9.3% | -32.2% | 105% | – | – | 58.4% | – |
@@ -87,6 +95,15 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - Basket · always on: Low 45% · Mid 31% · High 30%
 - Basket scale in/out · VIX-scaled cap: Low 39% · Mid 26% · High 25%
 
+Target-allocation variants (shares held by distance below the high; consistency = % of positive months and the worst 12-month return):
+
+- QQQ target 40%→100% shares by drawdown · via options: in shares near high (<10%) 46% · 10-30% down 57% · >30% down 72%; positive months 67%, worst 12 months -32.2%; premium 2.1%/yr, 274 puts / 240 calls, assigned 16, called away 19
+- QQQ target 40%→100% shares by drawdown · via stock: in shares near high (<10%) 45% · 10-30% down 66% · >30% down 89%; positive months 67%, worst 12 months -38.2%; stock turnover 131%/yr
+- QQQ target 60%→100% shares by drawdown · via options: in shares near high (<10%) 63% · 10-30% down 68% · >30% down 79%; positive months 65%, worst 12 months -35.3%; premium 1.6%/yr, 230 puts / 183 calls, assigned 14, called away 14
+- QQQ target 60%→100% shares by drawdown · via stock: in shares near high (<10%) 64% · 10-30% down 78% · >30% down 95%; positive months 66%, worst 12 months -42.0%; stock turnover 67%/yr
+- MSTR target 15%→100% shares by drawdown · via options: in shares near high (<10%) 36% · 10-30% down 31% · >30% down 59%; positive months 62%, worst 12 months -63.8%; premium 22.8%/yr, 180 puts / 53 calls, assigned 25, called away 12
+- MSTR target 15%→100% shares by drawdown · via stock: in shares near high (<10%) 19% · 10-30% down 35% · >30% down 84%; positive months 55%, worst 12 months -73.6%; stock turnover 498%/yr
+
 LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium kept after buybacks, per year as % of equity):
 
 - QQQ PMCC · Tom King rules: in the market 90% of days, call premium 47.7%/yr, call P&L -6.7%/yr, 30 entries; exits: target 0, early 1, stop 7, LEAP at 120 DTE 21
@@ -136,6 +153,14 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | MSTR · as described + puts rolled down & out (stock IV 1x HV) | 20.4% | 50.5% | 0.56 | -64.3% | -58.0% | – | – | -58.7% | 71% | 39.8 | 19 | 48.7% | 49.6% |
 | MSTR · as described + puts rolled down & out | 23.2% | 45.3% | 0.62 | -60.7% | -54.2% | – | – | -54.9% | 71% | 53.7 | 23 | 69.1% | 40.0% |
 | MSTR · as described + puts rolled down & out (stock IV 1.3x HV) | 28.7% | 43.1% | 0.73 | -57.5% | -50.3% | – | – | -51.1% | 72% | 60.5 | 24 | 83.8% | 36.4% |
+| QQQ target 40%→100% shares by drawdown · via options | 10.6% | 11.8% | 0.64 | -15.7% | -12.7% | – | – | -12.7% | 43% | – | 9 | 3.1% | 42.8% |
+| QQQ target 40%→100% shares by drawdown · via stock | 11.4% | 13.8% | 0.62 | -21.6% | -19.2% | – | – | -19.5% | 53% | – | 0 | 0.0% | 52.7% |
+| QQQ target 60%→100% shares by drawdown · via options | 12.9% | 14.2% | 0.70 | -17.0% | -13.6% | – | – | -13.6% | 54% | – | 9 | 3.0% | 53.8% |
+| QQQ target 60%→100% shares by drawdown · via stock | 13.2% | 16.7% | 0.63 | -26.7% | -24.4% | – | – | -24.9% | 69% | – | 0 | 0.0% | 69.1% |
+| MSTR target 15%→100% shares by drawdown · via options (stock IV 1x HV) | 24.0% | 62.4% | 0.61 | -69.5% | -65.4% | – | – | -65.8% | 57% | – | 25 | 18.0% | 56.9% |
+| MSTR target 15%→100% shares by drawdown · via options | 29.4% | 61.2% | 0.68 | -66.7% | -62.4% | – | – | -62.8% | 55% | – | 25 | 23.1% | 55.1% |
+| MSTR target 15%→100% shares by drawdown · via options (stock IV 1.3x HV) | 35.3% | 61.1% | 0.75 | -61.9% | -57.0% | – | – | -57.4% | 57% | – | 25 | 24.3% | 56.9% |
+| MSTR target 15%→100% shares by drawdown · via stock | 18.8% | 70.5% | 0.55 | -78.7% | -71.1% | – | – | -71.6% | 73% | – | 0 | 0.0% | 72.8% |
 | QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -1.8% | 9.5% | -0.49 | -29.4% | -19.3% | – | – | -20.0% | 88% | – | – | 43.6% | – |
 | QQQ PMCC · trend calls, no filter/exits | -0.9% | 11.3% | -0.32 | -35.6% | -31.1% | – | – | -31.8% | 106% | – | – | 64.2% | – |
@@ -185,6 +210,15 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - Index core 50% + satellites · spikes: Low 27% · Mid 41% · High 50%
 - Basket · always on: Low 47% · Mid 28% · High 34%
 - Basket scale in/out · VIX-scaled cap: Low 38% · Mid 26% · High 33%
+
+Target-allocation variants (shares held by distance below the high; consistency = % of positive months and the worst 12-month return):
+
+- QQQ target 40%→100% shares by drawdown · via options: in shares near high (<10%) 38% · 10-30% down 53% · >30% down 69%; positive months 67%, worst 12 months -14.2%; premium 3.1%/yr, 134 puts / 59 calls, assigned 9, called away 7
+- QQQ target 40%→100% shares by drawdown · via stock: in shares near high (<10%) 45% · 10-30% down 68% · >30% down 82%; positive months 65%, worst 12 months -21.1%; stock turnover 135%/yr
+- QQQ target 60%→100% shares by drawdown · via options: in shares near high (<10%) 50% · 10-30% down 59% · >30% down 76%; positive months 65%, worst 12 months -15.2%; premium 3.0%/yr, 138 puts / 44 calls, assigned 9, called away 5
+- QQQ target 60%→100% shares by drawdown · via stock: in shares near high (<10%) 64% · 10-30% down 80% · >30% down 90%; positive months 65%, worst 12 months -26.4%; stock turnover 75%/yr
+- MSTR target 15%→100% shares by drawdown · via options: in shares near high (<10%) 50% · 10-30% down 38% · >30% down 59%; positive months 59%, worst 12 months -63.8%; premium 23.1%/yr, 161 puts / 53 calls, assigned 25, called away 12
+- MSTR target 15%→100% shares by drawdown · via stock: in shares near high (<10%) 18% · 10-30% down 35% · >30% down 85%; positive months 52%, worst 12 months -73.6%; stock turnover 498%/yr
 
 LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium kept after buybacks, per year as % of equity):
 
