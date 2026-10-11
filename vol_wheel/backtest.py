@@ -732,10 +732,14 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
     legs: list[dict] = []
     collar_flow, collar_days = 0.0, 0
 
+    def term_slope(sym, days):
+        # skew_slope is fitted to ~45-DTE options; longer expiries' skew flattens about as 1/sqrt(T)
+        ref = bt.get("skew_term_days", 45)
+        return bt["skew_slope"]["index" if sym in vol_syms else "stock"] * math.sqrt(ref / max(days, ref))
+
     def leg_px(o, S, iv, d, r):
-        slope = bt["skew_slope"]["index" if o["s"] in vol_syms else "stock"]
-        T = max((o["exp"] - d).days, 0) / 365.0
-        return bs_price(S, o["K"], T, skew_iv(iv, S, o["K"], slope), o["cp"], r)
+        days = max((o["exp"] - d).days, 0)
+        return bs_price(S, o["K"], days / 365.0, skew_iv(iv, S, o["K"], term_slope(o["s"], days)), o["cp"], r)
 
     def leg_slip(o, mid):
         c = bt["costs"]
@@ -854,17 +858,25 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
                     held[s] = tgt / px_ok[s]
                     cash -= tgt
             if col and legs:
-                # a name sold out of (trend exit, rotation) takes its collar with it
-                gone = [o for o in legs if not held.get(o["s"])]
-                for o in gone:
+                # collars follow the rebalanced holding: resized to the new share count, and a name sold
+                # out of (trend exit, rotation) takes its collar with it
+                keep = []
+                for o in legs:
                     S, iv = px_ok.get(o["s"]), ivs.at[d, o["s"]]
                     if S is None or not np.isfinite(iv):
+                        keep.append(o)
                         continue
-                    mid = leg_px(o, S, iv, d, r)
-                    flow = o["qty"] * mid - leg_slip(o, mid)
-                    cash += flow
-                    collar_flow += flow
-                    legs.remove(o)
+                    new_qty = held.get(o["s"], 0.0) * (1 if o["qty"] > 0 else -1)
+                    delta_q = o["qty"] - new_qty            # contracts to close (negative = add)
+                    if abs(delta_q) > 1e-9:
+                        mid = leg_px(o, S, iv, d, r)
+                        flow = delta_q * mid - leg_slip({**o, "qty": delta_q}, mid)
+                        cash += flow
+                        collar_flow += flow
+                        o["qty"] = new_qty
+                    if abs(o["qty"]) > 1e-9:
+                        keep.append(o)
+                legs = keep
         if col:
             covered = {o["s"] for o in legs}
             regimes = col.get("regimes")
@@ -876,7 +888,7 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
                     continue
                 dte = col.get("dte", 182)
                 exp = d + pd.Timedelta(days=dte)
-                slope = bt["skew_slope"]["index" if s in vol_syms else "stock"]
+                slope = term_slope(s, dte)
                 put = {"s": s, "cp": "P", "K": S * (1 - col.get("put_otm_pct", 10) / 100), "qty": held[s],
                        "exp": exp, "opened": d}
                 new = [put]

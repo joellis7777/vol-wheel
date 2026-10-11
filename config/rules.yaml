@@ -257,6 +257,7 @@ backtest:
   stock_iv_mults: [1.0, 1.15, 1.3]
   stock_iv_hv_long: 60
   skew_slope: {index: 0.8, stock: 0.3}   # iv(K) = atm - slope * ln(K/S)
+  skew_term_days: 45        # skew_slope fits ~45-DTE options; longer ones use slope * sqrt(45 / DTE) (collars)
   costs: {per_contract: 0.65, slippage_pct_index: 2, slippage_pct_stock: 5}   # % of mid per fill
   decide_itm: hold          # ITM at 21 DTE: hold to expiry and take assignment ("roll" = roll same strike out once)
   max_rolls: 1
