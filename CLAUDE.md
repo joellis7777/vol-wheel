@@ -138,6 +138,7 @@ vol_wheel/
   backtest.py              Black-Scholes wheel simulation of the rulebook on price + vol-index
                            history: variants from rules.yaml `backtest:`; `python -m vol_wheel.backtest`
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
+  target.py                target-allocation scaling by drawdown, via options or stock (`mode: target`)
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
 data/earnings.json         earnings cache: next/last report date + timing, implied move (workflow-written)
@@ -387,6 +388,12 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   `call_regimes`; no credit = held to expiry. Options opened at or inside `decide_dte` (short-DTE
   variants) skip the decision and run to expiry. A variant's `start` clips the window (MSTR from
   2020-09-01, its bitcoin-treasury era).
+- `mode: target` (`vol_wheel/target.py`, defaults in `backtest.target`): Jordan's scaling plan
+  (2026-10-12) as a rule: target share % = interpolation of `alloc` [[drawdown % from the high,
+  share %]], reached by trading the stock (`exec: stock`) or with laddered slices (`exec: options`:
+  puts on the shortfall, calls only on the excess, one slice per `every_days` plus one on a spike
+  day, each struck off that day's price). Report adds shares held by drawdown bucket, positive
+  months and worst 12 months.
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions
