@@ -876,7 +876,7 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
         for v in variants:
             v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
             uses_stock_iv = any(s not in meta["vol_index_syms"] for s in v["symbols"])
-            no_options = v["mode"] == "hold" or (v["mode"] == "target" and v.get("exec") == "stock")
+            no_options = v["mode"] == "hold" or (v["mode"] in ("target", "multi") and v.get("exec") == "stock")
             run_mults = (mults if (uses_stock_iv and not no_options) else [base_mult])
             for m in run_mults:
                 key = v["name"] if m == base_mult else f"{v['name']}@{m:g}"
@@ -890,6 +890,12 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
                     slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
                     res = Target({**v, "index": sym in meta["index_syms"]}, fr[sym], rates, rules, vs, end,
                                  slope).run().result()
+                elif v["mode"] == "multi":
+                    from .multi import Multi
+                    slopes = {s: bt["skew_slope"]["index" if s in meta["vol_index_syms"] else "stock"]
+                              for s in v["symbols"]}
+                    liquid = set(bt.get("liquid_option_syms") or []) | meta["index_syms"]
+                    res = Multi(v, fr, rates, rules, vs, end, slopes, liquid).run().result()
                 elif v["mode"] == "pmcc":
                     from .pmcc import PMCC
                     sym = v["symbols"][0]
@@ -955,6 +961,17 @@ def report(res: dict, rules: dict) -> str:
             lines += ["Rotation variants (share of months holding each):", ""]
             lines += [f"- {v['label']}: " + ", ".join(f"{s} {p}%" for s, p in v["months_held_pct"].items())
                       for k, v in rt] + [""]
+        mb = [(k, v) for k, v in w["variants"].items() if "avg_weights_pct" in v and "@" not in k]
+        if mb:
+            lines += ["Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):", ""]
+            for k, v in mb:
+                st = v["stats"]
+                wts = " · ".join(f"{s} {x:.0f}%" for s, x in v["avg_weights_pct"].items())
+                lines.append(f"- {v['label']}: {wts}; premium {v['premium_per_year_pct']:.1f}%/yr, "
+                             f"stock turnover {v['turnover_per_year_pct']:.0f}%/yr, {st['puts_sold']} puts / "
+                             f"{st['calls_sold']} calls, assigned {st['assigned']}, called away {st['called_away']}; "
+                             f"positive months {v['positive_months_pct']:.0f}%, worst 12 months {v['worst_12m_pct']:+.1f}%")
+            lines.append("")
         tg = [(k, v) for k, v in w["variants"].items() if "shares_by_drawdown_pct" in v and "@" not in k]
         if tg:
             lines += ["Target-allocation variants (shares held by distance below the high; consistency = % of "
