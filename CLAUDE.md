@@ -83,8 +83,14 @@ changes, update this list in the same change.
     13.1% / −17% vs 16.6% / −36%; 2022 −14% vs −34%). Always-on puts fix QQQ-spikes' idle capital
     (2021→ 7% → 13%). VIX-scaled cap: small risk cut (2022 −13.5% vs −17%), ~0.3%/yr less. 40Δ puts
     at lows: no gain. Open question for Jordan: QQQ puts always on + calls only on up-spikes / High?
-  Still to add: one side vs both; IVR 30/50/70 sweep; 50% vs full call coverage; LEAPs vs shares;
-  VIX-scaled deployment (tastytrade 25–50% by VIX). Real option history is paid.
+  - Tom King's dynamic PMCC (2026-10-11, `qqq_pmcc_tom`; 100% notional, LEAP debit ~18% of the
+    account): 1.4% CAGR / −27% max DD vs LEAP alone with his filter + exits 7.7% / −33%, LEAP held
+    8.4% / −55%, QQQ 15.4% / −54%. His weekly calls collect ~48%/yr of equity in premium but lose
+    ~7%/yr net (10%/yr with weekly IV at 0.9× VXN); worst in whipsaw years (2011, 2015-16, 2018).
+    2023 (a year he'd call favorable): PMCC +14% of the account ≈ +60% on the debit, LEAP alone
+    ≈ +220% on the debit. LEAPs vs shares at equal notional: ~7%/yr behind (time value, 85Δ).
+    His entry filter + −30% stop is the useful part (max DD −55% → −33%).
+  Still to add: one side vs both; IVR 30/50/70 sweep. Real option history is paid.
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
 - Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
