@@ -116,6 +116,7 @@ vol_wheel/
   alerts.py                ntfy messages, dedup against data/alert_state.json, digest, test alert
   backtest.py              Black-Scholes wheel simulation of the rulebook on price + vol-index
                            history: variants from rules.yaml `backtest:`; `python -m vol_wheel.backtest`
+  pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
 data/earnings.json         earnings cache: next/last report date + timing, implied move (workflow-written)
@@ -354,6 +355,12 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   total cap from `deployment.vix_caps` (VIX bands; a list in the variant overrides it). Per-variant
   `dte` (number or {regime: dte}) and `decide_dte`. The report's scaling check shows the % of the
   account in shares by the first name's regime (should be high at Low, low at High).
+- `mode: pmcc` (`vol_wheel/pmcc.py`, defaults in `backtest.pmcc`): one underlying, long leg = LEAP
+  (85Δ, 12 months, closed at 120 DTE) or shares at `exposure_pct` notional, short calls `trend`
+  (Tom King's dynamic PMCC: 10-DTE calls at 25/50/65Δ by EMA8 vs EMA21, rolled at 85% of the
+  extrinsic captured), `spike` (rulebook) or `none`; optional entry filter (close > SMA200,
+  RSI14 > 35, EMA8 > EMA21) and exits (+100%, +50% in half the time, −30% of the LEAP debit).
+  Weekly calls are priced off the 30-day IV × `weekly_iv_ratio`.
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions
