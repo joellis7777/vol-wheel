@@ -90,6 +90,21 @@ changes, update this list in the same change.
     2023 (a year he'd call favorable): PMCC +14% of the account ≈ +60% on the debit, LEAP alone
     ≈ +220% on the debit. LEAPs vs shares at equal notional: ~7%/yr behind (time value, 85Δ).
     His entry filter + −30% stop is the useful part (max DD −55% → −33%).
+  - Assignment is rare (2026-10-12): always-on puts 2–7% assigned (90%+ close at 50% or at 21 DTE),
+    spike puts ~22% (QQQ), calls 0% called away when spike-only, 4–7% when always on.
+  - TA/rolling ideas (QQQ): 21-DTE 40Δ puts at lows + calls only on up-spikes 15.2% / −39% (best
+    tested; puts-always-hold 14.8%). Roll ITM both sides for credit ("roll until you're right") 4.7%
+    / −33% (vs 5.0% unrolled; 2022 −9.5% vs −13.5%). Far-OTM calls rolled up, assigned only in the
+    High regime: 5.0% (QQQ "tops" mostly aren't; cash then sits idle).
+  - MSTR 2020-09→: hold 80% 46.7% / −82% (2022 −63%); puts always + spike calls 28.7% / −63%;
+    as Jordan described (40Δ puts at lows, calls rolled until tops) 28.2% / −65%; + puts rolled
+    23.0% / −61%; Nithu Sezni's posted call rule 22.9% / −68%; spikes only 12.3% / −40%. Single
+    path, modelled IV (18.8–34% across IV mults for the described version).
+  - Nithu Sezni (@nithusezni, "The Orange Pill Investor", the "Soliel" Jordan follows): posted
+    rules = calls only after a rally with IVR > 50 and ~20% upside buffer, Friday rolls, LEAPs after
+    dips at low IVR with > 90 DTE (OTM LEAPs closed ~90 days out, deep-ITM ones become PMCCs),
+    funded partly with a personal loan; no public record before 2024, no verified returns; his
+    full rules are in his pinned X "Options Comprehensive Mega Thread".
   Still to add: one side vs both; IVR 30/50/70 sweep. Real option history is paid.
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
