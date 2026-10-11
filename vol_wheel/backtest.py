@@ -745,6 +745,9 @@ def metrics(eq: pd.Series, rates: pd.Series, bt: dict) -> dict:
             periods[name] = {"return_pct": round((seg.iloc[-1] / seg.iloc[0] - 1) * 100, 1),
                              "max_dd_pct": round(float(pdd.min()) * 100, 1)}
     full_years = {y: v for y, v in yearly.items() if (eq.index.year == int(y)).sum() > 200}
+    monthly = eq.groupby([eq.index.year, eq.index.month]).last()
+    mret = monthly.pct_change().dropna()
+    roll12 = eq.pct_change(TD).dropna()
     return {
         "start": eq.index[0].strftime("%Y-%m-%d"), "end": eq.index[-1].strftime("%Y-%m-%d"),
         "final": round(float(eq.iloc[-1])), "cagr_pct": round(cagr * 100, 2), "vol_pct": round(vol * 100, 1),
@@ -752,6 +755,8 @@ def metrics(eq: pd.Series, rates: pd.Series, bt: dict) -> dict:
         "max_dd_date": trough.strftime("%Y-%m-%d"), "longest_underwater_days": longest,
         "worst_year_pct": min(full_years.values()) if full_years else None,
         "yearly_pct": yearly, "periods": periods,
+        "positive_months_pct": round(float((mret > 0).mean()) * 100, 1) if len(mret) else None,
+        "worst_12m_pct": round(float(roll12.min()) * 100, 1) if len(roll12) else None,
     }
 
 
@@ -827,13 +832,20 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
         for v in variants:
             v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
             uses_stock_iv = any(s not in meta["vol_index_syms"] for s in v["symbols"])
-            run_mults = (mults if (uses_stock_iv and v["mode"] != "hold") else [base_mult])
+            no_options = v["mode"] == "hold" or (v["mode"] == "target" and v.get("exec") == "stock")
+            run_mults = (mults if (uses_stock_iv and not no_options) else [base_mult])
             for m in run_mults:
                 key = v["name"] if m == base_mult else f"{v['name']}@{m:g}"
                 fr = frames_by_mult[m]
                 vs = max(start, pd.Timestamp(v["start"])) if v.get("start") else start
                 if v["mode"] == "hold":
                     res = run_hold(v, fr, meta, rates, rules, vs, end)
+                elif v["mode"] == "target":
+                    from .target import Target
+                    sym = v["symbols"][0]
+                    slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
+                    res = Target({**v, "index": sym in meta["index_syms"]}, fr[sym], rates, rules, vs, end,
+                                 slope).run().result()
                 elif v["mode"] == "pmcc":
                     from .pmcc import PMCC
                     sym = v["symbols"][0]
@@ -890,6 +902,19 @@ def report(res: dict, rules: dict) -> str:
         if scal:
             lines += [f"Share of the account held as stock, by the first name's regime (scaling in at lows, out at highs):", ""]
             lines += [f"- {x}" for x in scal] + [""]
+        tg = [(k, v) for k, v in w["variants"].items() if "shares_by_drawdown_pct" in v and "@" not in k]
+        if tg:
+            lines += ["Target-allocation variants (shares held by distance below the high; consistency = % of "
+                      "positive months and the worst 12-month return):", ""]
+            for k, v in tg:
+                b = " · ".join(f"{n} {x:.0f}%" for n, x in v["shares_by_drawdown_pct"].items())
+                st = v["stats"]
+                extra = (f"premium {v['premium_per_year_pct']:.1f}%/yr, {st['puts_sold']} puts / {st['calls_sold']} calls, "
+                         f"assigned {st['assigned']}, called away {st['called_away']}"
+                         if st["puts_sold"] + st["calls_sold"] else f"stock turnover {v['turnover_per_year_pct']:.0f}%/yr")
+                lines.append(f"- {v['label']}: in shares {b}; positive months {v['positive_months_pct']:.0f}%, "
+                             f"worst 12 months {v['worst_12m_pct']:+.1f}%; {extra}")
+            lines.append("")
         pm = [(k, v) for k, v in w["variants"].items() if "call_pnl_per_year_pct" in v]
         if pm:
             lines += ["LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium "

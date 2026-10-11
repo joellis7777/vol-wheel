@@ -279,6 +279,13 @@ backtest:
   # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed or by
   # regime), calls (spike|always), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps,
   # roll_itm {puts, calls, max_rolls, dte, call_regimes}, start (later window start for this variant).
+  target:                   # defaults for mode: target variants (vol_wheel/target.py)
+    band_pct: 5             # act when shares are this far (% of the account) from the target
+    slice_pct: 10           # each put/call slice (or no limit for stock) covers up to 10% of the account
+    every_days: 5           # one new slice per side per 5 sessions, plus one on any spike day
+    dte: 45
+    stock_cost_bps: 5       # stock execution: cost per trade (bps of notional)
+    high_lookback_days: null   # drawdown measured from the all-time high (or a rolling window)
   pmcc:                     # defaults for mode: pmcc variants (vol_wheel/pmcc.py)
     exposure_pct: 100       # long-leg notional (shares controlled x price) as % of the account
     leap_delta: 85
@@ -363,6 +370,22 @@ backtest:
        put_delta: {Low: 40, Mid: 25, High: 15}, call_delta: {Low: 5, Mid: 10, High: 30},
        roll_itm: {puts: true, calls: true, call_regimes: [Low, Mid], max_rolls: 8, dte: 45},
        caps: {total: 80, per_name: 80, Crypto: 80}}
+    # Target allocation by drawdown (Jordan 2026-10-12): mostly cash near highs, mostly shares deep in a
+    # drawdown, reached with laddered puts/calls (options) or by trading the stock (stock), same rule.
+    - {name: qqq_target_opts, label: "QQQ target 40%→100% shares by drawdown · via options", symbols: [QQQ],
+       mode: target, exec: options, alloc: [[0, 40], [10, 55], [20, 70], [30, 80], [50, 100]]}
+    - {name: qqq_target_stock, label: "QQQ target 40%→100% shares by drawdown · via stock", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 40], [10, 55], [20, 70], [30, 80], [50, 100]]}
+    - {name: qqq_target60_opts, label: "QQQ target 60%→100% shares by drawdown · via options", symbols: [QQQ],
+       mode: target, exec: options, alloc: [[0, 60], [10, 70], [20, 80], [30, 90], [50, 100]]}
+    - {name: qqq_target60_stock, label: "QQQ target 60%→100% shares by drawdown · via stock", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 60], [10, 70], [20, 80], [30, 90], [50, 100]]}
+    - {name: mstr_target_opts, label: "MSTR target 15%→100% shares by drawdown · via options", symbols: [MSTR],
+       mode: target, exec: options, alloc: [[0, 15], [25, 40], [50, 70], [70, 100]], high_lookback_days: 1000,
+       start: "2020-09-01"}
+    - {name: mstr_target_stock, label: "MSTR target 15%→100% shares by drawdown · via stock", symbols: [MSTR],
+       mode: target, exec: stock, alloc: [[0, 15], [25, 40], [50, 70], [70, 100]], high_lookback_days: 1000,
+       start: "2020-09-01"}
     # Tom King's dynamic poor man's covered call (Theta Profits, 2026-03-29) and comparisons, sized
     # to 100% notional QQQ exposure (LEAP debit ~15-25% of the account, the rest in T-bills).
     - {name: qqq_pmcc_tom, label: "QQQ PMCC · Tom King rules", symbols: [QQQ], mode: pmcc, long: leap,
