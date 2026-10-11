@@ -857,6 +857,10 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
                 if m != base_mult:
                     res.pop("equity_weekly", None)
                 wres["variants"][key] = res
+                if res.get("shares_monthly") and "@" not in key and v["symbols"][0] == "MSTR":
+                    sm = res["shares_monthly"]
+                    path = " ".join(f"{k[2:]}:{sm[k]}" for k in sm if "2021-01" <= k <= "2023-06")
+                    print(f"{wname:7s} {key:22s} shares% by month 2021-01..2023-06: {path}", flush=True)
                 print(f"{wname:7s} {key:22s} CAGR {res['cagr_pct']:6.2f}%  maxDD {res['max_dd_pct']:6.1f}%  "
                       f"Sharpe {res['sharpe']:5.2f}  deployed {res['avg_deployed_pct']:5.1f}%"
                       + (f"  puts/yr {res['puts_per_year']}" if "puts_per_year" in res else ""), flush=True)

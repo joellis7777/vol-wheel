@@ -57,3 +57,21 @@ def test_options_calls_only_on_excess(rules):
     s = _run(rules, _frame(closes), exec="options")
     assert s.stats["calls_sold"] >= 1
     assert s.shares >= -1e-9 and s.cash > -1e-6       # never short shares, never borrows
+
+
+def test_trend_cap_limits_scaling_in_a_falling_market(rules):
+    closes = np.r_[np.linspace(60, 100, 260), np.linspace(100, 50, 120)]
+    f = _frame(closes)
+    free = _run(rules, f, exec="stock")
+    capped = _run(rules, f, exec="stock", trend_cap_pct=40)
+    assert free.in_shares[-1] > 0.8
+    assert capped.in_shares[-1] <= 0.45
+
+
+def test_core_calls_at_lows(rules):
+    closes = np.r_[np.full(10, 100.0), np.linspace(100, 50, 40), np.full(120, 50.0)]
+    f = _frame(closes)
+    f["regime"] = "Low"
+    s = _run(rules, f, exec="options", core_calls={"delta": 10, "max_pct": 25, "regimes": ["Low"]})
+    assert s.stats.get("core_calls", 0) >= 1
+    assert "2020-03" in s.result()["shares_monthly"]

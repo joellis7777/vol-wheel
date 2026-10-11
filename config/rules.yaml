@@ -386,6 +386,20 @@ backtest:
     - {name: mstr_target_stock, label: "MSTR target 15%→100% shares by drawdown · via stock", symbols: [MSTR],
        mode: target, exec: stock, alloc: [[0, 15], [25, 40], [50, 70], [70, 100]], high_lookback_days: 1000,
        start: "2020-09-01"}
+    # 2022 diagnosis follow-ups: a deeper MSTR schedule (its bears run -75% to -90%), a trend cap (no more
+    # than trend_cap_pct in shares while below a falling 200-day), and 10Δ income calls on up to 25% of
+    # the core in the Low regime (sideways at the lows), premium recycled into puts via the target.
+    - {name: mstr_target_deep, label: "MSTR target · deeper schedule (100% only at -88%)", symbols: [MSTR],
+       mode: target, exec: options, alloc: [[0, 15], [50, 30], [75, 60], [88, 100]], high_lookback_days: 1000,
+       start: "2020-09-01"}
+    - {name: mstr_target_trend, label: "MSTR target · deeper + trend cap 40% below a falling 200-day", symbols: [MSTR],
+       mode: target, exec: options, alloc: [[0, 15], [50, 30], [75, 60], [88, 100]], high_lookback_days: 1000,
+       trend_cap_pct: 40, start: "2020-09-01"}
+    - {name: mstr_target_trend_cc, label: "MSTR target · deeper + trend cap + core calls at lows", symbols: [MSTR],
+       mode: target, exec: options, alloc: [[0, 15], [50, 30], [75, 60], [88, 100]], high_lookback_days: 1000,
+       trend_cap_pct: 40, core_calls: {delta: 10, max_pct: 25, regimes: [Low]}, start: "2020-09-01"}
+    - {name: qqq_target_trend, label: "QQQ target 60%→100% · trend cap 60% below a falling 200-day", symbols: [QQQ],
+       mode: target, exec: options, alloc: [[0, 60], [10, 70], [20, 80], [30, 90], [50, 100]], trend_cap_pct: 60}
     # Tom King's dynamic poor man's covered call (Theta Profits, 2026-03-29) and comparisons, sized
     # to 100% notional QQQ exposure (LEAP debit ~15-25% of the account, the rest in T-bills).
     - {name: qqq_pmcc_tom, label: "QQQ PMCC · Tom King rules", symbols: [QQQ], mode: pmcc, long: leap,

@@ -44,10 +44,13 @@ class Target:
         high = close.rolling(lb, min_periods=1).max() if lb else close.cummax()
         f = frame.copy()
         f["dd_pct"] = (1 - close / high) * 100
+        sma = close.rolling(self.cfg.get("trend_sma", 200)).mean()
+        f["downtrend"] = (close < sma) & (sma.diff(20) < 0)
         f = f.reindex(self.cal)
         f["close"] = f["close"].ffill()
         f["iv"] = f["iv"].ffill()
         f["dd_pct"] = f["dd_pct"].ffill().fillna(0)
+        f["downtrend"] = f["downtrend"].astype("boolean").ffill().fillna(False).astype(bool)
         self.rows = f.to_dict("records")
         self.slope = slope
         self.cash = float(self.bt["account"])
@@ -106,9 +109,9 @@ class Target:
             keep.append(o)
         self.opts = keep
 
-    def _sell(self, cp, qty, S, d, iv, r, regime):
+    def _sell(self, cp, qty, S, d, iv, r, regime, delta=None):
         dte = self.cfg.get("dte", 45)
-        K = strike_for_delta(S, dte / 365, iv, self._delta(cp, regime), cp, self.slope, r)
+        K = strike_for_delta(S, dte / 365, iv, delta or self._delta(cp, regime), cp, self.slope, r)
         mid = self._px(S, K, dte, iv, cp, r)
         credit = mid - self._slip(mid)
         if credit <= 0 or qty <= 0:
@@ -139,7 +142,11 @@ class Target:
                 continue
             self._manage(S, d, iv, r)
             E = self.cash + self.shares * S - self._opt_value(S, d, iv, r)
-            tgt = target_fraction(row["dd_pct"], self.cfg["alloc"]) * E
+            frac = target_fraction(row["dd_pct"], self.cfg["alloc"])
+            if self.cfg.get("trend_cap_pct") is not None and row["downtrend"]:
+                # below a falling 200-day: don't scale in past the cap (a drawdown level isn't a low)
+                frac = min(frac, self.cfg["trend_cap_pct"] / 100)
+            tgt = frac * E
             cur = self.shares * S
             regime = row.get("regime") or "Mid"
             if self.cfg.get("exec", "options") == "stock":
@@ -164,6 +171,16 @@ class Target:
                         self._sell("P", notional / K, S, d, iv, r, regime)
                         self.last_put_i = i
                 excess = cur - tgt - call_shares * S
+                cc = self.cfg.get("core_calls")
+                if cc and excess <= band * E and regime in cc.get("regimes", ["Low"]) \
+                        and call_shares < self.shares * cc.get("max_pct", 25) / 100 and i - self.last_call_i >= every:
+                    # income calls on part of the core while price consolidates at the lows; the premium
+                    # stays in cash and funds more puts through the target
+                    qty = min(slice_frac * E / S, self.shares * cc.get("max_pct", 25) / 100 - call_shares)
+                    if qty * S > 0.01 * E:
+                        self._sell("C", qty, S, d, iv, r, regime, delta=cc.get("delta", 10) / 100)
+                        self.last_call_i = i
+                        self.stats["core_calls"] = self.stats.get("core_calls", 0) + 1
                 if excess > band * E and (i - self.last_call_i >= every or up_spike):
                     qty = min(slice_frac * E, excess) / S
                     qty = min(qty, self.shares - call_shares)
@@ -188,5 +205,7 @@ class Target:
         buckets = {"near high (<10%)": dd < 10, "10-30% down": (dd >= 10) & (dd < 30), ">30% down": dd >= 30}
         out["shares_by_drawdown_pct"] = {k: round(float(sh[m].mean()) * 100, 1) for k, m in buckets.items() if m.any()}
         out["stats"] = dict(self.stats)
+        m = pd.Series(self.in_shares, index=self.cal).groupby([self.cal.year, self.cal.month]).mean()
+        out["shares_monthly"] = {f"{y}-{mo:02d}": round(float(x) * 100) for (y, mo), x in m.items()}
         out["equity_weekly"] = weekly(eq)
         return out
