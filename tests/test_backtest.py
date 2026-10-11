@@ -274,3 +274,16 @@ def test_hold_weights_and_rotation(rules):
     rot = B.run_hold({"symbols": ["A", "B"], "rotate": {"lookback": 252, "top": 1, "abs": True}},
                      frames, meta, rates, rules, idx[0], idx[-1])
     assert rot["months_held_pct"]["A"] > 0 and rot["months_held_pct"]["B"] == 0
+
+
+def test_hold_trend_exit_moves_to_tbills(rules):
+    rules["backtest"]["min_history_days"] = 1
+    idx = pd.bdate_range("2020-01-01", periods=600)
+    closes = np.r_[np.linspace(100, 200, 300), np.linspace(200, 100, 300)]
+    frames = {"A": _frame(closes).set_axis(idx)}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0]}}
+    hold = B.run_hold({"symbols": ["A"]}, frames, meta, rates, rules, idx[0], idx[-1])
+    trend = B.run_hold({"symbols": ["A"], "trend_sma": 200}, frames, meta, rates, rules, idx[0], idx[-1])
+    assert trend["max_dd_pct"] > hold["max_dd_pct"]          # exits in the fall
+    assert trend["months_held_pct"]["T-bills"] > 0
