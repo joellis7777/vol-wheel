@@ -120,6 +120,18 @@ changes, update this list in the same change.
     QQQ/BTC 80/20 33.4% / −45%; rotation QQQ/GLD/BTC 56% / −82% (momentum too slow for BTC crashes);
     BTC hold 70% / −83%; QQQ hold 19.8% / −36%. Deep vs original MSTR schedule over 2022+2023
     combined: 1.82× vs 1.60× (deep lost less in 2022; held fewer shares in the 2023-24 rebound).
+  - Diversifier candidates (2026-10-12, monthly-return correlations since 2015-10, report table):
+    QQQ–GLD 0.07, QQQ–BTC 0.30, GLD–BTC 0.09, QQQ–XLE 0.30, GLD–XLE 0.00, QQQ–TLT 0.23 (TLT −33% in
+    2022), XLE +58% in 2022; SPY–QQQ 0.91, FNV–GLD 0.73, SLV–GLD 0.77 (redundant). From 2015-10:
+    QQQ/GLD/BTC 60/25/15 28.7% / −37% (2022 −31%); + XLE (50/20/15/15) 27.6% / −31% (2022 −23%,
+    worst 12m −28%); + TLT 25.1% / −38%; + XLP 26.7% / −34%. 2007→: QQQ/GLD 60/40 13.9% / −37%;
+    QQQ/GLD/XLE 13.3% / −43% (XLE fell with stocks in 2008); QQQ/GLD/TLT 12.3% / −35%.
+    Jordan is leaning to a 3-asset core (QQQ / gold / bitcoin) traded with options; open: add XLE?
+  - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
+    reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
+    2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
+    drawdowns, many names have thin options (TPL, VNOM, BWXT, RGLD). Fits the taxable buy-and-hold
+    role better than the options wheel. Not yet backtested here on daily data.
   - Nithu Sezni (@nithusezni, "The Orange Pill Investor", the "Soliel" Jordan follows): posted
     rules = calls only after a rally with IVR > 50 and ~20% upside buffer, Friday rolls, LEAPs after
     dips at low IVR with > 90 DTE (OTM LEAPs closed ~90 days out, deep-ITM ones become PMCCs),
