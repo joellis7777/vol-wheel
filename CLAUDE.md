@@ -113,6 +113,13 @@ changes, update this list in the same change.
     −88%) 25.3% / −42% (2022 −35%, 2023 +181%); + trend cap 40% below a falling 200-day 20.0% / −35%
     (2022 −27%, 2023 +105%); + 10Δ core calls in the Low regime 18.4% / −34% (premium helped 2022 by
     ~1 pt, capped the 2023 rebound). QQQ trend cap 60%: 11.2% / −32% vs 11.9% / −40%.
+  - Diversify vs rotate (2026-10-12, hold mode `weights` / `rotate`): 2007→ QQQ/GLD 70/30 14.4% /
+    −41% (Sharpe 0.80), 50/50 13.3% / −34% (0.82, 2008 +18%) vs QQQ 15.4% / −54% (0.69); dual-momentum
+    rotation QQQ↔GLD 11.2% / −33% (0.57: lags, whipsaws). From 2015-10 (Yahoo BTC-USD, hindsight
+    start): QQQ/GLD/BTC 60/25/15 28.7% / −37% (vol 19%, Sharpe 1.29, best risk-adjusted tested);
+    QQQ/BTC 80/20 33.4% / −45%; rotation QQQ/GLD/BTC 56% / −82% (momentum too slow for BTC crashes);
+    BTC hold 70% / −83%; QQQ hold 19.8% / −36%. Deep vs original MSTR schedule over 2022+2023
+    combined: 1.82× vs 1.60× (deep lost less in 2022; held fewer shares in the 2023-24 rebound).
   - Nithu Sezni (@nithusezni, "The Orange Pill Investor", the "Soliel" Jordan follows): posted
     rules = calls only after a rally with IVR > 50 and ~20% upside buffer, Friday rolls, LEAPs after
     dips at low IVR with > 90 DTE (OTM LEAPs closed ~90 days out, deep-ITM ones become PMCCs),
