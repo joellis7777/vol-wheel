@@ -232,6 +232,13 @@ class PMCC:
                     self._open_long(S, d, iv, r, E)
             if self.long is not None and self.call is None:
                 pick = self._call_delta(row)
+                if pick and self.long["kind"] == "shares":
+                    # keep shares at exposure_pct of equity (call buybacks are paid by trimming
+                    # shares, not by borrowing)
+                    E = self.cash + self.long["qty"] * S
+                    tgt = self.cfg.get("exposure_pct", 100) / 100 * E / S
+                    self.cash -= (tgt - self.long["qty"]) * S
+                    self.long["qty"] = tgt
                 if pick:
                     self._sell_call(S, d, iv, r, *pick)
 
