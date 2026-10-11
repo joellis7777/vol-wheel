@@ -126,7 +126,16 @@ changes, update this list in the same change.
     QQQ/GLD/BTC 60/25/15 28.7% / −37% (2022 −31%); + XLE (50/20/15/15) 27.6% / −31% (2022 −23%,
     worst 12m −28%); + TLT 25.1% / −38%; + XLP 26.7% / −34%. 2007→: QQQ/GLD 60/40 13.9% / −37%;
     QQQ/GLD/XLE 13.3% / −43% (XLE fell with stocks in 2008); QQQ/GLD/TLT 12.3% / −35%.
-    Jordan is leaning to a 3-asset core (QQQ / gold / bitcoin) traded with options; open: add XLE?
+    Jordan is leaning to a core of QQQ / gold / bitcoin + XLE (energy: "seems like a good idea",
+    2026-10-12) traded with options; Honeycomb = a defensive sleeve for the late-2029 bear he expects.
+  - Core rebalanced with options vs stock (2026-10-12, `mode: multi`, 2% band, from 2015-10):
+    QQQ/GLD/BTC 60/25/15 stock 29.2% / −36% vs options 28.3% / −35% (27.9–30.0% across IV mults;
+    premium ~3%/yr, stock turnover 1% vs 28%/yr); +XLE 50/20/15/15 stock 27.9% / −31% vs options
+    28.1% / −31% vs hybrid (stock for gaps > 8%) 26.8% / −30% (2022 −20%, worst 12m −25%, steadiest);
+    80% invested (SGOV 20%) options 22.0% / −26% ≈ monthly-rebalanced 80% mix 22.4% / −25%. 2007→
+    QQQ/GLD/XLE stock 13.1% / −44% vs options 13.6% / −42%. Execution is second-order (±1%/yr); the
+    mix drives results. Options lag the targets (fully invested = no cash for puts until calls are
+    exercised), so they run below target weights and the premium roughly makes up for it.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
