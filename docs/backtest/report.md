@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T02:51Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T14:59Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -18,6 +18,25 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | QQQ puts always on · calls only on up-spikes | 14.8% | 18.9% | 0.75 | -38.7% | -30.8% | +5.7% | +31.5% | -31.4% | 87% | 6.4 | 9 | 1.1% | 84.0% |
 | QQQ scale in/out · calls on half the shares | 6.5% | 10.9% | 0.50 | -38.3% | -26.8% | -1.9% | +15.6% | -14.5% | 51% | 76.9 | 38 | 8.6% | 21.7% |
 | QQQ scale in/out · calls only in High regime | 8.1% | 12.0% | 0.58 | -38.7% | -26.5% | -6.8% | +14.7% | -14.2% | 55% | 60.8 | 34 | 6.5% | 31.3% |
+| QQQ puts+calls always · roll ITM both sides for credit | 4.7% | 9.3% | 0.37 | -33.1% | -23.3% | -3.7% | +3.5% | -9.5% | 48% | 86.5 | 16 | 20.1% | 12.2% |
+| QQQ puts always · 5–10Δ calls rolled up, assigned only in High regime | 5.0% | 10.7% | 0.37 | -38.5% | -27.8% | -8.5% | +8.2% | -13.8% | 50% | 74.2 | 37 | 14.2% | 21.7% |
+| QQQ puts always · 21-DTE 40Δ puts at lows · calls on up-spikes | 15.2% | 19.4% | 0.75 | -38.9% | -31.3% | +5.6% | +32.0% | -31.9% | 89% | 6.6 | 11 | 1.0% | 86.9% |
+| MSTR · buy & hold 80% | 46.7% | 74.5% | 0.84 | -81.6% | -62.6% | – | +123.1% | -63.3% | 80% | – | – | – | – |
+| MSTR · spikes (current rules) (stock IV 1x HV) | 11.2% | 20.9% | 0.47 | -40.3% | -9.9% | – | +0.7% | -1.2% | 22% | 6.9 | 7 | 8.8% | 15.5% |
+| MSTR · spikes (current rules) | 12.3% | 19.8% | 0.53 | -40.4% | -10.7% | – | +0.8% | -0.5% | 22% | 6.9 | 6 | 10.7% | 16.1% |
+| MSTR · spikes (current rules) (stock IV 1.3x HV) | 13.6% | 19.5% | 0.59 | -38.7% | -9.0% | – | +1.0% | +1.0% | 22% | 6.9 | 6 | 12.6% | 15.9% |
+| MSTR · puts always · calls on up-spikes (stock IV 1x HV) | 24.1% | 51.9% | 0.62 | -63.5% | -58.6% | – | +4.0% | -59.3% | 69% | 54.2 | 23 | 34.2% | 46.8% |
+| MSTR · puts always · calls on up-spikes | 28.7% | 53.5% | 0.68 | -62.6% | -57.9% | – | +5.1% | -58.6% | 71% | 48.5 | 22 | 37.3% | 50.2% |
+| MSTR · puts always · calls on up-spikes (stock IV 1.3x HV) | 32.4% | 52.7% | 0.74 | -61.3% | -55.3% | – | +6.2% | -56.1% | 71% | 50.4 | 23 | 43.9% | 49.1% |
+| MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up) (stock IV 1x HV) | 22.6% | 54.0% | 0.59 | -63.4% | -58.4% | – | +4.0% | -59.0% | 72% | 44.7 | 21 | 38.8% | 53.4% |
+| MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up) | 22.9% | 55.7% | 0.59 | -67.5% | -56.0% | – | +5.1% | -56.7% | 72% | 33.8 | 16 | 40.5% | 58.6% |
+| MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up) (stock IV 1.3x HV) | 25.5% | 73.7% | 0.63 | -85.0% | -54.4% | – | +6.2% | -55.2% | 87% | 28.9 | 14 | 29.9% | 75.0% |
+| MSTR · as described (40Δ puts at lows, calls rolled up until tops) (stock IV 1x HV) | 18.8% | 50.5% | 0.53 | -66.7% | -60.6% | – | +6.1% | -61.3% | 69% | 44.7 | 19 | 40.2% | 50.1% |
+| MSTR · as described (40Δ puts at lows, calls rolled up until tops) | 28.2% | 51.4% | 0.68 | -64.9% | -58.6% | – | +7.1% | -59.4% | 72% | 47.8 | 23 | 48.0% | 49.9% |
+| MSTR · as described (40Δ puts at lows, calls rolled up until tops) (stock IV 1.3x HV) | 34.0% | 51.4% | 0.77 | -63.6% | -58.6% | – | +8.6% | -59.4% | 72% | 47.8 | 24 | 56.4% | 49.1% |
+| MSTR · as described + puts rolled down & out (stock IV 1x HV) | 20.4% | 49.1% | 0.56 | -64.3% | -58.0% | – | +6.1% | -58.7% | 69% | 44.5 | 19 | 48.4% | 46.8% |
+| MSTR · as described + puts rolled down & out | 23.0% | 44.1% | 0.62 | -60.7% | -54.2% | – | +7.1% | -54.9% | 70% | 57.7 | 23 | 68.4% | 37.8% |
+| MSTR · as described + puts rolled down & out (stock IV 1.3x HV) | 29.0% | 41.9% | 0.75 | -57.5% | -50.3% | – | +8.6% | -51.1% | 70% | 64.1 | 24 | 83.2% | 34.4% |
 | QQQ PMCC · Tom King rules | 1.4% | 9.7% | 0.04 | -27.4% | -15.2% | -5.8% | +8.6% | -11.9% | 94% | – | – | 47.7% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -2.4% | 9.6% | -0.36 | -53.0% | -23.1% | -13.6% | +7.8% | -23.8% | 95% | – | – | 45.7% | – |
 | QQQ PMCC · trend calls, no filter/exits | 0.1% | 10.8% | -0.08 | -35.7% | -31.6% | -9.2% | +9.3% | -32.2% | 105% | – | – | 58.4% | – |
@@ -54,6 +73,14 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - QQQ puts always on · calls only on up-spikes: Low 74% · Mid 86% · High 90%
 - QQQ scale in/out · calls on half the shares: Low 38% · Mid 16% · High 22%
 - QQQ scale in/out · calls only in High regime: Low 41% · Mid 29% · High 26%
+- QQQ puts+calls always · roll ITM both sides for credit: Low 18% · Mid 8% · High 18%
+- QQQ puts always · 5–10Δ calls rolled up, assigned only in High regime: Low 38% · Mid 18% · High 15%
+- QQQ puts always · 21-DTE 40Δ puts at lows · calls on up-spikes: Low 77% · Mid 88% · High 93%
+- MSTR · spikes (current rules): Low 17% · Mid 17% · High 14%
+- MSTR · puts always · calls on up-spikes: Low 59% · Mid 49% · High 43%
+- MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up): Low 63% · Mid 59% · High 53%
+- MSTR · as described (40Δ puts at lows, calls rolled up until tops): Low 60% · Mid 47% · High 43%
+- MSTR · as described + puts rolled down & out: Low 44% · Mid 38% · High 31%
 - QQQ + SPY · spikes: Low 67% · Mid 84% · High 89%
 - Basket · spikes (current rules): Low 45% · Mid 56% · High 63%
 - Index core 50% + satellites · spikes: Low 55% · Mid 67% · High 73%
@@ -90,6 +117,25 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | QQQ puts always on · calls only on up-spikes | 13.1% | 14.3% | 0.70 | -17.2% | -14.0% | – | – | -14.1% | 67% | 28.9 | 8 | 3.5% | 55.5% |
 | QQQ scale in/out · calls on half the shares | 8.7% | 10.5% | 0.54 | -16.6% | -13.8% | – | – | -13.9% | 54% | 73.2 | 13 | 8.8% | 25.3% |
 | QQQ scale in/out · calls only in High regime | 13.5% | 13.7% | 0.76 | -17.2% | -14.2% | – | – | -14.2% | 67% | 28.7 | 8 | 5.2% | 55.1% |
+| QQQ puts+calls always · roll ITM both sides for credit | 7.4% | 8.7% | 0.49 | -12.6% | -9.5% | – | – | -9.5% | 54% | 69.9 | 8 | 28.4% | 23.7% |
+| QQQ puts always · 5–10Δ calls rolled up, assigned only in High regime | 6.7% | 10.0% | 0.37 | -16.3% | -13.7% | – | – | -13.8% | 52% | 74.1 | 13 | 18.7% | 22.4% |
+| QQQ puts always · 21-DTE 40Δ puts at lows · calls on up-spikes | 13.7% | 16.0% | 0.68 | -21.3% | -17.3% | – | – | -17.3% | 73% | 25.2 | 9 | 3.0% | 63.7% |
+| MSTR · buy & hold 80% | 28.9% | 74.9% | 0.67 | -81.6% | -62.6% | – | – | -63.3% | 80% | – | – | – | – |
+| MSTR · spikes (current rules) (stock IV 1x HV) | 11.8% | 21.5% | 0.47 | -40.3% | -9.9% | – | – | -1.2% | 22% | 6.6 | 7 | 8.9% | 16.4% |
+| MSTR · spikes (current rules) | 12.9% | 20.4% | 0.54 | -40.4% | -10.7% | – | – | -0.5% | 23% | 6.6 | 6 | 10.9% | 17.1% |
+| MSTR · spikes (current rules) (stock IV 1.3x HV) | 14.3% | 20.1% | 0.60 | -38.7% | -9.0% | – | – | +1.0% | 23% | 6.6 | 6 | 12.8% | 16.8% |
+| MSTR · puts always · calls on up-spikes (stock IV 1x HV) | 24.8% | 53.4% | 0.62 | -63.5% | -58.6% | – | – | -59.3% | 71% | 50.1 | 23 | 34.5% | 49.5% |
+| MSTR · puts always · calls on up-spikes | 29.5% | 55.0% | 0.69 | -62.6% | -57.9% | – | – | -58.6% | 73% | 44.0 | 22 | 37.4% | 53.2% |
+| MSTR · puts always · calls on up-spikes (stock IV 1.3x HV) | 33.1% | 54.2% | 0.74 | -61.3% | -55.3% | – | – | -56.1% | 73% | 46.1 | 23 | 44.0% | 52.0% |
+| MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up) (stock IV 1x HV) | 23.2% | 55.6% | 0.60 | -63.4% | -58.4% | – | – | -59.0% | 74% | 40.0 | 21 | 39.2% | 56.5% |
+| MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up) | 23.3% | 57.3% | 0.60 | -67.5% | -56.0% | – | – | -56.7% | 74% | 28.5 | 16 | 40.7% | 62.0% |
+| MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up) (stock IV 1.3x HV) | 25.8% | 75.8% | 0.64 | -85.0% | -54.4% | – | – | -55.2% | 90% | 23.3 | 14 | 29.8% | 79.4% |
+| MSTR · as described (40Δ puts at lows, calls rolled up until tops) (stock IV 1x HV) | 18.8% | 51.9% | 0.53 | -66.7% | -60.6% | – | – | -61.3% | 71% | 40.0 | 19 | 40.3% | 53.0% |
+| MSTR · as described (40Δ puts at lows, calls rolled up until tops) | 29.2% | 52.8% | 0.69 | -64.3% | -59.0% | – | – | -59.7% | 73% | 44.2 | 23 | 48.2% | 51.9% |
+| MSTR · as described (40Δ puts at lows, calls rolled up until tops) (stock IV 1.3x HV) | 33.9% | 52.8% | 0.76 | -63.6% | -58.6% | – | – | -59.4% | 74% | 43.3 | 24 | 56.5% | 52.0% |
+| MSTR · as described + puts rolled down & out (stock IV 1x HV) | 20.4% | 50.5% | 0.56 | -64.3% | -58.0% | – | – | -58.7% | 71% | 39.8 | 19 | 48.7% | 49.6% |
+| MSTR · as described + puts rolled down & out | 23.2% | 45.3% | 0.62 | -60.7% | -54.2% | – | – | -54.9% | 71% | 53.7 | 23 | 69.1% | 40.0% |
+| MSTR · as described + puts rolled down & out (stock IV 1.3x HV) | 28.7% | 43.1% | 0.73 | -57.5% | -50.3% | – | – | -51.1% | 72% | 60.5 | 24 | 83.8% | 36.4% |
 | QQQ PMCC · Tom King rules | 1.3% | 9.7% | -0.15 | -24.5% | -19.2% | – | – | -20.0% | 87% | – | – | 44.3% | – |
 | QQQ PMCC · Tom King rules · weekly IV 0.9x | -1.8% | 9.5% | -0.49 | -29.4% | -19.3% | – | – | -20.0% | 88% | – | – | 43.6% | – |
 | QQQ PMCC · trend calls, no filter/exits | -0.9% | 11.3% | -0.32 | -35.6% | -31.1% | – | – | -31.8% | 106% | – | – | 64.2% | – |
@@ -126,6 +172,14 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - QQQ puts always on · calls only on up-spikes: Low 53% · Mid 55% · High 62%
 - QQQ scale in/out · calls on half the shares: Low 44% · Mid 20% · High 25%
 - QQQ scale in/out · calls only in High regime: Low 53% · Mid 54% · High 62%
+- QQQ puts+calls always · roll ITM both sides for credit: Low 26% · Mid 20% · High 36%
+- QQQ puts always · 5–10Δ calls rolled up, assigned only in High regime: Low 39% · Mid 18% · High 20%
+- QQQ puts always · 21-DTE 40Δ puts at lows · calls on up-spikes: Low 67% · Mid 62% · High 69%
+- MSTR · spikes (current rules): Low 17% · Mid 17% · High 18%
+- MSTR · puts always · calls on up-spikes: Low 59% · Mid 49% · High 52%
+- MSTR · Nithu's posted rule (calls after rallies, ~20Δ, rolled up): Low 63% · Mid 59% · High 65%
+- MSTR · as described (40Δ puts at lows, calls rolled up until tops): Low 60% · Mid 45% · High 51%
+- MSTR · as described + puts rolled down & out: Low 44% · Mid 38% · High 37%
 - QQQ + SPY · spikes: Low 7% · Mid 15% · High 18%
 - Basket · spikes (current rules): Low 25% · Mid 36% · High 45%
 - Index core 50% + satellites · spikes: Low 27% · Mid 41% · High 50%
