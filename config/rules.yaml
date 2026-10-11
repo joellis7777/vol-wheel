@@ -457,6 +457,46 @@ backtest:
     - {name: eq_qg_2007_trend, label: "Equal QQQ / GLD · 200-day exit (2007→)", symbols: [QQQ, GLD], mode: hold,
        weights: {QQQ: 1, GLD: 1}, trend_sma: 200}
     - {name: qqq_trend_2007, label: "QQQ · 200-day exit to T-bills (2007→)", symbols: [QQQ], mode: hold, trend_sma: 200}
+    # (a) exit armed only after a stretched market (High regime within N days), or only below a falling 200-day
+    - {name: qqq_trend_armed, label: "QQQ · 200-day exit armed by High regime in last 12m", symbols: [QQQ], mode: hold,
+       trend_sma: 200, trend_arm: {high_within_days: 252}}
+    - {name: qqq_trend_armed6, label: "QQQ · 200-day exit armed by High regime in last 6m", symbols: [QQQ], mode: hold,
+       trend_sma: 200, trend_arm: {high_within_days: 126}}
+    - {name: qqq_trend_falling, label: "QQQ · exit below a falling 200-day", symbols: [QQQ], mode: hold,
+       trend_sma: 200, trend_falling: true}
+    - {name: eq_qg_2007_trend_armed, label: "Equal QQQ / GLD · exit armed by High (12m)", symbols: [QQQ, GLD], mode: hold,
+       weights: {QQQ: 1, GLD: 1}, trend_sma: 200, trend_arm: {high_within_days: 252}}
+    - {name: eq_qgb_trend_armq, label: "Equal QQQ / GLD / BTC · BTC exit always, QQQ+GLD armed by High", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_arm: {symbols: [QQQ, GLD], high_within_days: 252}, start: "2015-10-01"}
+    - {name: eq_qgb_2020_trend_armq, label: "Equal QQQ / GLD / BTC · BTC always, QQQ+GLD armed (from 2020-09)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_arm: {symbols: [QQQ, GLD], high_within_days: 252}, start: "2020-09-01"}
+    # (b) exited weight to the best-trending defensive name (TLT, dollar) instead of T-bills
+    - {name: qqq_trend_def, label: "QQQ · 200-day exit to best of TLT / UUP / T-bills", symbols: [QQQ], mode: hold,
+       trend_sma: 200, trend_to: {symbols: [TLT, UUP], lookback: 126}}
+    - {name: eq_qg_2007_trend_def, label: "Equal QQQ / GLD · exit to best of TLT / UUP / T-bills", symbols: [QQQ, GLD],
+       mode: hold, weights: {QQQ: 1, GLD: 1}, trend_sma: 200, trend_to: {symbols: [TLT, UUP], lookback: 126}}
+    - {name: eq_qgb_trend_def, label: "Equal QQQ / GLD / BTC · exit to best of TLT / UUP / T-bills", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_to: {symbols: [TLT, UUP], lookback: 126}, start: "2015-10-01"}
+    - {name: eq_qgb_trend_defx, label: "Equal QQQ / GLD / BTC · exit to best of TLT / UUP / XLE / T-bills", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_to: {symbols: [TLT, UUP, XLE], lookback: 126}, start: "2015-10-01"}
+    # (c) collars: 10%-OTM 6-month put financed by a zero-cost call, re-struck quarterly
+    - {name: qqq_collar, label: "QQQ · always collared (10% put, zero-cost call, 6m)", symbols: [QQQ], mode: hold,
+       collar: {put_otm_pct: 10, dte: 182, roll_days: 91}}
+    - {name: qqq_collar_high, label: "QQQ · collar opened only in High regime", symbols: [QQQ], mode: hold,
+       collar: {put_otm_pct: 10, dte: 182, roll_days: 91, regimes: [High]}}
+    - {name: qqq_puts_high, label: "QQQ · 10% puts only in High regime (no call)", symbols: [QQQ], mode: hold,
+       collar: {put_otm_pct: 10, dte: 182, roll_days: 91, regimes: [High], call: false}}
+    - {name: eq_qgb_collar_high, label: "Equal QQQ / GLD / BTC · collars in High regime", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1},
+       collar: {put_otm_pct: 10, dte: 182, roll_days: 91, regimes: [High]}, start: "2015-10-01"}
+    - {name: eq_qgb_plan, label: "Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_arm: {symbols: [QQQ, GLD], high_within_days: 252}, trend_to: {symbols: [TLT, UUP], lookback: 126},
+       collar: {put_otm_pct: 10, dte: 182, roll_days: 91, regimes: [High]}, start: "2015-10-01"}
     - {name: btc_hold, label: "Buy & hold BTC 100%", symbols: [BTC-USD], mode: hold, weight: 100, start: "2015-10-01"}
     - {name: qqq_hold_2015, label: "Buy & hold QQQ 100% (from 2015-10)", symbols: [QQQ], mode: hold, weight: 100,
        start: "2015-10-01"}

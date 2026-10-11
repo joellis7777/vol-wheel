@@ -675,46 +675,152 @@ class Sim:
         return out
 
 
+def _zero_cost_call(S: float, T: float, atm: float, slope: float, r: float, target: float) -> float:
+    """Lowest call strike >= S whose premium is no more than `target` (the put it finances)."""
+    lo, hi = S, S * 4
+    if bs_price(S, lo, T, skew_iv(atm, S, lo, slope), "C", r) <= target:
+        return lo
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if bs_price(S, mid, T, skew_iv(atm, S, mid, slope), "C", r) > target:
+            lo = mid
+        else:
+            hi = mid
+    return hi
+
+
 def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: dict, start, end) -> dict:
     """Buy-and-hold at `weight`% (rest in T-bills), monthly rebalance. Weights: equal across eligible
     names, or `weights` {sym: %} renormalized over the eligible ones. `rotate` {lookback, top, abs}:
     each month hold only the `top` names with the best trailing `lookback`-day return, and only those
-    beating T-bills over the same span when `abs` (dual momentum); otherwise T-bills. `trend_sma`:
-    at each monthly rebalance a name closing below its N-day average gets its weight in T-bills."""
+    beating T-bills over the same span when `abs` (dual momentum); otherwise T-bills.
+    Defensive exit, checked at each monthly rebalance:
+      `trend_sma`     a name closing below its N-day average gets its weight in T-bills (or `trend_to`)
+                      until it closes back above
+      `trend_falling` exit only while that average is also lower than 20 days earlier
+      `trend_arm`     {symbols, high_within_days}: for those names an exit also needs the High regime
+                      within the last N days (the market was stretched before it broke)
+      `trend_to`      {symbols, lookback, top}: the exited weight goes to the defensive name(s) with the
+                      best trailing `lookback`-day return, if beating T-bills; else T-bills
+    `collar` {put_otm_pct, dte, roll_days, call, call_otm_pct, regimes}: a put `put_otm_pct` below on each
+    holding, financed by a call (zero-cost strike unless `call_otm_pct`; `call: false` = puts only),
+    re-struck every `roll_days`; new collars only while the name's regime is in `regimes` when given."""
     bt = rules["backtest"]
     cal = rates.index[(rates.index >= start) & (rates.index <= end)]
     syms = [s for s in variant["symbols"] if s in frames]
+    tt = variant.get("trend_to") or {}
+    dsyms = [s for s in tt.get("symbols", []) if s in frames and s not in syms]
+    allsyms = syms + dsyms
     w = variant.get("weight", 100) / 100
     # forward-filled: a missing bar for one name must not value the holding at zero
-    closes_all = pd.DataFrame({s: frames[s]["close"] for s in syms}).ffill()
+    closes_all = pd.DataFrame({s: frames[s]["close"] for s in allsyms}).ffill()
     closes = closes_all.reindex(cal)
-    held = {s: 0.0 for s in syms}
+    held = {s: 0.0 for s in allsyms}
     weights = variant.get("weights")
     rot = variant.get("rotate")
-    months_in = {s: 0 for s in syms}
+    tsma = variant.get("trend_sma")
+    arm = variant.get("trend_arm") or {}
+    arm_syms = set(arm.get("symbols") or syms)
+    arm_days = arm.get("high_within_days")
+    regs = pd.DataFrame({s: frames[s]["regime"] if "regime" in frames[s] else "Mid" for s in syms})
+    col = variant.get("collar")
+    if col:
+        ivs = pd.DataFrame({s: frames[s]["iv"] for s in syms}).ffill().reindex(cal)
+        regs_cal = regs.reindex(cal)
+        vol_syms = meta.get("vol_index_syms") or set()
+        liquid = set(bt.get("liquid_option_syms") or []) | set(meta.get("index_syms") or set())
+    legs: list[dict] = []
+    collar_flow, collar_days = 0.0, 0
+
+    def leg_px(o, S, iv, d, r):
+        slope = bt["skew_slope"]["index" if o["s"] in vol_syms else "stock"]
+        T = max((o["exp"] - d).days, 0) / 365.0
+        return bs_price(S, o["K"], T, skew_iv(iv, S, o["K"], slope), o["cp"], r)
+
+    def leg_slip(o, mid):
+        c = bt["costs"]
+        pct = c["slippage_pct_index"] if o["s"] in liquid else c["slippage_pct_stock"]
+        return abs(o["qty"]) * (max(mid * pct / 100, 0.01) + c["per_contract"] / 100)
+
+    months_in = {s: 0 for s in allsyms}
     months_cash = 0
+    off_now: set = set()
     cash = float(bt["account"])
     eq, prev_d, last_month = [], None, None
     min_bars = bt.get("min_history_days", 260)
     for d in cal:
+        r = float(rates.loc[d])
         if prev_d is not None:
-            cash *= 1 + float(rates.loc[d]) * (d - prev_d).days / 365.0
+            cash *= 1 + r * (d - prev_d).days / 365.0
         prev_d = d
-        px = {s: closes.at[d, s] for s in syms}
+        px = {s: closes.at[d, s] for s in allsyms}
         px_ok = {s: p for s, p in px.items() if np.isfinite(p) and p > 0}
-        E = cash + sum(held[s] * px_ok.get(s, 0.0) for s in syms)
+        if col and legs:
+            # settle expired legs, close legs due for a re-strike
+            keep = []
+            for o in legs:
+                S, iv = px_ok.get(o["s"]), ivs.at[d, o["s"]]
+                if S is None or not np.isfinite(iv):
+                    keep.append(o)
+                    continue
+                if d >= o["exp"]:
+                    flow = o["qty"] * max(0.0, (o["K"] - S) if o["cp"] == "P" else (S - o["K"]))
+                elif (d - o["opened"]).days >= col.get("roll_days", 91):
+                    mid = leg_px(o, S, iv, d, r)
+                    flow = o["qty"] * mid - leg_slip(o, mid)
+                else:
+                    keep.append(o)
+                    continue
+                cash += flow
+                collar_flow += flow
+            legs = keep
+
+        def leg_value():
+            tot = 0.0
+            for o in legs:
+                S, iv = px_ok.get(o["s"]), ivs.at[d, o["s"]]
+                if S is not None and np.isfinite(iv):
+                    tot += o["qty"] * leg_px(o, S, iv, d, r)
+            return tot
+
+        E = cash + sum(held[s] * px_ok.get(s, 0.0) for s in allsyms) + (leg_value() if legs else 0.0)
         if d.month != last_month:
             last_month = d.month
-            elig = [s for s in px_ok if frames[s]["close"].loc[meta["first_date"][s]:d].count() >= min_bars]
-            tsma = variant.get("trend_sma")
+            elig = [s for s in syms if s in px_ok
+                    and frames[s]["close"].loc[meta["first_date"][s]:d].count() >= min_bars]
             elig_all = elig
+            off: list = []
+            dest: list = []
             if tsma and elig:
                 past = closes_all.loc[:d]
-                off = [s for s in elig if past[s].count() >= tsma and past[s].iloc[-1] < past[s].iloc[-tsma:].mean()]
-                months_cash += len(off)   # name-months in T-bills
+                for s in elig:
+                    p = past[s].dropna()
+                    if len(p) < tsma or p.iloc[-1] >= p.iloc[-tsma:].mean():
+                        continue
+                    if s not in off_now:   # entering an exit; staying out needs only the close below
+                        if variant.get("trend_falling") and len(p) >= tsma + 20 \
+                                and p.iloc[-tsma:].mean() >= p.iloc[-tsma - 20:-20].mean():
+                            continue
+                        if arm_days and s in arm_syms and not (regs[s].loc[:d].iloc[-arm_days:] == "High").any():
+                            continue
+                    off.append(s)
+                off_now = set(off)
+                if off and dsyms:
+                    lb = tt.get("lookback", 126)
+                    rf = float(rates.loc[:d].iloc[-lb:].mean()) * lb / 252
+                    mom = {}
+                    for s in dsyms:
+                        p = past[s].dropna()
+                        if s in px_ok and len(p) > lb:
+                            mom[s] = p.iloc[-1] / p.iloc[-1 - lb] - 1
+                    dest = sorted((s for s in mom if mom[s] > rf), key=mom.get, reverse=True)[:tt.get("top", 1)]
                 for s in elig:
                     if s not in off:
                         months_in[s] += 1
+                for s in dest:
+                    months_in[s] += len(off) / len(dest)
+                if not dest:
+                    months_cash += len(off)
                 elig = [s for s in elig if s not in off]
             if rot and elig:
                 lb = rot.get("lookback", 252)
@@ -727,29 +833,84 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
                     months_in[s] += 1
                 if not elig:
                     months_cash += 1
-            for s in syms:
+            for s in allsyms:
                 if held[s] and s in px_ok:
                     cash += held[s] * px_ok[s]
                     held[s] = 0.0
-            if elig:
-                base = elig_all if tsma else elig
-                if weights:
-                    tot = sum(weights.get(s, 0) for s in base) or 1.0
-                    wts = {s: weights.get(s, 0) / tot for s in elig}
-                else:
-                    wts = {s: 1 / len(base) for s in elig}
-                for s in elig:
-                    tgt = E * w * wts[s]
+            base = elig_all if tsma else elig
+            if weights:
+                tot = sum(weights.get(s, 0) for s in base) or 1.0
+                wts = {s: weights.get(s, 0) / tot for s in base}
+            else:
+                wts = {s: 1 / len(base) for s in base} if base else {}
+            for s in elig:
+                tgt = E * w * wts[s]
+                held[s] = tgt / px_ok[s]
+                cash -= tgt
+            if dest:
+                off_w = sum(wts.get(s, 0) for s in off)
+                for s in dest:
+                    tgt = E * w * off_w / len(dest)
                     held[s] = tgt / px_ok[s]
                     cash -= tgt
-        eq.append(cash + sum(held[s] * px_ok.get(s, 0.0) for s in syms))
+            if col and legs:
+                # a name sold out of (trend exit, rotation) takes its collar with it
+                gone = [o for o in legs if not held.get(o["s"])]
+                for o in gone:
+                    S, iv = px_ok.get(o["s"]), ivs.at[d, o["s"]]
+                    if S is None or not np.isfinite(iv):
+                        continue
+                    mid = leg_px(o, S, iv, d, r)
+                    flow = o["qty"] * mid - leg_slip(o, mid)
+                    cash += flow
+                    collar_flow += flow
+                    legs.remove(o)
+        if col:
+            covered = {o["s"] for o in legs}
+            regimes = col.get("regimes")
+            for s in syms:
+                S, iv = px_ok.get(s), ivs.at[d, s]
+                if not held[s] or s in covered or S is None or not np.isfinite(iv) or iv <= 0:
+                    continue
+                if regimes and regs_cal.at[d, s] not in regimes:
+                    continue
+                dte = col.get("dte", 182)
+                exp = d + pd.Timedelta(days=dte)
+                slope = bt["skew_slope"]["index" if s in vol_syms else "stock"]
+                put = {"s": s, "cp": "P", "K": S * (1 - col.get("put_otm_pct", 10) / 100), "qty": held[s],
+                       "exp": exp, "opened": d}
+                new = [put]
+                pmid = leg_px(put, S, iv, d, r)
+                if col.get("call", True):
+                    K = S * (1 + col["call_otm_pct"] / 100) if col.get("call_otm_pct") is not None else \
+                        _zero_cost_call(S, dte / 365, iv, slope, r, pmid)
+                    new.append({"s": s, "cp": "C", "K": K, "qty": -held[s], "exp": exp, "opened": d})
+                for o in new:
+                    mid = leg_px(o, S, iv, d, r)
+                    flow = -o["qty"] * mid - leg_slip(o, mid)
+                    cash += flow
+                    collar_flow += flow
+                legs += new
+            collar_days += bool(legs)
+        eq.append(cash + sum(held[s] * px_ok.get(s, 0.0) for s in allsyms) + (leg_value() if legs else 0.0))
     eqs = pd.Series(eq, index=cal)
     out = metrics(eqs, rates.reindex(cal), bt)
     out["avg_deployed_pct"] = round(w * 100, 1)
-    if rot or variant.get("trend_sma"):
+    if rot or tsma:
         n = max(sum(months_in.values()) + months_cash, 1)
         out["months_held_pct"] = {**{s: round(100 * c / n) for s, c in months_in.items()},
                                   "T-bills": round(100 * months_cash / n)}
+    if col:
+        yrs = max(len(eqs) / 252, 1e-9)
+        open_val = 0.0
+        if legs:
+            d = cal[-1]
+            for o in legs:
+                S, iv = closes.at[d, o["s"]], ivs.at[d, o["s"]]
+                if np.isfinite(S) and np.isfinite(iv):
+                    open_val += o["qty"] * leg_px(o, S, iv, d, float(rates.loc[d]))
+        out["collar_pnl_per_year_pct"] = round((collar_flow + open_val) / yrs / float(eqs.mean()) * 100, 2)
+        out["collared_days_pct"] = round(100 * collar_days / max(len(eqs), 1))
     out["equity_weekly"] = weekly(eqs)
     return out
 
@@ -817,6 +978,7 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
     vol_map = dict(bt.get("vol_index", {}))
     variants = bt["variants"]
     syms = sorted({s for v in variants for s in resolve_symbols(v["symbols"], rules)}
+                  | {s for v in variants for s in (v.get("trend_to") or {}).get("symbols", [])}
                   | set(bt.get("correlation_symbols") or []))
     hists, info = {}, {}
     for s in syms + sorted(set(vol_map.values())):
@@ -973,6 +1135,11 @@ def report(res: dict, rules: dict) -> str:
             lines += ["Rotation variants (share of months holding each):", ""]
             lines += [f"- {v['label']}: " + ", ".join(f"{s} {p}%" for s, p in v["months_held_pct"].items())
                       for k, v in rt] + [""]
+        cl = [(k, v) for k, v in w["variants"].items() if "collar_pnl_per_year_pct" in v]
+        if cl:
+            lines += ["Collar variants (net option P&L per year as % of equity; share of days with a collar on):", ""]
+            lines += [f"- {v['label']}: collar P&L {v['collar_pnl_per_year_pct']:+.2f}%/yr, collared "
+                      f"{v['collared_days_pct']}% of days" for k, v in cl] + [""]
         mb = [(k, v) for k, v in w["variants"].items() if "avg_weights_pct" in v and "@" not in k]
         if mb:
             lines += ["Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):", ""]
