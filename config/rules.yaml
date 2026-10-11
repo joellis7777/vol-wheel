@@ -15,6 +15,11 @@ universe:
   Hard asset: {cap: 10, core: [GLD],     opportunistic: [FNV]}   # gold royalty, added 2026-10-09 (RGLD removed same day: illiquid)
 
 total_deployed_cap: 80       # % of account across all buckets
+# VIX-scaled total cap (tastytrade: deploy more when volatility is high). [VIX at/above, cap % of
+# account in put collateral + shares]. Built 2026-10-11 for testing in the backtest (variants with
+# vix_caps: true); not yet the live rule: total_deployed_cap above still applies.
+deployment:
+  vix_caps: [[0, 40], [15, 55], [20, 70], [30, 80]]
 per_name_cap: 15             # % of account per single name
 per_name_cap_index: 25       # % of account for index names (SPY, QQQ)
 
@@ -275,20 +280,32 @@ backtest:
   variants:
     - {name: qqq_spike, label: "QQQ only · spikes", symbols: [QQQ], mode: spike, entry_pct: 15,
        caps: {total: 80, per_name: 80, Index: 80}}
-    - {name: qqq_spike_20d, label: "QQQ only · spikes · fixed 20Δ", symbols: [QQQ], mode: spike, entry_pct: 15,
-       put_delta: 20, call_delta: 20, caps: {total: 80, per_name: 80, Index: 80}}
     - {name: qqq_spike_cc, label: "QQQ only · spike puts, calls always on shares", symbols: [QQQ], mode: spike,
        entry_pct: 15, calls: always, caps: {total: 80, per_name: 80, Index: 80}}
-    - {name: qqq_always, label: "QQQ only · always on", symbols: [QQQ], mode: always, entry_pct: 10,
-       entry_every_days: 5, min_ivr: 0, caps: {total: 80, per_name: 80, Index: 80}}
-    - {name: qqq_always_ivr30, label: "QQQ only · always on, IVR ≥ 30", symbols: [QQQ], mode: always,
-       entry_pct: 10, entry_every_days: 5, min_ivr: 30, caps: {total: 80, per_name: 80, Index: 80}}
+    # Scale in / scale out (Jordan, 2026-10-11): stay deployed, puts on the cash and calls on the
+    # shares at all times; regime deltas lean in at lows (30Δ puts / 10Δ calls) and out at highs
+    # (10Δ puts / 30Δ calls), so assignments ladder into shares on the way down and out on the way up.
+    - {name: qqq_scale, label: "QQQ scale in/out · cap 80%", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 0, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_scale_vix, label: "QQQ scale in/out · VIX-scaled cap", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 0, vix_caps: true, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_scale_vix100, label: "QQQ scale in/out · VIX cap to 100%", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: [[0, 50], [15, 65], [20, 80], [30, 90], [40, 100]],
+       caps: {total: 100, per_name: 100, Index: 100}}
+    - {name: qqq_scale_lows, label: "QQQ scale in/out · VIX cap · 40Δ puts at lows", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, put_delta: {Low: 40, Mid: 20, High: 10},
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_scale_ivr30, label: "QQQ scale in/out · VIX cap · puts only at IVR ≥ 30", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 30, vix_caps: true,
+       caps: {total: 80, per_name: 80, Index: 80}}
     - {name: index_spike, label: "QQQ + SPY · spikes", symbols: [QQQ, SPY], mode: spike, entry_pct: 15,
        caps: {total: 80, per_name: 40, Index: 80}}
     - {name: basket_spike, label: "Basket · spikes (current rules)", symbols: universe, mode: spike}
     - {name: core_sats_spike, label: "Index core 50% + satellites · spikes", symbols: universe, mode: spike,
        entry_pct: {Index: 15, default: 5}, caps: {Index: 50}}
     - {name: basket_always, label: "Basket · always on", symbols: universe, mode: always, entry_every_days: 5}
+    - {name: basket_scale_vix, label: "Basket scale in/out · VIX-scaled cap", symbols: universe, mode: always,
+       entry_every_days: 2, vix_caps: true}
     - {name: qqq_hold, label: "Buy & hold QQQ 100%", symbols: [QQQ], mode: hold, weight: 100}
     - {name: qqq_hold_80, label: "Buy & hold QQQ 80% / T-bills 20%", symbols: [QQQ], mode: hold, weight: 80}
     - {name: basket_hold_80, label: "Buy & hold basket 80% (equal weight)", symbols: universe, mode: hold, weight: 80}

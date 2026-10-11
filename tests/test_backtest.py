@@ -75,7 +75,7 @@ def _frame(closes, iv=0.25, ivr=80.0, down=0.0, up=0.0, regime="Mid", gate=False
     return f
 
 
-def _sim(rules, frame, variant=None, sym="TEST"):
+def _sim(rules, frame, variant=None, sym="TEST", vix=None):
     rules["universe"]["Test"] = {"cap": 100, "core": [sym], "opportunistic": []}
     rules["backtest"]["min_history_days"] = 1
     rules["backtest"]["circuit_breakers"] = {}
@@ -83,7 +83,8 @@ def _sim(rules, frame, variant=None, sym="TEST"):
          "caps": {"total": 100, "per_name": 100, "Test": 100}, **(variant or {})}
     rates = pd.Series(0.0, index=frame.index)
     meta = {"bucket": {sym: "Test"}, "index_syms": set(), "vol_index_syms": set(),
-            "first_date": {sym: frame.index[0]}}
+            "first_date": {sym: frame.index[0]},
+            "vix": pd.Series(vix, index=frame.index) if vix is not None else None}
     return B.Sim(v, {sym: frame}, meta, rates, rules, frame.index[0], frame.index[-1]).run()
 
 
@@ -180,3 +181,35 @@ def test_hold_survives_missing_bars(rules):
     meta = {"bucket": {"TEST": "Test"}, "index_syms": set(), "vol_index_syms": set(), "first_date": {"TEST": f.index[0]}}
     res = B.run_hold({"symbols": ["TEST"], "weight": 100}, {"TEST": f}, meta, rates, rules, f.index[0], f.index[-1])
     assert res["max_dd_pct"] > -1
+
+
+def test_vix_cap_bands():
+    bands = [[0, 40], [15, 55], [20, 70], [30, 80]]
+    assert B.vix_cap(12.0, bands) == 40
+    assert B.vix_cap(15.0, bands) == 55
+    assert B.vix_cap(29.9, bands) == 70
+    assert B.vix_cap(45.0, bands) == 80
+    assert B.vix_cap(float("nan"), bands) is None and B.vix_cap(20.0, []) is None
+
+
+def test_vix_cap_limits_deployment(rules):
+    f = _frame(np.full(60, 100.0), ivr=10.0)
+    rules["backtest"]["costs"]["per_contract"] = 0.0
+    base = {"mode": "always", "entry_every_days": 1, "min_ivr": 0, "entry_pct": 10,
+            "caps": {"total": 100, "per_name": 100, "Test": 100}}
+    uncapped = _sim(rules, f, base)
+    rules["deployment"] = {"vix_caps": [[0, 30], [25, 90]]}
+    calm = _sim(rules, f, {**base, "vix_caps": True}, vix=12.0)
+    stressed = _sim(rules, f, {**base, "vix_caps": True}, vix=35.0)
+    assert max(calm.deployed) <= 0.30 + 1e-6
+    assert max(stressed.deployed) > 0.6
+    assert max(uncapped.deployed) > max(calm.deployed)
+
+
+def test_dte_by_regime(rules):
+    f = _frame(np.full(4, 100.0), regime="Low")
+    f.loc[f.index[0], "down"] = 2.0
+    s = _sim(rules, f, {"dte": {"Low": 30}})
+    o = s.opts[0]
+    assert (o.expiry - o.opened).days == 30
+    assert s._dte("High", 45) == 45

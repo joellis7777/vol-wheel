@@ -342,6 +342,11 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   Low/Mid), caps per name/bucket/total, circuit breakers. Fractional contracts, T-bill yield on cash.
 - Modes: `spike` (rulebook), `always` (a put every `entry_every_days` while IVR ≥ `min_ivr`,
   tastytrade-style), `hold` (buy-and-hold at `weight`%, monthly rebalance).
+- `qqq_scale*` / `basket_scale_vix` = Jordan's scale-in/scale-out plan (2026-10-11): always-on puts
+  on the cash and calls on the shares, regime deltas doing the leaning. `vix_caps: true` takes the
+  total cap from `deployment.vix_caps` (VIX bands; a list in the variant overrides it). Per-variant
+  `dte` (number or {regime: dte}) and `decide_dte`. The report's scaling check shows the % of the
+  account in shares by the first name's regime (should be high at Low, low at High).
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions
