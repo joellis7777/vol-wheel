@@ -76,6 +76,13 @@ changes, update this list in the same change.
   - Basket ≈ index core 50% + satellites (15.6% vs 15.8%); both lean on NVDA/MSTR (hindsight) and on
     the assumed single-stock IV. 2021→: basket spikes 21% / −14% vs QQQ hold 17% / −36%.
   - Regime deltas vs fixed 20Δ: no meaningful difference.
+  - Jordan's scale-in/scale-out plan (2026-10-11: always deployed, puts on cash, calls on shares,
+    regime deltas) works mechanically (QQQ: 36% in shares at Low, 6% at High) but returns 5% CAGR
+    with −39% max DD. The calls cost it: same puts with calls on half the shares 6.5%, calls only in
+    High regime 8.1%, calls only on up-spikes 14.8% (≈ QQQ hold 15.4%, max DD −39% vs −54%; 2021→
+    13.1% / −17% vs 16.6% / −36%; 2022 −14% vs −34%). Always-on puts fix QQQ-spikes' idle capital
+    (2021→ 7% → 13%). VIX-scaled cap: small risk cut (2022 −13.5% vs −17%), ~0.3%/yr less. 40Δ puts
+    at lows: no gain. Open question for Jordan: QQQ puts always on + calls only on up-spikes / High?
   Still to add: one side vs both; IVR 30/50/70 sweep; 50% vs full call coverage; LEAPs vs shares;
   VIX-scaled deployment (tastytrade 25–50% by VIX). Real option history is paid.
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
