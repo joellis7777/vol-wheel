@@ -213,3 +213,14 @@ def test_dte_by_regime(rules):
     o = s.opts[0]
     assert (o.expiry - o.opened).days == 30
     assert s._dte("High", 45) == 45
+
+
+def test_call_coverage_and_regimes(rules):
+    closes = np.r_[np.full(5, 100.0), np.full(30, 70.0)]   # assigned ~day 32, call still open at the end
+    f = _frame(closes, regime="High")                       # High: no net-cost floor on the call strike
+    f.loc[f.index[0], "down"] = 2.0
+    half = _sim(rules, f, {"calls": "always", "call_coverage": 50})
+    calls = [o for o in half.opts if o.cp == "C"]
+    assert calls and sum(o.qty for o in calls) == pytest.approx(half.shares["TEST"] * 0.5)
+    none = _sim(rules, f, {"calls": "always", "call_regimes": ["Low"]})
+    assert none.stats["calls_sold"] == 0

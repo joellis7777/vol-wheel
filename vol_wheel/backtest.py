@@ -581,6 +581,10 @@ class Sim:
         if self.shares[s] <= 1e-9:
             return
         cov = self.rules["momentum_max_call_coverage"] / 100 if s in self.rules["momentum_names"] else 1.0
+        if self.v.get("call_coverage") is not None:
+            cov = min(cov, self.v["call_coverage"] / 100)
+        if self.v.get("call_regimes") and row["regime"] not in self.v["call_regimes"]:
+            return
         covered = sum(o.qty for o in self.opts if o.sym == s and o.cp == "C")
         qty = self.shares[s] * cov - covered
         S = float(row["close"])
