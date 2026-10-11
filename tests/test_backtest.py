@@ -341,3 +341,20 @@ def test_hold_collar_limits_the_fall(rules):
     put = B.bs_price(S, 90, T, B.skew_iv(iv, S, 90, slope), "P", 0.0)
     K = B._zero_cost_call(S, T, iv, slope, 0.0, put)
     assert K > S and B.bs_price(S, K, T, B.skew_iv(iv, S, K, slope), "C", 0.0) == pytest.approx(put, rel=1e-3)
+
+
+def test_hold_collar_follows_rebalanced_shares(rules):
+    # A runs 10x while B is flat: each monthly rebalance sells A, and A's short call must shrink with it
+    # (a call left at the old size is partly naked and loses money in a rising market)
+    rules["backtest"]["min_history_days"] = 1
+    idx = pd.bdate_range("2020-01-01", periods=260)
+    frames = {"A": _frame(np.geomspace(100, 1000, 260), iv=0.6).set_axis(idx),
+              "B": _frame(np.full(260, 100.0), iv=0.3).set_axis(idx)}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0], "B": idx[0]}}
+    hold = B.run_hold({"symbols": ["A", "B"]}, frames, meta, rates, rules, idx[0], idx[-1])
+    col = B.run_hold({"symbols": ["A", "B"], "collar": {"put_otm_pct": 10, "dte": 182, "roll_days": 91}},
+                     frames, meta, rates, rules, idx[0], idx[-1])
+    # covered calls cap the gain but can never turn a rising, rebalanced book into a loss
+    acct = rules["backtest"]["account"]
+    assert acct < col["final"] < hold["final"] and col["max_dd_pct"] > -10
