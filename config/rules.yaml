@@ -473,6 +473,22 @@ backtest:
     - {name: eq_qgb_2020_trend_armq, label: "Equal QQQ / GLD / BTC · BTC always, QQQ+GLD armed (from 2020-09)", mode: hold,
        symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
        trend_arm: {symbols: [QQQ, GLD], high_within_days: 252}, start: "2020-09-01"}
+    - {name: eq_qg_2007_trend_falling, label: "Equal QQQ / GLD · exit below a falling 200-day", symbols: [QQQ, GLD],
+       mode: hold, weights: {QQQ: 1, GLD: 1}, trend_sma: 200, trend_falling: true}
+    - {name: eq_qgb_trend_falling, label: "Equal QQQ / GLD / BTC · exit below a falling 200-day", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200, trend_falling: true,
+       start: "2015-10-01"}
+    - {name: eq_qgb_2020_trend_falling, label: "Equal QQQ / GLD / BTC · falling 200-day exit (from 2020-09)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200, trend_falling: true,
+       start: "2020-09-01"}
+    - {name: qqq_falling_def, label: "QQQ · falling 200-day exit to best of TLT / UUP / T-bills", symbols: [QQQ],
+       mode: hold, trend_sma: 200, trend_falling: true, trend_to: {symbols: [TLT, UUP], lookback: 126}}
+    - {name: eq_qgb_falling_def, label: "Equal QQQ / GLD / BTC · falling exit to TLT / UUP / T-bills", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200, trend_falling: true,
+       trend_to: {symbols: [TLT, UUP], lookback: 126}, start: "2015-10-01"}
+    - {name: qqq_falling_puts_high, label: "QQQ · falling 200-day exit + 10% puts in High regime", symbols: [QQQ],
+       mode: hold, trend_sma: 200, trend_falling: true,
+       collar: {put_otm_pct: 10, dte: 182, roll_days: 91, regimes: [High], call: false}}
     # (b) exited weight to the best-trending defensive name (TLT, dollar) instead of T-bills
     - {name: qqq_trend_def, label: "QQQ · 200-day exit to best of TLT / UUP / T-bills", symbols: [QQQ], mode: hold,
        trend_sma: 200, trend_to: {symbols: [TLT, UUP], lookback: 126}}
