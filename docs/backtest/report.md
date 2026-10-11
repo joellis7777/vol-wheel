@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T00:48Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T00:51Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -15,6 +15,9 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | QQQ scale in/out · VIX cap to 100% | 5.4% | 12.3% | 0.36 | -42.9% | -30.6% | -8.0% | +10.1% | -16.6% | 53% | 95.1 | 43 | 10.5% | 15.5% |
 | QQQ scale in/out · VIX cap · 40Δ puts at lows | 5.2% | 10.6% | 0.39 | -36.1% | -26.1% | -6.0% | +10.1% | -15.1% | 48% | 85.7 | 49 | 9.7% | 13.6% |
 | QQQ scale in/out · VIX cap · puts only at IVR ≥ 30 | 3.5% | 9.6% | 0.25 | -37.9% | -27.1% | -8.7% | +6.0% | -9.4% | 26% | 40.4 | 24 | 6.0% | 10.9% |
+| QQQ puts always on · calls only on up-spikes | 14.8% | 18.9% | 0.75 | -38.7% | -30.8% | +5.7% | +31.5% | -31.4% | 87% | 6.4 | 9 | 1.1% | 84.0% |
+| QQQ scale in/out · calls on half the shares | 6.5% | 10.9% | 0.50 | -38.3% | -26.8% | -1.9% | +15.6% | -14.5% | 51% | 76.9 | 38 | 8.6% | 21.7% |
+| QQQ scale in/out · calls only in High regime | 8.1% | 12.0% | 0.58 | -38.7% | -26.5% | -6.8% | +14.7% | -14.2% | 55% | 60.8 | 34 | 6.5% | 31.3% |
 | QQQ + SPY · spikes | 12.7% | 17.3% | 0.69 | -34.5% | -26.4% | +2.5% | +24.3% | -27.0% | 83% | 2.1 | 6 | 0.9% | 81.2% |
 | Basket · spikes (current rules) (stock IV 1x HV) | 14.6% | 16.1% | 0.83 | -33.0% | -30.3% | +27.3% | +42.8% | -31.5% | 62% | 32.4 | 36 | 7.7% | 54.7% |
 | Basket · spikes (current rules) | 15.6% | 16.5% | 0.87 | -34.6% | -31.7% | +35.6% | +45.8% | -33.0% | 62% | 32.1 | 33 | 9.1% | 55.1% |
@@ -41,6 +44,9 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - QQQ scale in/out · VIX cap to 100%: Low 39% · Mid 8% · High 9%
 - QQQ scale in/out · VIX cap · 40Δ puts at lows: Low 34% · Mid 8% · High 8%
 - QQQ scale in/out · VIX cap · puts only at IVR ≥ 30: Low 28% · Mid 6% · High 6%
+- QQQ puts always on · calls only on up-spikes: Low 74% · Mid 86% · High 90%
+- QQQ scale in/out · calls on half the shares: Low 38% · Mid 16% · High 22%
+- QQQ scale in/out · calls only in High regime: Low 41% · Mid 29% · High 26%
 - QQQ + SPY · spikes: Low 67% · Mid 84% · High 89%
 - Basket · spikes (current rules): Low 45% · Mid 56% · High 63%
 - Index core 50% + satellites · spikes: Low 55% · Mid 67% · High 73%
@@ -64,6 +70,9 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 | QQQ scale in/out · VIX cap to 100% | 7.5% | 11.5% | 0.40 | -19.1% | -16.5% | – | – | -16.6% | 55% | 91.7 | 14 | 10.7% | 18.5% |
 | QQQ scale in/out · VIX cap · 40Δ puts at lows | 7.3% | 10.4% | 0.41 | -17.8% | -15.0% | – | – | -15.1% | 50% | 82.6 | 14 | 9.8% | 17.3% |
 | QQQ scale in/out · VIX cap · puts only at IVR ≥ 30 | 5.7% | 8.6% | 0.31 | -13.7% | -9.4% | – | – | -9.4% | 29% | 37.6 | 8 | 6.1% | 13.8% |
+| QQQ puts always on · calls only on up-spikes | 13.1% | 14.3% | 0.70 | -17.2% | -14.0% | – | – | -14.1% | 67% | 28.9 | 8 | 3.5% | 55.5% |
+| QQQ scale in/out · calls on half the shares | 8.7% | 10.5% | 0.54 | -16.6% | -13.8% | – | – | -13.9% | 54% | 73.2 | 13 | 8.8% | 25.3% |
+| QQQ scale in/out · calls only in High regime | 13.5% | 13.7% | 0.76 | -17.2% | -14.2% | – | – | -14.2% | 67% | 28.7 | 8 | 5.2% | 55.1% |
 | QQQ + SPY · spikes | 7.4% | 4.1% | 0.96 | -5.1% | 0.3% | – | – | +4.4% | 18% | 7.7 | 1 | 2.1% | 13.9% |
 | Basket · spikes (current rules) (stock IV 1x HV) | 19.7% | 15.4% | 1.03 | -15.3% | -6.5% | – | – | -6.5% | 47% | 52.2 | 17 | 10.7% | 35.4% |
 | Basket · spikes (current rules) | 21.0% | 15.3% | 1.11 | -13.8% | -4.9% | – | – | -4.9% | 47% | 52.7 | 16 | 12.8% | 35.1% |
@@ -90,6 +99,9 @@ Share of the account held as stock, by the first name's regime (scaling in at lo
 - QQQ scale in/out · VIX cap to 100%: Low 46% · Mid 11% · High 14%
 - QQQ scale in/out · VIX cap · 40Δ puts at lows: Low 43% · Mid 10% · High 13%
 - QQQ scale in/out · VIX cap · puts only at IVR ≥ 30: Low 33% · Mid 10% · High 5%
+- QQQ puts always on · calls only on up-spikes: Low 53% · Mid 55% · High 62%
+- QQQ scale in/out · calls on half the shares: Low 44% · Mid 20% · High 25%
+- QQQ scale in/out · calls only in High regime: Low 53% · Mid 54% · High 62%
 - QQQ + SPY · spikes: Low 7% · Mid 15% · High 18%
 - Basket · spikes (current rules): Low 25% · Mid 36% · High 45%
 - Index core 50% + satellites · spikes: Low 27% · Mid 41% · High 50%
