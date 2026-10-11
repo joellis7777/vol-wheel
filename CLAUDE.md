@@ -136,6 +136,16 @@ changes, update this list in the same change.
     QQQ/GLD/XLE stock 13.1% / −44% vs options 13.6% / −42%. Execution is second-order (±1%/yr); the
     mix drives results. Options lag the targets (fully invested = no cash for puts until calls are
     exercised), so they run below target weights and the premium roughly makes up for it.
+  - Equal-weight core + 200-day exit (2026-10-12, hold `trend_sma: 200`: a name below its 200-day at
+    the monthly check sits in T-bills; Jordan wants ~equal QQQ / GLD / BTC, less XLE, and a way to
+    protect gains before the late-2029 bear he expects). From 2015-10: equal QQQ/GLD/BTC 39.5% / −45%
+    (2022 −35%, 2018 −30%) vs with the exit 33.5% / −29% (2022 −9%, 2018 −19%; ~25% of name-months in
+    T-bills); 30/30/30 + XLE 10 with the exit 31.1% / −27% (2022 −3%). From 2020-09: equal with BTC
+    26.9% / −45% vs exit 26.8% / −23% (no cost); with MSTR 37.1% / −52% vs exit 40.1% / −38% (2022
+    −2%). 2007→: QQQ hold 15.4% / −54% vs exit 12.7% / −29% (2008 −16% vs −42%; whipsaw cost in 2010,
+    2015-16, 2019, 2025); QQQ/GLD equal 13.3% / −34% vs exit 10.3% / −18%. A monthly check misses
+    fast crashes (2020 drawdown unchanged). Equal weight with BTC's hindsight 2017 (+224% for the mix)
+    is why 2015→ CAGRs are so high.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
