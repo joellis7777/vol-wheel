@@ -1,6 +1,6 @@
 # vol-wheel backtest
 
-Generated 2026-10-11T20:54Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
+Generated 2026-10-11T21:23Z by `python -m vol_wheel.backtest` (workflow `backtest`). Account $500,000, cash yield _IRX. Single-stock IV is modelled as 1.15× max(HV20, HV60) unless a row says otherwise.
 
 Deployed = average put collateral + shares as % of the account; In shares = the part held as assigned stock; Premium/yr = option credits (after costs) per year as % of average equity.
 
@@ -79,6 +79,21 @@ Deployed = average put collateral + shares as % of the account; In shares = the 
 | Equal QQQ / GLD (2007→) | 13.3% | 14.7% | 0.82 | -33.8% | -19.3% | +18.3% | +26.1% | -17.4% | 100% | – | – | – | – |
 | Equal QQQ / GLD · 200-day exit (2007→) | 10.3% | 11.8% | 0.76 | -18.2% | -8.9% | +23.5% | +16.7% | -6.0% | 100% | – | – | – | – |
 | QQQ · 200-day exit to T-bills (2007→) | 12.7% | 17.1% | 0.69 | -28.6% | -15.6% | +10.7% | +13.5% | -7.2% | 100% | – | – | – | – |
+| QQQ · 200-day exit armed by High regime in last 12m | 11.8% | 19.8% | 0.59 | -53.6% | -41.9% | -12.0% | +13.5% | -7.2% | 100% | – | – | – | – |
+| QQQ · 200-day exit armed by High regime in last 6m | 12.1% | 21.3% | 0.57 | -53.6% | -41.9% | -12.0% | +13.5% | -33.7% | 100% | – | – | – | – |
+| QQQ · exit below a falling 200-day | 14.7% | 18.8% | 0.74 | -29.4% | -21.1% | +3.5% | +32.4% | -19.2% | 100% | – | – | – | – |
+| Equal QQQ / GLD · exit armed by High (12m) | 10.2% | 13.3% | 0.69 | -33.8% | -19.3% | +18.3% | +16.7% | -2.3% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · BTC exit always, QQQ+GLD armed by High | 34.2% | 21.8% | 1.36 | -28.5% | -18.6% | – | +66.8% | -6.5% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · BTC always, QQQ+GLD armed (from 2020-09) | 27.3% | 20.0% | 1.16 | -21.1% | -6.1% | – | +40.0% | -6.5% | 100% | – | – | – | – |
+| QQQ · 200-day exit to best of TLT / UUP / T-bills | 12.7% | 18.0% | 0.67 | -33.2% | -4.8% | -2.0% | +14.1% | -1.9% | 100% | – | – | – | – |
+| Equal QQQ / GLD · exit to best of TLT / UUP / T-bills | 11.4% | 12.5% | 0.81 | -18.2% | -3.8% | +26.2% | +17.0% | -3.1% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · exit to best of TLT / UUP / T-bills | 34.4% | 21.9% | 1.36 | -28.4% | -18.1% | – | +72.4% | -6.7% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · exit to best of TLT / UUP / XLE / T-bills | 36.8% | 23.6% | 1.35 | -35.6% | -25.5% | – | +72.4% | +11.5% | 100% | – | – | – | – |
+| QQQ · always collared (10% put, zero-cost call, 6m) | -0.3% | 7.6% | -0.20 | -27.9% | -21.1% | -20.1% | +0.0% | -17.3% | 100% | – | – | – | – |
+| QQQ · collar opened only in High regime | 9.8% | 18.5% | 0.51 | -53.6% | -41.9% | -27.7% | +26.8% | -33.7% | 100% | – | – | – | – |
+| QQQ · 10% puts only in High regime (no call) | 13.6% | 20.2% | 0.66 | -53.6% | -41.9% | -19.1% | +40.3% | -33.7% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · collars in High regime | 9.6% | 28.2% | 0.39 | -57.6% | -34.7% | – | +8.3% | -34.7% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP | 6.0% | 24.8% | 0.27 | -58.0% | -30.6% | – | +5.3% | -3.9% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 69.9% | 65.4% | 1.11 | -83.0% | -74.5% | – | +201.1% | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 19.8% | 22.1% | 0.83 | -35.6% | -33.1% | – | +32.4% | -33.7% | 100% | – | – | – | – |
 | Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band) | 29.2% | 19.3% | 1.31 | -35.6% | -30.0% | – | +54.4% | -30.2% | 99% | – | 0 | 0.0% | – |
@@ -160,6 +175,25 @@ Rotation variants (share of months holding each):
 - Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09): QQQ 27%, GLD 25%, MSTR 21%, T-bills 27%
 - Equal QQQ / GLD · 200-day exit (2007→): QQQ 41%, GLD 34%, T-bills 25%
 - QQQ · 200-day exit to T-bills (2007→): QQQ 82%, T-bills 18%
+- QQQ · 200-day exit armed by High regime in last 12m: QQQ 89%, T-bills 11%
+- QQQ · 200-day exit armed by High regime in last 6m: QQQ 96%, T-bills 4%
+- QQQ · exit below a falling 200-day: QQQ 89%, T-bills 11%
+- Equal QQQ / GLD · exit armed by High (12m): QQQ 44%, GLD 40%, T-bills 16%
+- Equal QQQ / GLD / BTC · BTC exit always, QQQ+GLD armed by High: QQQ 28%, GLD 24%, BTC-USD 24%, T-bills 24%
+- Equal QQQ / GLD / BTC · BTC always, QQQ+GLD armed (from 2020-09): QQQ 27%, GLD 25%, BTC-USD 23%, T-bills 25%
+- QQQ · 200-day exit to best of TLT / UUP / T-bills: QQQ 82%, TLT 7%, UUP 8%, T-bills 3%
+- Equal QQQ / GLD · exit to best of TLT / UUP / T-bills: QQQ 41%, GLD 34%, TLT 8%, UUP 12%, T-bills 4%
+- Equal QQQ / GLD / BTC · exit to best of TLT / UUP / T-bills: QQQ 27%, GLD 24%, BTC-USD 24%, TLT 5%, UUP 16%, T-bills 4%
+- Equal QQQ / GLD / BTC · exit to best of TLT / UUP / XLE / T-bills: QQQ 27%, GLD 24%, BTC-USD 24%, TLT 4%, UUP 6%, XLE 14%, T-bills 1%
+- Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP: QQQ 28%, GLD 24%, BTC-USD 24%, TLT 5%, UUP 16%, T-bills 4%
+
+Collar variants (net option P&L per year as % of equity; share of days with a collar on):
+
+- QQQ · always collared (10% put, zero-cost call, 6m): collar P&L -16.05%/yr, collared 100% of days
+- QQQ · collar opened only in High regime: collar P&L -5.66%/yr, collared 42% of days
+- QQQ · 10% puts only in High regime (no call): collar P&L -1.83%/yr, collared 42% of days
+- Equal QQQ / GLD / BTC · collars in High regime: collar P&L -28.37%/yr, collared 80% of days
+- Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP: collar P&L -28.05%/yr, collared 77% of days
 
 Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):
 
@@ -276,6 +310,21 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 | Equal QQQ / GLD (2007→) | 15.9% | 15.5% | 0.82 | -24.0% | -17.6% | – | – | -17.4% | 100% | – | – | – | – |
 | Equal QQQ / GLD · 200-day exit (2007→) | 12.6% | 12.4% | 0.76 | -17.0% | -5.6% | – | – | -6.0% | 100% | – | – | – | – |
 | QQQ · 200-day exit to T-bills (2007→) | 16.2% | 16.3% | 0.81 | -15.6% | -6.3% | – | – | -7.2% | 100% | – | – | – | – |
+| QQQ · 200-day exit armed by High regime in last 12m | 16.2% | 16.3% | 0.81 | -15.6% | -6.3% | – | – | -7.2% | 100% | – | – | – | – |
+| QQQ · 200-day exit armed by High regime in last 6m | 11.9% | 21.0% | 0.49 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
+| QQQ · exit below a falling 200-day | 16.6% | 19.1% | 0.73 | -22.9% | -18.5% | – | – | -19.2% | 100% | – | – | – | – |
+| Equal QQQ / GLD · exit armed by High (12m) | 13.4% | 12.4% | 0.81 | -17.0% | -1.8% | – | – | -2.3% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · BTC exit always, QQQ+GLD armed by High | 20.9% | 19.2% | 0.91 | -21.1% | -6.1% | – | – | -6.5% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · BTC always, QQQ+GLD armed (from 2020-09) | 20.9% | 19.2% | 0.91 | -21.1% | -6.1% | – | – | -6.5% | 100% | – | – | – | – |
+| QQQ · 200-day exit to best of TLT / UUP / T-bills | 17.6% | 16.7% | 0.86 | -15.6% | -1.0% | – | – | -1.9% | 100% | – | – | – | – |
+| Equal QQQ / GLD · exit to best of TLT / UUP / T-bills | 13.3% | 12.8% | 0.79 | -17.3% | -3.8% | – | – | -3.1% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · exit to best of TLT / UUP / T-bills | 20.3% | 19.5% | 0.88 | -21.6% | -7.1% | – | – | -6.7% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · exit to best of TLT / UUP / XLE / T-bills | 26.8% | 22.7% | 1.02 | -23.0% | 9.4% | – | – | +11.5% | 100% | – | – | – | – |
+| QQQ · always collared (10% put, zero-cost call, 6m) | -0.6% | 7.8% | -0.45 | -19.5% | -18.3% | – | – | -18.4% | 100% | – | – | – | – |
+| QQQ · collar opened only in High regime | 12.8% | 19.2% | 0.55 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
+| QQQ · 10% puts only in High regime (no call) | 14.3% | 21.0% | 0.59 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · collars in High regime | 8.5% | 19.3% | 0.35 | -44.5% | -34.7% | – | – | -34.7% | 100% | – | – | – | – |
+| Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP | 9.0% | 12.7% | 0.48 | -18.8% | -4.3% | – | – | -3.9% | 100% | – | – | – | – |
 | Buy & hold BTC 100% | 17.7% | 57.1% | 0.51 | -76.6% | -64.1% | – | – | -64.3% | 100% | – | – | – | – |
 | Buy & hold QQQ 100% (from 2015-10) | 16.6% | 22.4% | 0.65 | -35.6% | -33.1% | – | – | -33.7% | 100% | – | – | – | – |
 | Core QQQ 60/GLD 25/BTC 15 · rebalanced with stock (2% band) | 18.3% | 19.5% | 0.79 | -36.7% | -30.6% | – | – | -30.8% | 99% | – | 0 | 0.0% | – |
@@ -357,6 +406,25 @@ Rotation variants (share of months holding each):
 - Equal QQQ / GLD / MSTR · 200-day exit (from 2020-09): QQQ 26%, GLD 24%, MSTR 20%, T-bills 29%
 - Equal QQQ / GLD · 200-day exit (2007→): QQQ 39%, GLD 36%, T-bills 24%
 - QQQ · 200-day exit to T-bills (2007→): QQQ 79%, T-bills 21%
+- QQQ · 200-day exit armed by High regime in last 12m: QQQ 79%, T-bills 21%
+- QQQ · 200-day exit armed by High regime in last 6m: QQQ 96%, T-bills 4%
+- QQQ · exit below a falling 200-day: QQQ 86%, T-bills 14%
+- Equal QQQ / GLD · exit armed by High (12m): QQQ 39%, GLD 37%, T-bills 24%
+- Equal QQQ / GLD / BTC · BTC exit always, QQQ+GLD armed by High: QQQ 26%, GLD 25%, BTC-USD 23%, T-bills 26%
+- Equal QQQ / GLD / BTC · BTC always, QQQ+GLD armed (from 2020-09): QQQ 26%, GLD 25%, BTC-USD 23%, T-bills 26%
+- QQQ · 200-day exit to best of TLT / UUP / T-bills: QQQ 79%, TLT 0%, UUP 16%, T-bills 6%
+- Equal QQQ / GLD · exit to best of TLT / UUP / T-bills: QQQ 39%, GLD 36%, TLT 2%, UUP 17%, T-bills 5%
+- Equal QQQ / GLD / BTC · exit to best of TLT / UUP / T-bills: QQQ 26%, GLD 24%, BTC-USD 23%, TLT 2%, UUP 18%, T-bills 6%
+- Equal QQQ / GLD / BTC · exit to best of TLT / UUP / XLE / T-bills: QQQ 26%, GLD 24%, BTC-USD 23%, TLT 0%, UUP 4%, XLE 21%, T-bills 0%
+- Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP: QQQ 26%, GLD 25%, BTC-USD 23%, TLT 2%, UUP 18%, T-bills 6%
+
+Collar variants (net option P&L per year as % of equity; share of days with a collar on):
+
+- QQQ · always collared (10% put, zero-cost call, 6m): collar P&L -17.37%/yr, collared 100% of days
+- QQQ · collar opened only in High regime: collar P&L -3.52%/yr, collared 39% of days
+- QQQ · 10% puts only in High regime (no call): collar P&L -2.03%/yr, collared 39% of days
+- Equal QQQ / GLD / BTC · collars in High regime: collar P&L -11.55%/yr, collared 74% of days
+- Equal QQQ / GLD / BTC · armed exit + High collars + TLT/UUP: collar P&L -11.45%/yr, collared 74% of days
 
 Multi-asset core variants (average weights; option premium and stock turnover per year, % of equity):
 
@@ -435,6 +503,7 @@ LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L 
 - SPY: cboe 2006-01-03 → 2026-10-08 (5226 bars); bars before 2006-01-03 dropped
 - TLT: cboe 2006-01-03 → 2026-10-08 (5225 bars); bars before 2006-01-03 dropped
 - TSLA: cboe 2010-06-29 → 2026-10-08 (4096 bars)
+- UUP: cboe 2007-03-12 → 2026-10-08 (4929 bars)
 - XLE: cboe 2006-01-03 → 2026-10-08 (5224 bars); 2018-11-22 bad print dropped (65.98); 2025-05-26 bad print dropped (81.99); bars before 2006-01-03 dropped
 - XLP: cboe 2006-01-03 → 2026-10-08 (5226 bars); bars before 2006-01-03 dropped
 - XLU: cboe 2006-01-03 → 2026-10-08 (5224 bars); 2018-11-22 bad print dropped (54.08); 2025-05-26 bad print dropped (81.06); bars before 2006-01-03 dropped
