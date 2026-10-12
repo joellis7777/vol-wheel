@@ -20,7 +20,7 @@ rule-bound satellites (an MSTR/IBIT long-call sleeve and stock picks) for upside
 | Sleeve | Weight | What it holds | Rules | Where |
 |---|---|---|---|---|
 | **Core** | 65% | QQQ 35 / GLD 35 / IBIT 20 / XLE 10 (of the core) | Checked monthly: IBIT out below its 200-day, QQQ / GLD / XLE out only below a *falling* 200-day; exited weight in T-bills until back above; rebalance to weights monthly | IRA (exits would realize gains in taxable) |
-| **Reserve** | 20% | SGOV | Collateral for core entries: when a core name is below target weight and spikes down (IVR ≥ 50), sell a 16Δ ~45-DTE cash-secured put; take 50% or hold to assignment (assignment = buying the dip inside the target) | IRA |
+| **Reserve** | 20% | SGOV | Pyramid fund for the core: while a core name is in its uptrend, add to it as it falls (QQQ / GLD / XLE: +7% of the sleeve per 10% drop, to 100% at −30%; IBIT: +10% per 25% drop, to 100% at −70%), by stock or 16Δ cash-secured puts on IVR ≥ 50 down-spikes; trim back to base weight as new highs return. Nothing is added while a name is below a falling 200-day (the exit wins) | IRA |
 | **Convexity sleeve** | ≤ 5% at risk | MSTR (or IBIT) long calls | ~15–25Δ, ~15 months out, 1–2% of the account per position, sell half at +100%, rest out at 60Δ or 90 DTE, re-enter as a roll; no entry filter | IRA (or taxable for > 1-year holds) |
 | **Stock picks** | ≤ 10% | 5–10 names | See "Stock picker" below | Taxable (long-term holds) or IRA |
 | **Long-term taxable** | rest of taxable | Buy-and-hold core names | No short calls against LEAPs/shares held for long-term gains (tax straddles) | Taxable |
@@ -36,8 +36,10 @@ Why these numbers:
   The daily three-state KISS signal lost on the long history: 2007→ start-every-January medians 2–3%/yr
   lower on QQQ, QQQ/GLD and QQQ/GLD/XLE with no better worst drawdown; with bitcoin it cut ~5 pts of
   drawdown for ~3–5%/yr. Daily on bitcoin only (hybrid) didn't beat the plain monthly rule either.
-- 20% reserve: the standing decision; in tests it costs ~1–2%/yr of return vs fully invested and is the
-  dry powder the put entries need. Earns T-bill yield meanwhile.
+- 20% reserve: the standing decision. Pyramiding it into core dips (only while the trend holds) beat leaving it
+  idle: core 21.8% / −21% vs 21.2% / −18% (2015→), QQQ alone ~+1%/yr. Fully invested with no exits earns more
+  (30.2%) at −31% drawdown and a −23% 2022; pyramiding with no exits sits between (25.5% / −27%). These all
+  share a Sharpe of ~1.3–1.4, so this is Jordan's risk dial: more conviction = less reserve / no exits.
 - Convexity sleeve: 15Δ with exits beat 40Δ (with or without Soliel's trend filter) on MSTR, QQQ, NVDA,
   TSLA and modelled BTC, in start-every-January windows too, and still with LEAPs priced 20% richer. It is
   a bull-market result (2009–26) and bleeds in flat years, so keep it small: 1–2% of the account per
@@ -62,10 +64,9 @@ Why these numbers:
 - Rolling for credit as a return source (QQQ 4.7% vs 5.0%; MSTR 23% vs 28%).
 - Put credit spreads in the IRA as the income engine (0.4% / −24% for a 6-ETF book).
 - A tastytrade-style premium book as the main strategy (3.9% / −16%; fine as a bond substitute only).
-- Pyramiding put size as a name falls ("start small, add bigger lower"): no gain in any book tested
-  (QQQ, 6 ETFs, tastytrade book, MSTR); flat-sized puts did better across start dates because small first
-  puts deploy too slowly. In a cash-secured IRA, "keep buying power to add" is the reserve + caps' job.
-  Scaling *total exposure* by drawdown is different and does help on MSTR (mode: target).
+- Pyramiding put *size* inside a capped wheel ("start small, add bigger lower" per trade): no gain in any
+  book tested; flat-sized puts did better across start dates. Pyramiding *total exposure* with the reserve
+  is different and is adopted above (Reserve row).
 - Bigger trades after a loss: tastylive's 2021–26 SPY study found doubling size after each losing trade
   wiped out the period's gains; losses cluster with volatility, so size-ups land in the worst stretches.
 - Selling MSTR puts whenever premium looks rich: the edge is IV above the realized vol that follows
@@ -115,6 +116,7 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-10-11 (later): reserve becomes a pyramid fund for core dips in uptrends (beat an idle reserve).
 - 2026-10-11 (later): draft picks watchlist from Jordi Visser; picker entry question (momentum vs rubble) added.
 - 2026-10-11 (later): scale-in by trade size tested: no gain; keep flat sizes with caps and the reserve.
 - 2026-10-11 (later): convexity sleeve confirmed beyond MSTR (15Δ > 40Δ on every name tested); MSTR

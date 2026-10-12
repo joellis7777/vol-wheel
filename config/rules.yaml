@@ -873,3 +873,45 @@ backtest:
     - {name: mstr_puts_scalein, label: "MSTR puts always + spike calls · 3% at highs → 15% at −60%", symbols: [MSTR],
        mode: always, entry_pct: 3, entry_every_days: 2, min_ivr: 0, calls: spike, start: "2020-09-01",
        size_by_dd: [[0, 1], [20, 2], [40, 3], [60, 5]], caps: {total: 80, per_name: 80, Crypto: 80}}
+    # Pyramiding by total exposure into high-conviction assets (Jordan 2026-10-11): hold back a reserve at the high,
+    # buy more of the asset the further it falls (stock), trim back toward the base weight as it recovers to new
+    # highs. mode: target, exec: stock; alloc = [[drawdown % from the all-time high, % of the sleeve invested]].
+    - {name: qqq_pyr, label: "QQQ pyramid · 80% at the high → 100% at −30%", symbols: [QQQ], mode: target, exec: stock,
+       alloc: [[0, 80], [10, 87], [20, 94], [30, 100]]}
+    - {name: qqq_pyr_steep, label: "QQQ pyramid · 60% at the high → 100% at −30%", symbols: [QQQ], mode: target,
+       exec: stock, alloc: [[0, 60], [10, 75], [20, 90], [30, 100]]}
+    - {name: qqq_pyr_trend, label: "QQQ pyramid 80→100% · capped at 50% below a falling 200-day", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 50}
+    - {name: gld_pyr, label: "GLD pyramid · 80% → 100% at −30%", symbols: [GLD], mode: target, exec: stock,
+       alloc: [[0, 80], [10, 87], [20, 94], [30, 100]]}
+    - {name: xle_pyr, label: "XLE pyramid · 80% → 100% at −30%", symbols: [XLE], mode: target, exec: stock,
+       alloc: [[0, 80], [10, 87], [20, 94], [30, 100]]}
+    - {name: btc_pyr, label: "BTC pyramid · 70% at the high → 100% at −70%", symbols: [BTC-USD], mode: target, exec: stock,
+       alloc: [[0, 70], [25, 80], [50, 90], [70, 100]], start: "2015-10-01"}
+    - {name: btc_pyr_trend, label: "BTC pyramid 70→100% · capped at 30% below a falling 200-day", symbols: [BTC-USD],
+       mode: target, exec: stock, alloc: [[0, 70], [25, 80], [50, 90], [70, 100]], trend_cap_pct: 30, start: "2015-10-01"}
+    - {name: btc_hold_80, label: "BTC 80% held / 20% T-bills", symbols: [BTC-USD], mode: hold, weight: 80, start: "2015-10-01"}
+    - {name: core_btc20_hold, label: "Core 35/35/20/10 · held, monthly rebalance, no exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 35, GLD: 35, BTC-USD: 20, XLE: 10}, start: "2015-10-01"}
+    - {name: core_btc20_80, label: "Core 35/35/20/10 · 80% invested, 20% T-bills, no exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 35, GLD: 35, BTC-USD: 20, XLE: 10}, weight: 80,
+       start: "2015-10-01"}
+    - {name: core_pyr, label: "Core 35/35/20/10 · each sleeve pyramids into its own drawdown (80/70% at highs)",
+       mode: blend, weights: {qqq_pyr: 35, gld_pyr: 35, btc_pyr: 20, xle_pyr: 10}, start: "2015-10-01"}
+    - {name: core_pyr_trend, label: "Core 35/35/20/10 · pyramids, QQQ and BTC capped below a falling 200-day",
+       mode: blend, weights: {qqq_pyr_trend: 35, gld_pyr: 35, btc_pyr_trend: 20, xle_pyr: 10}, start: "2015-10-01"}
+    # Pyramid into dips only while the trend holds; out (0%) below a falling 200-day.
+    - {name: qqq_pyr_exit, label: "QQQ pyramid 80→100% in uptrends · out below a falling 200-day", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 0}
+    - {name: gld_pyr_exit, label: "GLD pyramid 80→100% · out below a falling 200-day", symbols: [GLD], mode: target,
+       exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 0}
+    - {name: xle_pyr_exit, label: "XLE pyramid 80→100% · out below a falling 200-day", symbols: [XLE], mode: target,
+       exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 0}
+    - {name: btc_pyr_exit, label: "BTC pyramid 70→100% · out below a falling 200-day", symbols: [BTC-USD], mode: target,
+       exec: stock, alloc: [[0, 70], [25, 80], [50, 90], [70, 100]], trend_cap_pct: 0, start: "2015-10-01"}
+    - {name: core_pyr_exit, label: "Core 35/35/20/10 · pyramid dips in uptrends, out below a falling 200-day",
+       mode: blend, weights: {qqq_pyr_exit: 35, gld_pyr_exit: 35, btc_pyr_exit: 20, xle_pyr_exit: 10}, start: "2015-10-01"}
+    - {name: core_combo_80, label: "Account 80% core (combo exits) + 20% T-bills reserve, never deployed", mode: blend,
+       weights: {core_btc20_combo: 80, tbills: 20}, start: "2015-10-01"}
+    - {name: qqq_trend_80, label: "80% QQQ falling-200 exit + 20% T-bills reserve, never deployed", mode: blend,
+       weights: {qqq_trend_falling: 80, tbills: 20}}

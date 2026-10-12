@@ -306,6 +306,18 @@ backtest changes the picture: edit it in the same change and add a line to its c
     dates the monthly rule still wins (whipsaws). 42 Macro sold their bitcoin the same way (two steps on
     their trend signal, no calendar input). Keep monthly; show bitcoin's daily state on the dashboard as a
     readiness warning only.
+  - Pyramiding by total exposure (Jordan 2026-10-11: scale into high-conviction assets as they fall, expecting new
+    highs; `*_pyr*`, mode: target exec: stock, e.g. QQQ 80% at the high → 100% at −30%, BTC 70% → 100% at −70%,
+    trimmed back as highs return; `trend_cap_pct: 0` = out below a falling 200-day). Equal 20% reserve on both
+    sides, 2007→ (3y | 5y start-every-January medians): QQQ held 80% 12.9% / −45% (12.5 | 13.1) vs pyramid 14.0% /
+    −51% (13.1 | 14.0); QQQ falling-200 exit + idle reserve 12.2% / −24% (11.3 | 11.8) vs pyramid in uptrends +
+    exit 12.6% / −31% (12.7 | 12.9). Core 35/35/20/10 from 2015-10: idle reserve, no exits 24.5% / −25% (22.0 |
+    23.4) vs pyramid 25.5% / −27% (21.7 | 25.8); combo exits + idle reserve 21.2% / −18% (20.6 | 21.4, 2022 −4%)
+    vs pyramid in uptrends + exits 21.8% / −21% (20.2 | 22.1, 2022 −6%); fully invested held 30.2% / −31%.
+    BTC: pyramid 58.5% / −78% vs 80% held 59.9% / −74% (medians 49.3 | 60.2 vs 46.9 | 56.6). So deploying a
+    reserve into dips beats leaving it idle by ~0.5–1%/yr at ~3–6 pts more drawdown; it doesn't beat being
+    fully invested or the trend exit's drawdown control. Same Sharpe band (1.30–1.38): a risk dial, not a free
+    lunch. Different from pyramiding put size inside a capped wheel (no gain, see above).
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
