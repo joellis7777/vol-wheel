@@ -341,6 +341,15 @@ backtest changes the picture: edit it in the same change and add a line to its c
     13.2% / −40.5% (medians 5.4 | 7.6): options lag the targets (puts don't fill in rallies, calls get
     assigned early), the same lag seen in `mode: multi`. Execute the cycle targets with stock; use options
     only opportunistically on spikes.
+  - Scale-out cap sensitivity (2026-10-11, `*_cyc_{gentle,aggr,lb504,lb1260}`, stock). Core 35/35/20/10 from
+    2015-10: gentle (ETFs 90% at +75% → 50% at +250%; BTC 85% at +400% → 45% at +2000%) 24.1% / −24.1%, 2022
+    −18.6%, Sharpe 1.41; base 21.8% / −20.1%, −13.6%, 1.45; aggressive (ETFs 85% at +30% → 35% at +150%; BTC 80%
+    at +100% → 30% at +1000%) 18.6% / −16.6%, −8.6%, 1.51; base caps on a 2-year low 22.7% / −24.2% (1.35), on a
+    5-year low 17.8% / −16.3% (1.43). Start-every-January medians 3y | 5y: gentle 21.5 | 24.0, base 19.2 |
+    21.8, aggressive 16.8 | 18.2, pyramid only 21.2 | 25.0. A smooth dial with no cliff (not a fitted
+    threshold); more scale-out = less return, less drawdown, higher Sharpe. Most of the effect is bitcoin
+    (BTC sleeve max DD −77% pyramid-only, −49% base, −39% aggressive). On QQQ alone the caps change 2022
+    (−29% → −14% to −27%) but not 2008 (the 2007 top wasn't extended).
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates

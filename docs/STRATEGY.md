@@ -34,7 +34,10 @@ Why these numbers:
 - XLE 10% cut the 2022 loss (2022 −5% vs −9 to −11%) and is uncorrelated with gold.
 - Cycle (pyramid in + scale out, Jordan 2026-10-11): best risk-adjusted core tested. 2015→ 21.8% / −20%
   max DD, 2022 −14%, Sharpe 1.45 vs pyramid-only 24.8% / −26% (2022 −19%) and held 30.2% / −31% (−23%).
-  It gives up ~3%/yr in a mostly-bull decade for a lighter account into bears. Execute with stock: done
+  It gives up ~3%/yr in a mostly-bull decade for a lighter account into bears. The cap strength is a smooth
+  dial (tested 2026-10-11): gentle 24% / −24% (2022 −19%), base 22% / −20% (−14%), aggressive 19% / −17%
+  (−9%), Sharpe 1.41 → 1.45 → 1.51. Base is in rules.yaml; aggressive fits "steady gains on a large account"
+  best. Jordan's choice. Execute with stock: done
   through puts and assigned calls the same targets earned 16.3% (options lag the targets).
 - Exit rule: none on the core (Jordan's call, 2026-10-11). Tested cost vs the trend-exit core (2015→): ~25% /
   −26% max DD and ~−19% in 2022 vs ~22% / −21% and −6%; in a 2000-style bear (not in our data) the gap would
