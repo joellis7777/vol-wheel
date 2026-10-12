@@ -335,6 +335,21 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   function renderPortfolio() {
     var p = state.data.portfolio, el = $("portfolio"), a = state.acct;
     if (!p || !p.core || !p.core.length) { el.hidden = true; return; }
+    // per-account-size weights: the profile for the selected size (or the nearest smaller one)
+    var prof = null, tiers = Object.keys(p.profiles || {}).map(Number).sort(function (x, y) { return x - y; });
+    tiers.forEach(function (t) { if (t <= a) prof = p.profiles[String(t)]; });
+    if (!prof && tiers.length) prof = p.profiles[String(tiers[0])];
+    var used = 0;
+    p.core.forEach(function (r) {
+      if (r.error) return;
+      if (prof && prof[r.symbol] != null) {
+        r.weight = prof[r.symbol];
+        r.sleeve_pct = p.budget_pct * r.weight / 100;
+        r.account_pct = r.sleeve_pct * r.target_pct / 100;
+      }
+      used += r.account_pct;
+    });
+    p.reserve_pct = p.budget_pct - used;
     var trend = { 1: ["ok", "uptrend"], 0.5: ["warn", "mixed"], 0: ["exit", "downtrend"] };
     var core = p.core.map(function (r) {
       if (r.error) return "<tr><td><b>" + esc(r.symbol) + '</b></td><td colspan="4" class="legend">' + esc(r.error) + "</td></tr>";
@@ -348,8 +363,8 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         '<td class="n">' + money(a * r.account_pct / 100) + '<span class="sub2">' + num(r.account_pct, 1) + "% of acct</span></td>" +
         '<td class="n">' + nx + "</td></tr>";
     }).join("");
-    var h = "<h2>Portfolio · " + kmoney(a) + " account</h2>" +
-      '<div class="legend">Core held with no trend exit: the reserve pyramids into each name by its own drawdown range (fully invested only near its historical worst), and a cap scales each name out as its bull run matures (gain from the 3-year low). Targets and $ use the selected account size.</div>' +
+    var h = "<h2>Portfolio · " + kmoney(a) + " account" + (prof && prof.label ? " · " + esc(prof.label) : "") + "</h2>" +
+      '<div class="legend">Core held with no trend exit: the reserve pyramids into each name by its own drawdown range (fully invested only near its historical worst), and a cap scales each name out as its bull run matures (gain from the 3-year low). Weights, targets and $ follow the selected account size (smaller = more bitcoin; $1M = preservation). Under ~$150k use fractional shares for QQQ/GLD; puts only on IBIT/XLE.</div>' +
       '<div class="tbl"><table style="margin-top:6px"><thead><tr><th>Core</th><th class="n">Price</th><th class="n">Target</th><th class="n">Hold</th><th class="n">Next add</th></tr></thead><tbody>' + core +
       '<tr><td><b>Reserve</b><span class="sub2">SGOV, pyramid fund</span></td><td></td><td></td><td class="n">' + money(a * p.reserve_pct / 100) + '<span class="sub2">' + num(p.reserve_pct, 1) + '% of acct</span></td><td></td></tr></tbody></table></div>';
     var w = p.btc_warning;

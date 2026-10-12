@@ -179,6 +179,8 @@ def build(rules: dict, fetch) -> dict:
         except Exception as e:  # noqa: BLE001
             out["core"].append({"symbol": sym, "weight": cfg["weight"], "error": str(e)[:120]})
     out["reserve_pct"] = round(pc.get("budget_pct", 85) - sum(r.get("account_pct", 0) for r in out["core"]), 2)
+    if pc.get("profiles"):          # per-account-size weights; the dashboard re-weights rows by the selected size
+        out["profiles"] = {str(k): v for k, v in pc["profiles"].items()}
     bw = (pc.get("btc_warning") or {}).get("symbol")
     if bw and get(bw) is not None:
         out["btc_warning"] = btc_warning(get(bw))

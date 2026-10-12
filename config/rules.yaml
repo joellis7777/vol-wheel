@@ -10,14 +10,27 @@ bull_mode: true            # manual switch; LEAP buys also need SPY > SMA200
 # (QQQ −80% for 2000-02, GLD −45%, BTC −80%, XLE −75%). budget_pct = core + reserve, % of the account.
 # Each alloc point past the first is a "step": crossing one deeper alerts ADD, recovering above one alerts TRIM.
 # alloc_gain = scale-out cap by the gain from the 3-year low (bull maturity): crossing a level alerts SCALE OUT.
+# Aggressive caps chosen by Jordan 2026-10-11 (core 18.6% / −16.6% max DD, 2022 −8.6%, Sharpe 1.51 from 2015-10).
 portfolio:
   budget_pct: 85
   trend_exit: false
   core:
-    QQQ:  {weight: 35, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
-    GLD:  {weight: 35, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
-    IBIT: {weight: 20, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], history_symbol: BTC-USD}
-    XLE:  {weight: 10, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    QQQ:  {weight: 35, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]]}
+    GLD:  {weight: 35, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]]}
+    IBIT: {weight: 20, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [100, 80], [250, 60], [500, 40], [1000, 30]], history_symbol: BTC-USD}
+    XLE:  {weight: 10, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]]}
+  # Core weights by account size (2026-10-11; dashboard account selector). Defaults for the risk a typical holder
+  # of that size can carry: smaller / younger = more bitcoin, $1M+ / retirement = less. Override by risk profile
+  # rather than size when they differ. Cycle rules + aggressive caps, 2015-10→: BTC 50% 28.4% / −23.5% max DD,
+  # 40% 25.3% / −20.5%, 30% 22.1% / −17.8% (best Sharpe 1.53), 20% 18.6% / −16.6%, 10% 15.4% / −16.1%.
+  # Accounts under ~$150k: fractional shares for QQQ/GLD (one cash-secured put = ~$75k / ~$38k of collateral);
+  # puts only on IBIT/XLE; no picks or LEAP sleeve until ~$150k.
+  profiles:
+    25000:   {QQQ: 25, GLD: 15, IBIT: 50, XLE: 10, label: "max growth"}
+    50000:   {QQQ: 30, GLD: 20, IBIT: 40, XLE: 10, label: "growth"}
+    150000:  {QQQ: 35, GLD: 25, IBIT: 30, XLE: 10, label: "balanced"}
+    500000:  {QQQ: 35, GLD: 35, IBIT: 20, XLE: 10, label: "steady"}
+    1000000: {QQQ: 40, GLD: 40, IBIT: 10, XLE: 10, label: "preservation"}
   # Bitcoin's daily trend state (1 above a rising 200-day, 0.5 one of the two, 0 below a falling one): a
   # readiness warning only, never an exit (the 2025 top: daily state sold ~14% higher but whipsawed).
   btc_warning: {symbol: BTC-USD}
@@ -1005,3 +1018,10 @@ backtest:
     - {name: xle_cyc_lb1260, label: "XLE cycle · lb1260", symbols: [XLE], mode: target, exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]], gain_lookback_days: 1260}
     - {name: btc_cyc_lb1260, label: "BTC-USD cycle · lb1260", symbols: [BTC-USD], mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], gain_lookback_days: 1260, start: "2015-10-01"}
     - {name: core_cyc_lb1260, label: "Core cycle · base caps, 5-year low", mode: blend, weights: {"qqq_cyc_lb1260": 35, "gld_cyc_lb1260": 35, "xle_cyc_lb1260": 10, "btc_cyc_lb1260": 20}, start: "2015-10-01"}
+    # Weights by account size / risk profile (2026-10-11): cycle sleeves with aggressive caps, BTC 0–50% of the core.
+    - {name: mixc_btc50, label: "Cycle core · QQQ 25 / GLD 15 / BTC 50 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 25, "gld_cyc_aggr": 15, "xle_cyc_aggr": 10, "btc_cyc_aggr": 50}, start: "2015-10-01"}
+    - {name: mixc_btc40, label: "Cycle core · QQQ 30 / GLD 20 / BTC 40 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 30, "gld_cyc_aggr": 20, "xle_cyc_aggr": 10, "btc_cyc_aggr": 40}, start: "2015-10-01"}
+    - {name: mixc_btc30, label: "Cycle core · QQQ 35 / GLD 25 / BTC 30 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 35, "gld_cyc_aggr": 25, "xle_cyc_aggr": 10, "btc_cyc_aggr": 30}, start: "2015-10-01"}
+    - {name: mixc_btc20, label: "Cycle core · QQQ 35 / GLD 35 / BTC 20 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 35, "gld_cyc_aggr": 35, "xle_cyc_aggr": 10, "btc_cyc_aggr": 20}, start: "2015-10-01"}
+    - {name: mixc_btc10, label: "Cycle core · QQQ 40 / GLD 40 / BTC 10 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 40, "gld_cyc_aggr": 40, "xle_cyc_aggr": 10, "btc_cyc_aggr": 10}, start: "2015-10-01"}
+    - {name: mixc_btc0, label: "Cycle core · QQQ 50 / GLD 40 / BTC 0 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 50, "gld_cyc_aggr": 40, "xle_cyc_aggr": 10}, start: "2015-10-01"}

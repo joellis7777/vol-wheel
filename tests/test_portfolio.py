@@ -80,3 +80,11 @@ def test_core_row_scale_out_cap_by_gain_from_low():
     assert r["dd_pct"] == 0 and r["pyramid_pct"] == 80
     assert r["gain_pct"] == pytest.approx(250, abs=1) and r["scale_cap_pct"] == 40 and r["target_pct"] == 40
     assert r["gain_step"] == 4 and r["next_trim"] is None
+
+
+def test_build_passes_profiles_through():
+    h = _hist(np.linspace(100, 120, 300))
+    rules = {"portfolio": {"budget_pct": 85, "core": {"QQQ": {"weight": 35, "alloc": ALLOC}},
+                           "profiles": {25000: {"QQQ": 25, "label": "max growth"}}}}
+    out = P.build(rules, lambda s: h)
+    assert out["profiles"]["25000"]["QQQ"] == 25

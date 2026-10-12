@@ -19,7 +19,7 @@ rule-bound satellites (an MSTR/IBIT long-call sleeve and stock picks) for upside
 
 | Sleeve | Weight | What it holds | Rules | Where |
 |---|---|---|---|---|
-| **Core** | 65% | QQQ 35 / GLD 35 / IBIT 20 / XLE 10 (of the core) | Held, no trend exit (Jordan: buy dips, don't sell them). Scale out as each name's bull run matures: a cap by its gain from the 3-year low (QQQ/GLD/XLE 90% at +50% → 50% at +150%; IBIT 85% at +200% → 30% at +1500%), so the account is light going into the next bear; trades in stock (options lag the targets) | IRA |
+| **Core** | 65% | QQQ / GLD / IBIT / XLE by account size: $25k 25/15/50/10, $50k 30/20/40/10, $150k 35/25/30/10, $500k 35/35/20/10, $1M 40/40/10/10 | Held, no trend exit (Jordan: buy dips, don't sell them). Scale out as each name's bull run matures: aggressive caps by its gain from the 3-year low (QQQ/GLD/XLE 85% at +30% → 35% at +150%; IBIT 80% at +100% → 30% at +1000%), so the account is light going into the next bear; trades in stock (options lag the targets) | IRA |
 | **Reserve** | 20% | SGOV | Pyramid fund: each core name has its own range, from its base weight at the high to fully invested near its historical worst drawdown (QQQ −80%, GLD −45%, IBIT −80%, XLE −75%); add at each step by stock or 16Δ cash-secured puts on IVR ≥ 50 down-spikes; trim back to base as new highs return | IRA |
 | **Convexity sleeve** | ≤ 5% at risk | MSTR (or IBIT) long calls | ~15–25Δ, ~15 months out, 1–2% of the account per position, sell half at +100%, rest out at 60Δ or 90 DTE, re-enter as a roll; no entry filter | IRA (or taxable for > 1-year holds) |
 | **Stock picks** | ≤ 10% | 5–10 names | See "Stock picker" below | Taxable (long-term holds) or IRA |
@@ -36,8 +36,7 @@ Why these numbers:
   max DD, 2022 −14%, Sharpe 1.45 vs pyramid-only 24.8% / −26% (2022 −19%) and held 30.2% / −31% (−23%).
   It gives up ~3%/yr in a mostly-bull decade for a lighter account into bears. The cap strength is a smooth
   dial (tested 2026-10-11): gentle 24% / −24% (2022 −19%), base 22% / −20% (−14%), aggressive 19% / −17%
-  (−9%), Sharpe 1.41 → 1.45 → 1.51. Base is in rules.yaml; aggressive fits "steady gains on a large account"
-  best. Jordan's choice. Execute with stock: done
+  (−9%), Sharpe 1.41 → 1.45 → 1.51. Jordan chose aggressive (now live). Execute with stock: done
   through puts and assigned calls the same targets earned 16.3% (options lag the targets).
 - Exit rule: none on the core (Jordan's call, 2026-10-11). Tested cost vs the trend-exit core (2015→): ~25% /
   −26% max DD and ~−19% in 2022 vs ~22% / −21% and −6%; in a 2000-style bear (not in our data) the gap would
@@ -122,6 +121,7 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-10-11 (later): aggressive caps live; core weights by account size ($25k 50% BTC → $1M 10%).
 - 2026-10-11 (later): core scales out as bull runs mature (cycle plan); trades in stock, not via assignment.
 - 2026-10-11 (later): no trend exit on the core (Jordan); per-ticker pyramid ranges to each asset's worst drawdown.
 - 2026-10-11 (later): reserve becomes a pyramid fund for core dips in uptrends (beat an idle reserve).

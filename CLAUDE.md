@@ -65,6 +65,11 @@ changes, update this list in the same change.
   GLD −45%, BTC −80%, XLE −75%), trimmed back as new highs return. Accepted cost vs the trend-exit core
   (2015→): ~25% / −26% max DD and a ~−19% 2022 vs ~22% / −21% and −6%. Trend states stay on the dashboard as
   information. Pyramiding applies to the core assets only, not single-stock picks.
+- **Core scale-out and weights by size** (Jordan, 2026-10-11): aggressive scale-out caps (ETFs 85% of the sleeve at
+  +30% off the 3-year low → 35% at +150%; BTC 80% at +100% → 30% at +1000%). Core weights follow account size
+  (`portfolio.profiles`, dashboard selector): $25k 25/15/50/10 QQQ/GLD/IBIT/XLE (max growth), $50k 30/20/40/10,
+  $150k 35/25/30/10, $500k 35/35/20/10, $1M 40/40/10/10 (preservation). Defaults by typical risk capacity;
+  age/goals can override. Under ~$150k: fractional shares, puts only on IBIT/XLE, no picks or LEAP sleeve.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 - **The rulebook is a starting hypothesis, not a constraint** (Jordan, 2026-10-11): the goal is to
@@ -350,6 +355,12 @@ backtest changes the picture: edit it in the same change and add a line to its c
     threshold); more scale-out = less return, less drawdown, higher Sharpe. Most of the effect is bitcoin
     (BTC sleeve max DD −77% pyramid-only, −49% base, −39% aggressive). On QQQ alone the caps change 2022
     (−29% → −14% to −27%) but not 2008 (the 2007 top wasn't extended).
+  - Weight ladder with the cycle rules + aggressive caps (2026-10-11, `mixc_btc*`, from 2015-10): BTC share of the
+    core 50 / 40 / 30 / 20 / 10 / 0% → CAGR 28.4 / 25.3 / 22.1 / 18.6 / 15.4 / 12.4%, max DD −23.5 / −20.5 / −17.8 /
+    −16.6 / −16.1 / −16.4%, worst 12 months −23 / −20 / −17 / −14 / −10 / −8%, Sharpe 1.49 / 1.52 / 1.53 / 1.51 /
+    1.36 / 1.08 (start-every-January medians 3y: 24.3 / 21.9 / 19.4 / 16.8 / 13.8 / 11.8). Drawdown stays
+    flat because the caps cut bitcoin after its runs (2018, 2022 came after big gains); a crash without a prior
+    run wouldn't be caught, so real drawdowns at 40–50% BTC could be deeper. Bitcoin hindsight from 2015.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
