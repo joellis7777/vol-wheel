@@ -9,14 +9,15 @@ bull_mode: true            # manual switch; LEAP buys also need SPY > SMA200
 # the all-time high, % of that name's sleeve invested]]; fully invested only near the asset's historical worst
 # (QQQ −80% for 2000-02, GLD −45%, BTC −80%, XLE −75%). budget_pct = core + reserve, % of the account.
 # Each alloc point past the first is a "step": crossing one deeper alerts ADD, recovering above one alerts TRIM.
+# alloc_gain = scale-out cap by the gain from the 3-year low (bull maturity): crossing a level alerts SCALE OUT.
 portfolio:
   budget_pct: 85
   trend_exit: false
   core:
-    QQQ:  {weight: 35, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]]}
-    GLD:  {weight: 35, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]]}
-    IBIT: {weight: 20, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], history_symbol: BTC-USD}
-    XLE:  {weight: 10, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]]}
+    QQQ:  {weight: 35, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
+    GLD:  {weight: 35, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    IBIT: {weight: 20, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], history_symbol: BTC-USD}
+    XLE:  {weight: 10, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
   # Bitcoin's daily trend state (1 above a rising 200-day, 0.5 one of the two, 0 below a falling one): a
   # readiness warning only, never an exit (the 2025 top: daily state sold ~14% higher but whipsawed).
   btc_warning: {symbol: BTC-USD}
@@ -955,3 +956,31 @@ backtest:
        mode: blend, weights: {qqq_pyr_cal55: 35, gld_pyr_cal: 35, btc_pyr_cal: 20, xle_pyr_cal: 10}, start: "2015-10-01"}
     - {name: core_pyr_cal80, label: "Core 35/35/20/10 · per-ticker pyramid ranges, no exits (QQQ full at −80%)",
        mode: blend, weights: {qqq_pyr_cal80: 35, gld_pyr_cal: 35, btc_pyr_cal: 20, xle_pyr_cal: 10}, start: "2015-10-01"}
+    # Jordan's full plan (2026-10-11): pyramid in as it falls (per-ticker ranges) AND scale out as the bull matures
+    # (calls assigned higher and higher), so the account is light going into the next bear. alloc_gain caps the
+    # share % by the gain from the 3-year low (gain_lookback_days 756). exec options = puts on the shortfall,
+    # calls on the excess (assignment does the selling); exec stock = same targets traded directly.
+    - {name: qqq_cycle, label: "QQQ cycle · pyramid to −80% + scale out to 40% at +200% off the 3y low · stock", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]],
+       alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
+    - {name: qqq_cycle_opts, label: "QQQ cycle · same targets via puts / assigned calls", symbols: [QQQ], mode: target,
+       exec: options, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]],
+       alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
+    - {name: gld_cycle, label: "GLD cycle · pyramid to −45% + scale out to 50% at +150%", symbols: [GLD], mode: target,
+       exec: stock, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: gld_cycle_opts, label: "GLD cycle · via options", symbols: [GLD], mode: target, exec: options,
+       alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: xle_cycle, label: "XLE cycle · pyramid to −75% + scale out to 50% at +150%", symbols: [XLE], mode: target,
+       exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: xle_cycle_opts, label: "XLE cycle · via options", symbols: [XLE], mode: target, exec: options,
+       alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: btc_cycle, label: "BTC cycle · pyramid to −80% + scale out to 30% at +1500% off the 3y low", symbols: [BTC-USD],
+       mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]],
+       alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], start: "2015-10-01"}
+    - {name: btc_cycle_opts, label: "BTC cycle · via options (modelled)", symbols: [BTC-USD], mode: target, exec: options,
+       alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]],
+       index: false, start: "2015-10-01"}
+    - {name: core_cycle, label: "Core 35/35/20/10 · pyramid in + scale out (stock)", mode: blend,
+       weights: {qqq_cycle: 35, gld_cycle: 35, btc_cycle: 20, xle_cycle: 10}, start: "2015-10-01"}
+    - {name: core_cycle_opts, label: "Core 35/35/20/10 · pyramid in + scale out via puts / assigned calls", mode: blend,
+       weights: {qqq_cycle_opts: 35, gld_cycle_opts: 35, btc_cycle_opts: 20, xle_cycle_opts: 10}, start: "2015-10-01"}

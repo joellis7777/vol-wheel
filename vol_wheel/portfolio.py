@@ -1,9 +1,10 @@
 """Portfolio layer for the dashboard and alerts (docs/STRATEGY.md): the core pyramid, the stock-picks
 watchlist and the bitcoin readiness warning. Signals only: nothing here knows what Jordan holds.
 
-Core pyramid (`portfolio.core`): each name's sleeve = budget_pct x weight of the account. Its invested
+Core cycle (`portfolio.core`): each name's sleeve = budget_pct x weight of the account. Its invested
 target = interpolation of `alloc` [[drawdown % from the all-time high, % of the sleeve]] at today's
-drawdown. Steps are the alloc points past the first; the step index (how many step levels the drawdown has
+drawdown, capped by `alloc_gain` [[gain % from the 3-year low, max %]] as a bull run matures (scale out
+into strength; Jordan 2026-10-11). Steps are the alloc points past the first; the step index (how many step levels the drawdown has
 reached) is what alerts compare: deeper = ADD, shallower = TRIM. There is no trend exit (Jordan,
 2026-10-11); each name's trend state is shown for information. `history_symbol` measures the drawdown on
 a longer history (IBIT launched 2024; BTC-USD stands in) and converts step prices back to the ETF.
@@ -60,15 +61,31 @@ def core_row(sym: str, cfg: dict, budget_pct: float, hist: pd.DataFrame, ref: pd
         lvl = steps[idx - 1][0]
         prev = {"dd_pct": lvl, "target_pct": sorted(alloc)[idx - 1][1],
                 "price": round(high * (1 - lvl / 100) * conv, 2)}
+    # scale-out cap as the bull matures: gain from the lowest close of the last gain_lookback_days
+    gain, cap, gstep, gnext = None, None, 0, None
+    if cfg.get("alloc_gain"):
+        lb = int(cfg.get("gain_lookback_days", 756))
+        low = float(rclose.iloc[-lb:].min())
+        gain = (rprice / low - 1) * 100
+        ga = sorted(cfg["alloc_gain"])
+        cap = alloc_target(gain, ga)
+        gstep = sum(1 for lvl, _ in ga[1:] if gain >= lvl)
+        if gstep < len(ga) - 1:
+            lvl, c2 = ga[gstep + 1]
+            gnext = {"gain_pct": lvl, "cap_pct": c2, "price": round(low * (1 + lvl / 100) * conv, 2)}
+        target = min(target, cap)
     st = trend_states(close).iloc[-1] if len(close) >= 220 else np.nan
     return {
         "symbol": sym, "weight": cfg["weight"], "price": round(price, 2),
         "ref_symbol": cfg.get("history_symbol") or sym, "high": round(high * conv, 2),
         "high_date": str(pd.Timestamp(high_date).date()), "dd_pct": round(dd, 1),
         "target_pct": round(target, 1), "base_pct": sorted(alloc)[0][1],
-        "sleeve_pct": round(sleeve, 2), "account_pct": round(sleeve * target / 100, 2),
+        "pyramid_pct": round(alloc_target(dd, alloc), 1),
+        "sleeve_pct": round(sleeve, 2), "account_pct": round(sleeve * min(target, cap if cap is not None else 999) / 100, 2),
         "step": idx, "steps": len(steps), "next": nxt, "trim_above": prev,
         "trend_state": None if not np.isfinite(st) else float(st),
+        "gain_pct": None if gain is None else round(gain, 1), "scale_cap_pct": None if cap is None else round(cap, 1),
+        "gain_step": gstep, "next_trim": gnext,
         "full_at_dd": steps[-1][0] if steps else 0,
         "asof": str(close.index[-1].date()),
     }

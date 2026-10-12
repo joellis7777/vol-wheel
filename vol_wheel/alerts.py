@@ -361,11 +361,12 @@ def evaluate_portfolio(result: dict, state: dict, today: str, rules: dict) -> li
     for r in port.get("core") or []:
         if r.get("error"):
             continue
-        sym, step = r["symbol"], r["step"]
+        sym, step, gstep = r["symbol"], r["step"], r.get("gain_step", 0)
         rec = core_s.get(sym)
         if rec is None:
-            core_s[sym] = {"step": step, "date": today}
+            core_s[sym] = {"step": step, "gstep": gstep, "date": today}
             continue
+        rec.setdefault("gstep", gstep)
         nxt = r.get("next")
         nxt_txt = (f"Next add at {_money(nxt['price'])} (−{nxt['dd_pct']:.0f}%) → {nxt['target_pct']:.0f}% of the sleeve."
                    if nxt else "Fully invested: the deepest step is reached.")
@@ -373,18 +374,26 @@ def evaluate_portfolio(result: dict, state: dict, today: str, rules: dict) -> li
                  f"{r['high_date']}" + (f", measured on {r['ref_symbol']}" if r["ref_symbol"] != sym else "") + ").")
         tgt = (f"Target: {r['target_pct']:.0f}% of the {sym} sleeve = {r['account_pct']:.1f}% of the account "
                f"(sleeve {r['sleeve_pct']:.1f}%).")
-        if step > rec["step"] and "CORE_ADD" in allowed:
+        if gstep > rec["gstep"] and step <= rec["step"] and "CORE_TRIM" in allowed:
+            nt = r.get("next_trim")
+            out.append(_pmsg(rules, "CORE_TRIM", f"SCALE OUT · {sym} · +{r['gain_pct']:.0f}% off the 3-year low",
+                             "\n".join([where, f"Bull maturity cap now {r['scale_cap_pct']:.0f}% of the sleeve. " + tgt,
+                                         "Trim the excess: sell shares, or covered calls on the excess that you let be "
+                                         "assigned.", (f"Next scale-out at {_money(nt['price'])} (+{nt['gain_pct']:.0f}%) → "
+                                                       f"{nt['cap_pct']:.0f}%." if nt else "")]),
+                             "default", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step > rec["step"] and "CORE_ADD" in allowed:
             out.append(_pmsg(rules, "CORE_ADD", f"ADD · {sym} · step {step}/{r['steps']}",
                              "\n".join([where, tgt, "Add with shares, or a 16Δ cash-secured put on a down-spike "
                                          "(IVR ≥ 50). No trend exit: keep holding.", nxt_txt]),
-                             "high", ("core", sym, {"step": step, "date": today})))
+                             "high", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
         elif step < rec["step"] and "CORE_TRIM" in allowed:
             out.append(_pmsg(rules, "CORE_TRIM", f"TRIM · {sym} · back to step {step}/{r['steps']}",
                              "\n".join([where, tgt, "Recovered above a pyramid step: trim the sleeve back toward "
                                          "this target (or sell a covered call on the excess on an up-spike).", nxt_txt]),
-                             "default", ("core", sym, {"step": step, "date": today})))
-        elif step != rec["step"]:
-            core_s[sym] = {"step": step, "date": today}
+                             "default", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step != rec["step"] or gstep != rec["gstep"]:
+            core_s[sym] = {"step": step, "gstep": gstep, "date": today}
     for r in port.get("picks") or []:
         sym, stt = r["symbol"], r.get("status")
         if stt in (None, "NO_DATA"):

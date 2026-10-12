@@ -71,3 +71,12 @@ def test_btc_warning_and_build_survives_failures():
     assert out["core"][0]["symbol"] == "QQQ" and "error" in out["core"][1]
     assert any("GLD" in n for n in out["notes"]) and out["btc_warning"]["label"]
     assert out["picks"][0]["symbol"] == "S"
+
+
+def test_core_row_scale_out_cap_by_gain_from_low():
+    h = _hist(np.r_[np.linspace(100, 50, 200), np.linspace(50, 175, 500)])      # +250% off the 3-year low, at a high
+    cfg = {"weight": 35, "alloc": ALLOC, "alloc_gain": [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
+    r = P.core_row("QQQ", cfg, 85, h)
+    assert r["dd_pct"] == 0 and r["pyramid_pct"] == 80
+    assert r["gain_pct"] == pytest.approx(250, abs=1) and r["scale_cap_pct"] == 40 and r["target_pct"] == 40
+    assert r["gain_step"] == 4 and r["next_trim"] is None

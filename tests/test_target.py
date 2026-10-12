@@ -75,3 +75,19 @@ def test_core_calls_at_lows(rules):
     s = _run(rules, f, exec="options", core_calls={"delta": 10, "max_pct": 25, "regimes": ["Low"]})
     assert s.stats.get("core_calls", 0) >= 1
     assert "2020-03" in s.result()["shares_monthly"]
+
+
+def test_alloc_gain_scales_out_as_the_bull_matures(rules):
+    import numpy as np
+    from vol_wheel import target as T
+    rules = __import__("copy").deepcopy(rules)
+    rules["backtest"]["costs"] = {"per_contract": 0.0, "slippage_pct_index": 0, "slippage_pct_stock": 0}
+    idx = pd.bdate_range("2020-01-01", periods=600)
+    closes = np.linspace(100, 400, 600)                      # a long rally: +300% from the low
+    f = pd.DataFrame({"close": closes, "iv": 0.2, "regime": "Mid", "down": 0.0, "up": 0.0}, index=idx)
+    rates = pd.Series(0.0, index=idx)
+    base = {"symbols": ["X"], "mode": "target", "exec": "stock", "alloc": [[0, 100], [50, 100]]}
+    full = T.Target(base, f, rates, rules, idx[0], idx[-1]).run()
+    capped = T.Target({**base, "alloc_gain": [[0, 100], [100, 70], [300, 30]]}, f, rates, rules,
+                      idx[0], idx[-1]).run()
+    assert full.in_shares[-1] > 0.9 and capped.in_shares[-1] < 0.4

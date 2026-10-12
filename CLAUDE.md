@@ -329,6 +329,18 @@ backtest changes the picture: edit it in the same change and add a line to its c
     −83%, XLE −82%, SPY −56%, MSTR −89%. Core 35/35/20/10 from 2015-10: QQQ full at −55% 25.0% / −25.7%, at −80%
     24.8% / −25.9%, vs the fast −30% schedule 25.5% / −26.7%; start-every-January medians within ~1 pt. The
     deep ranges cost little here and keep buying power for a 2000-style crash the data doesn't contain.
+  - Jordan's full cycle plan (2026-10-11, `*_cycle*`, target `alloc_gain`): pyramid in by drawdown AND scale out as
+    the bull matures (cap by gain from the 3-year low: QQQ/GLD/XLE 100% → 90 at +50%, 70 at +100%, 50 at +150%
+    (QQQ 40 at +200%); BTC 100 → 85 at +200%, 65 at +400%, 45 at +800%, 30 at +1500%), so the account is light
+    entering a bear. Core 35/35/20/10 from 2015-10, executed with stock: 21.8% / −20.1% max DD, 2022 −13.6%,
+    Sharpe 1.45 (best tested) vs pyramid only 24.8% / −25.9% (2022 −19.1%), held 30.2% / −31.2% (−23.1%),
+    monthly combo exits 26.1% / −21.8% (−5.1%). Start-every-January medians 3y | 5y: 19.2 | 21.8 vs pyramid
+    21.2 | 25.0 vs exits 25.5 | 26.3. QQQ alone 2007→ stock: 13.4% / −47.6% (2022 −21.8% vs −28.8% pyramid
+    only; 2008 unchanged: the 2007 top was only +60% off its low). Executed with puts on the shortfall and
+    covered calls assigned on the excess instead of stock: core 16.3% / −20.1% (medians 9.2 | 13.1), QQQ
+    13.2% / −40.5% (medians 5.4 | 7.6): options lag the targets (puts don't fill in rallies, calls get
+    assigned early), the same lag seen in `mode: multi`. Execute the cycle targets with stock; use options
+    only opportunistically on spikes.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
