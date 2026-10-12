@@ -208,4 +208,5 @@ class Target:
         m = pd.Series(self.in_shares, index=self.cal).groupby([self.cal.year, self.cal.month]).mean()
         out["shares_monthly"] = {f"{y}-{mo:02d}": round(float(x) * 100) for (y, mo), x in m.items()}
         out["equity_weekly"] = weekly(eq)
+        out["_eq"] = eq
         return out

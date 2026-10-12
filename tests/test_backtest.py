@@ -308,6 +308,16 @@ def test_hold_trend_arm_and_falling(rules):
     assert armed_hi["months_held_pct"]["T-bills"] > 0
     falling = B.run_hold({**base, "trend_falling": True}, frames, meta, rates, rules, idx[0], idx[-1])
     assert 0 < falling["months_held_pct"]["T-bills"] <= plain["months_held_pct"]["T-bills"]
+    # a list limits the falling rule to those names: the others keep the plain exit
+    frames2 = {"A": frames["A"], "B": frames["A"].copy()}
+    meta2 = {"first_date": {"A": idx[0], "B": idx[0]}}
+    both = {"symbols": ["A", "B"], "trend_sma": 200}
+    mixed = B.run_hold({**both, "trend_falling": ["A"]}, frames2, meta2, rates, rules, idx[0], idx[-1])
+    p2 = B.run_hold(both, frames2, meta2, rates, rules, idx[0], idx[-1])
+    f2 = B.run_hold({**both, "trend_falling": True}, frames2, meta2, rates, rules, idx[0], idx[-1])
+    assert f2["months_held_pct"]["T-bills"] <= mixed["months_held_pct"]["T-bills"] <= p2["months_held_pct"]["T-bills"]
+    assert mixed["months_held_pct"]["T-bills"] == pytest.approx(
+        (plain["months_held_pct"]["T-bills"] + falling["months_held_pct"]["T-bills"]) / 2, abs=1)
 
 
 def test_hold_trend_to_defensive(rules):
@@ -336,6 +346,11 @@ def test_hold_collar_limits_the_fall(rules):
     col = B.run_hold({"symbols": ["A"], "collar": {"put_otm_pct": 10, "dte": 182, "roll_days": 91}},
                      frames, meta, rates, rules, idx[0], idx[-1])
     assert col["max_dd_pct"] > hold["max_dd_pct"] + 10 and col["collar_pnl_per_year_pct"] > 0
+    # `symbols` limits collars to the listed names
+    other = B.run_hold({"symbols": ["A"], "collar": {"put_otm_pct": 10, "dte": 182, "roll_days": 91,
+                                                     "symbols": ["Z"]}},
+                       frames, meta, rates, rules, idx[0], idx[-1])
+    assert other["collared_days_pct"] == 0 and other["max_dd_pct"] == pytest.approx(hold["max_dd_pct"])
     # zero-cost call: premium matches the put's
     S, T, iv, slope = 100.0, 0.5, 0.2, 0.8
     put = B.bs_price(S, 90, T, B.skew_iv(iv, S, 90, slope), "P", 0.0)
@@ -358,3 +373,95 @@ def test_hold_collar_follows_rebalanced_shares(rules):
     # covered calls cap the gain but can never turn a rising, rebalanced book into a loss
     acct = rules["backtest"]["account"]
     assert acct < col["final"] < hold["final"] and col["max_dd_pct"] > -10
+
+
+def test_decide_itm_close_never_assigns(rules):
+    # a put sold at 100 that is ITM at 21 DTE: held -> assigned; decide_itm close -> bought back, no shares
+    closes = np.r_[np.full(5, 100.0), np.full(60, 80.0)]
+    f = _frame(closes)
+    f.loc[f.index[0], "down"] = 2.0
+    held = _sim(rules, f, {})
+    closed = _sim(rules, f, {"decide_itm": "close"})
+    assert held.stats["assigned"] >= 1 and closed.stats["assigned"] == 0
+    assert closed.stats["closed_21dte_itm"] >= 1
+    # take_profit_pct per variant: at 100% nothing closes for profit
+    assert _sim(rules, f, {"take_profit_pct": 100}).stats["closed_profit"] == 0
+
+
+def test_calls_none_never_writes_calls(rules):
+    closes = np.r_[np.full(5, 100.0), np.full(30, 80.0), np.full(60, 95.0)]
+    f = _frame(closes)
+    f.loc[f.index[0], "down"] = 2.0
+    s = _sim(rules, f, {"calls": "none"})
+    assert s.stats["assigned"] >= 1 and s.stats["calls_sold"] == 0
+    with pytest.raises(ValueError):
+        _sim(rules, f, {"calls": "nope"})
+
+
+def test_put_spread_caps_the_loss_and_uses_width_as_collateral(rules):
+    # a crash through the strike: the naked put is assigned, the spread loses at most its width
+    closes = np.r_[np.full(5, 100.0), np.full(60, 60.0)]
+    f = _frame(closes)
+    f.loc[f.index[0], "down"] = 2.0
+    naked = _sim(rules, f, {"decide_itm": "hold"})
+    spread = _sim(rules, f, {"decide_itm": "hold", "put_wing_delta": 5})
+    assert naked.stats["assigned"] >= 1 and spread.stats["assigned"] == 0
+    assert spread.stats["spread_loss"] >= 1
+    # a spread's entry_pct is its maximum loss (the width), less the credit taken in
+    acct = rules["backtest"]["account"]
+    loss_spread = acct - spread.result()["final"]
+    assert 0.05 * acct < loss_spread <= 0.10 * acct
+    o = B.Opt("X", "P", 100.0, 10.0, f.index[0], f.index[30], 1.0, wing=90.0)
+    assert o.collateral == pytest.approx(100.0)
+
+
+def test_blend_rebalances_fixed_weights():
+    idx = pd.bdate_range("2020-01-01", periods=60)
+    up = pd.Series(np.linspace(100, 200, 60), index=idx)      # +100%
+    flat = pd.Series(100.0, index=idx)
+    rates = pd.Series(0.0, index=idx)
+    bt = {"account": 1000.0, "periods": {}}
+    res = B.run_blend({"weights": {"a": 50, "b": 50}}, {"a": up, "b": flat}, rates, bt, idx[0], idx[-1])
+    # a 50/50 mix of +100% and 0% gains more than 50% when rebalanced (selling the winner monthly costs a bit)
+    assert 1.3 < res["final"] / 1000 < 1.5
+    assert res["blend_weights_pct"] == {"a": 50.0, "b": 50.0}
+    tb = B.run_blend({"weights": {"tbills": 100}}, {}, pd.Series(0.05, index=idx), bt, idx[0], idx[-1])
+    assert tb["final"] > 1000 and tb["max_dd_pct"] == 0
+
+
+def test_rolling_windows_and_summary():
+    cal = pd.bdate_range("2010-01-01", "2016-12-31")
+    calls = []
+
+    def fake(name, s, e, memo):
+        calls.append((name, s.year))
+        return {"start": s.strftime("%Y-%m-%d"), "cagr_pct": 10.0 if name == "a" else float(s.year - 2010),
+                "max_dd_pct": -5.0}
+    out = B.run_rolling({"years": [3], "first_year": 2010, "benchmark": "b", "variants": ["a"]}, ["a"], fake, cal)
+    rows = out["variants"]["a"]["3"]
+    assert [r["start"][:4] for r in rows] == ["2010", "2011", "2012", "2013"]
+    sm = out["summary"]["a"]["3"]
+    assert sm["windows"] == 4 and sm["median"] == 10.0 and sm["beat_bench_pct"] == 100
+
+
+def test_trend_states_three_levels():
+    up = pd.Series(np.linspace(100, 200, 400))
+    assert B.trend_states(up, 200).iloc[-1] == 1.0
+    dn = pd.Series(np.linspace(200, 100, 400))
+    assert B.trend_states(dn, 200).iloc[-1] == 0.0
+    # sharp drop after a long rise: below the average while it is still rising -> half
+    mix = pd.Series(np.r_[np.linspace(100, 200, 380), np.full(5, 120.0)])
+    assert B.trend_states(mix, 200).iloc[-1] == 0.5
+
+
+def test_run_states_scales_and_trades_on_signal(rules):
+    rules["backtest"]["min_history_days"] = 1
+    idx = pd.bdate_range("2020-01-01", periods=700)
+    a = np.r_[np.linspace(100, 200, 350), np.linspace(200, 100, 350)]
+    frames = {"A": _frame(a).set_axis(idx)}
+    rates = pd.Series(0.0, index=idx)
+    meta = {"first_date": {"A": idx[0]}}
+    hold = B.run_hold({"symbols": ["A"]}, frames, meta, rates, rules, idx[0], idx[-1])
+    st = B.run_states({"symbols": ["A"], "states": {}}, frames, meta, rates, rules, idx[0], idx[-1])
+    assert st["max_dd_pct"] > hold["max_dd_pct"] + 15       # steps out on the way down
+    assert st["state_days_pct"]["A"]["half"] > 0 and st["state_days_pct"]["A"]["out"] > 0
