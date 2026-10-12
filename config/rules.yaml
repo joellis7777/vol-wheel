@@ -790,3 +790,45 @@ backtest:
        weights: {qgx_falling: 70, btc_states: 30}, start: "2015-10-01"}
     - {name: core_hybrid20, label: "Core 35/35/20/10 · hybrid exits (BTC daily, rest monthly)", mode: blend,
        weights: {qgx_falling: 80, btc_states: 20}, start: "2015-10-01"}
+    # Where MSTR premium goes (2026-10-11): 30-delta puts ~45 DTE, a new one every 5 sessions, 10% notional each,
+    # close at 50% or 21 DTE, never assigned. Premium/yr vs the net return shows the losses that offset it.
+    - {name: mstr_csp30, label: "MSTR · 30Δ puts, close 50% / 21 DTE, never assigned", symbols: [MSTR], mode: always,
+       put_delta: 30, entry_pct: 10, entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close,
+       start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_csp20, label: "MSTR · 20Δ puts, close 50% / 21 DTE, never assigned", symbols: [MSTR], mode: always,
+       put_delta: 20, entry_pct: 10, entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close,
+       start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_csp30_full, label: "MSTR · 30Δ puts, close 50% / 21 DTE · kept fully deployed (new put every session)",
+       symbols: [MSTR], mode: always, put_delta: 30, entry_pct: 20, entry_every_days: 1, min_ivr: 0, calls: none,
+       decide_itm: close, start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    # Convexity sleeve beyond MSTR (2026-10-11): same rules (15Δ / 40Δ, no filter, half at +100%, 60Δ / 90 DTE)
+    # on other volatile names; BTC-USD has no listed options before 2024, so it's a modelled what-if.
+    - {name: tsla_sleeve15, label: "TSLA sleeve · 15Δ, no filter", symbols: [TSLA], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null, start: "2012-01-01"}
+    - {name: tsla_sleeve40, label: "TSLA sleeve · 40Δ, no filter", symbols: [TSLA], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null, start: "2012-01-01"}
+    - {name: tsla_shares5, label: "TSLA · 5% in shares", symbols: [TSLA], mode: hold, weight: 5, start: "2012-01-01"}
+    - {name: nvda_sleeve15, label: "NVDA sleeve · 15Δ, no filter", symbols: [NVDA], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null}
+    - {name: nvda_sleeve40, label: "NVDA sleeve · 40Δ, no filter", symbols: [NVDA], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null}
+    - {name: nvda_shares5, label: "NVDA · 5% in shares", symbols: [NVDA], mode: hold, weight: 5}
+    - {name: btc_sleeve15, label: "BTC sleeve · 15Δ, no filter (modelled)", symbols: [BTC-USD], mode: sleeve,
+       entry_delta: 15, entry_filter: [], max_runup_pct: null, start: "2015-10-01"}
+    - {name: btc_sleeve40, label: "BTC sleeve · 40Δ, no filter (modelled)", symbols: [BTC-USD], mode: sleeve,
+       entry_delta: 40, entry_filter: [], max_runup_pct: null, start: "2015-10-01"}
+    - {name: btc_shares5, label: "BTC · 5% held", symbols: [BTC-USD], mode: hold, weight: 5, start: "2015-10-01"}
+    - {name: qqq_sleeve15, label: "QQQ sleeve · 15Δ, no filter", symbols: [QQQ], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null}
+    - {name: qqq_sleeve40, label: "QQQ sleeve · 40Δ, no filter", symbols: [QQQ], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null}
+    - {name: qqq_shares5, label: "QQQ · 5% in shares", symbols: [QQQ], mode: hold, weight: 5}
+    # Term-structure check: price the long-dated calls at 1.2x the 30-day IV (LEAP IV runs above 30-day in calm markets).
+    - {name: qqq_sleeve15_iv12, label: "QQQ sleeve · 15Δ, LEAP IV 1.2x", symbols: [QQQ], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
+    - {name: mstr_sleeve15_iv12, label: "MSTR sleeve · 15Δ no filter, LEAP IV 1.2x", symbols: [MSTR], mode: sleeve,
+       entry_delta: 15, entry_filter: [], max_runup_pct: null, iv_scale: 1.2, start: "2020-09-01"}
+    - {name: nvda_sleeve15_iv12, label: "NVDA sleeve · 15Δ, LEAP IV 1.2x", symbols: [NVDA], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
+    - {name: qqq_sleeve40_iv12, label: "QQQ sleeve · 40Δ, LEAP IV 1.2x", symbols: [QQQ], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null, iv_scale: 1.2}

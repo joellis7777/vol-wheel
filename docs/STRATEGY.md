@@ -38,9 +38,10 @@ Why these numbers:
   drawdown for ~3–5%/yr. Daily on bitcoin only (hybrid) didn't beat the plain monthly rule either.
 - 20% reserve: the standing decision; in tests it costs ~1–2%/yr of return vs fully invested and is the
   dry powder the put entries need. Earns T-bill yield meanwhile.
-- Convexity sleeve: 15Δ with exits beat 40Δ + trend filter in every window (2020-09→ 30.9% vs 5.0%,
-  2021→ 16.6% vs 3.7% account CAGR at 5% per position, −14% max DD). One stock, one path, modelled IV:
-  size small (1–2% per position here) until it holds on IBIT/BTC and TSLA too.
+- Convexity sleeve: 15Δ with exits beat 40Δ (with or without Soliel's trend filter) on MSTR, QQQ, NVDA,
+  TSLA and modelled BTC, in start-every-January windows too, and still with LEAPs priced 20% richer. It is
+  a bull-market result (2009–26) and bleeds in flat years, so keep it small: 1–2% of the account per
+  position, ≤ 5% at risk, on IBIT or MSTR.
 
 ## What to implement
 
@@ -61,6 +62,8 @@ Why these numbers:
 - Rolling for credit as a return source (QQQ 4.7% vs 5.0%; MSTR 23% vs 28%).
 - Put credit spreads in the IRA as the income engine (0.4% / −24% for a 6-ETF book).
 - A tastytrade-style premium book as the main strategy (3.9% / −16%; fine as a bond substitute only).
+- Selling MSTR puts whenever premium looks rich: the edge is IV above the realized vol that follows
+  (IV = realized → about 0%); only sell when IV ≥ 1.15 x realized vol (the scanner's gate).
 - Standing collars or always-on puts (QQQ always collared 6.0%; collars on the BTC core cost ~19%/yr).
 - The 16Δ / IVR ≥ 50 wheel as a standalone strategy (median 2.5–2.8%: it only works if a crash assigns
   it early).
@@ -88,13 +91,16 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 ## Next tests that could change this
 
 1. Done 2026-10-11: monthly combo exits beat the daily signal; bitcoin 20% of the core chosen.
-2. Convexity sleeve on IBIT/BTC and TSLA; real MSTR LEAP bid/ask from the scanner's chains.
+2. Done 2026-10-11: the sleeve holds on QQQ, NVDA, TSLA, BTC. Still to do: real MSTR/IBIT LEAP bid/ask from
+   the scanner's chains.
 3. Reserve put entries: core + 16Δ put entries on dips vs buying at the next rebalance.
 4. Stock-picker exit rules on a list of momentum names (with a hindsight caveat).
 5. Jordi Visser ingest (in progress): his themes for the picks watchlist and any exit discipline.
 
 ## Change log
 
+- 2026-10-11 (later): convexity sleeve confirmed beyond MSTR (15Δ > 40Δ on every name tested); MSTR
+  premium explained (the edge is IV vs later realized vol, not the premium size).
 - 2026-10-11 (later): core switched to QQQ 35 / GLD 35 / IBIT 20 / XLE 10 with monthly combo exits
   after the start-every-January runs (daily three-state signal and the hybrid rejected).
 - 2026-10-11: first version, after research batches 1–2 (Soliel, tastylive, Tom Sosnoff, 42 Macro) and

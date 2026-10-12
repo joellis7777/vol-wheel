@@ -15,7 +15,8 @@ sits in T-bills. Built to test Soliel's 2026 long-call rule against Jordan's dee
   exits at `exit_delta` or `exit_dte` act as rolls while the trend holds.
 Options are Black-Scholes on the backtest's IV (stock names: `stock_iv_mult` x max(HV20, HV60)) with
 the stock skew slope, or `call_skew` when given (0 = flat; negative = OTM calls priced richer, as on
-MSTR in bitcoin rallies), scaled by sqrt(skew_term_days / DTE) for long expiries. Far-OTM call prices hinge on that assumption, so run it at several values.
+MSTR in bitcoin rallies), scaled by sqrt(skew_term_days / DTE) for long expiries; `iv_scale` lifts the
+30-day IV to a long-dated level (term structure). Far-OTM call prices hinge on that assumption, so run it at several values.
 """
 from __future__ import annotations
 
@@ -48,6 +49,12 @@ def hhhl_series(close: pd.Series, order: int = 5) -> pd.Series:
     return pd.Series(out, index=c.index)
 
 
+def self_iv_scale(variant: dict, rules: dict) -> float:
+    """`iv_scale`: multiplies the 30-day IV used to price the long-dated calls. The backtest's IV is a 30-day
+    measure; LEAP IV usually sits above it in calm markets (upward term structure), so 1.0 flatters buyers."""
+    return float({**(rules["backtest"].get("sleeve") or {}), **variant}.get("iv_scale", 1.0))
+
+
 class Sleeve:
     def __init__(self, variant: dict, frame: pd.DataFrame, rates: pd.Series, rules: dict, start, end,
                  slope: float):
@@ -59,7 +66,7 @@ class Sleeve:
         close = frame["close"].dropna()
         f = frame.reindex(self.cal).copy()
         f["close"] = f["close"].ffill()
-        f["iv"] = f["iv"].ffill()
+        f["iv"] = f["iv"].ffill() * self_iv_scale(variant, rules)   # long-dated IV vs the 30-day input
         f["sma200"] = close.rolling(200).mean().reindex(self.cal)
         n = self.cfg.get("runup_days", 20)
         f["runup"] = (close / close.shift(n) - 1).reindex(self.cal) * 100

@@ -272,6 +272,21 @@ backtest changes the picture: edit it in the same change and add a line to its c
     28.8 | 27.7 / −27.4%. Bitcoin weight with monthly combo exits: 30% 30.9 / −29.5%, 20% (35/35/20/10)
     25.5 | 26.3 / −21.8% (full window 26.1% / −21.8%, Sharpe 1.38, 2022 −5%), 10% (daily) 16.4 | 17.1 / −16.2%.
     Chosen for docs/STRATEGY.md: 35/35/20/10 with monthly combo exits.
+  - Why MSTR premium (Jordan sees ~5% of capital per 45-DTE put) doesn't become a big return (2026-10-11,
+    `mstr_csp*`; 30Δ puts, close at 50% or 21 DTE, never assigned, from 2020-09). Gross credits are large
+    (52%/yr of equity at ~25% deployed; 129%/yr kept ~60% deployed) but net CAGR is 10.2% / −22% and 16.4% /
+    −45% (2022 −35%): buybacks of the ~1 in 3 puts tested by 21 DTE give most of it back. Net depends almost
+    entirely on IV vs the realized vol that follows: at IV = 1.0x HV the fully deployed book makes −1.2%, at
+    1.15x 16.4%, at 1.3x 31.5%. Real MSTR iv30 on 2026-10-02..09 was ~63 vs HV20/HV60 ~80 (0.78x), i.e.
+    below realized: premium that looks rich can still be a losing sale. This is what the IV/HV ≥ 1.15 gate
+    is for. Selling puts also caps the upside: MSTR held +250% (2023) and +294% (2024).
+  - Convexity sleeve beyond MSTR (2026-10-11, `*_sleeve15/40`, no entry filter, 5% per position, half at +100%,
+    out at 60Δ / 90 DTE; start-every-January medians 3y | 5y, account CAGR): 15Δ beat 40Δ on every name: QQQ
+    13.4 | 13.7 vs 8.5 | 6.9 (beat 5% in shares in 100% of windows); NVDA 14.3 | 11.2 vs 8.6 | 7.7; TSLA
+    11.3 | 12.7 vs 6.2 | 6.4; BTC (modelled, no listed options before 2024) 26.6 | 26.8 vs 12.6 | 11.1. Worst
+    windows −4% (NVDA 2012, a flat stretch), worst max DD −17 to −26%. Pricing the LEAPs at 1.2x the 30-day IV
+    (`iv_scale`, term structure): QQQ 15Δ 9.7% vs 12.2%, MSTR 27.9% vs 30.9%, NVDA 11.7% (DD −29%): the ranking
+    holds. Caveat: 2009–26 was a long bull market for all four; long calls bleed in flat years.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
