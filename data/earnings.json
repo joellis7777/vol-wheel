@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-09",
-  "implied_move": 0.04979529933253165,
+  "fetched": "2026-10-12",
+  "implied_move": 0.049506942228006084,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,7 +10,7 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-09",
+  "fetched": "2026-10-12",
   "implied_move": 0.07032735783657706,
   "next": {
    "date": "2026-11-06",
@@ -20,7 +20,7 @@
   }
  },
  "FNV": {
-  "fetched": "2026-10-09",
+  "fetched": "2026-10-12",
   "implied_move": 0.04363294752350614,
   "next": {
    "date": "2026-11-02",
@@ -30,8 +30,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-09",
-  "implied_move": 0.06746291035800785,
+  "fetched": "2026-10-12",
+  "implied_move": 0.06469075919212285,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -40,8 +40,8 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-09",
-  "implied_move": 0.06354255870771414,
+  "fetched": "2026-10-12",
+  "implied_move": 0.07878977329408841,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -50,7 +50,7 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-10-09",
+  "fetched": "2026-10-12",
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -59,7 +59,7 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-09",
+  "fetched": "2026-10-12",
   "implied_move": 0.0510603855700259,
   "next": {
    "date": "2026-10-29",
@@ -69,8 +69,8 @@
   }
  },
  "NVDA": {
-  "fetched": "2026-10-09",
-  "implied_move": 0.06916764654639589,
+  "fetched": "2026-10-12",
+  "implied_move": 0.06220242694467948,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -89,8 +89,8 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-09",
-  "implied_move": 0.08825374748533622,
+  "fetched": "2026-10-12",
+  "implied_move": 0.08535915373995662,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -99,8 +99,8 @@
   }
  },
  "TSLA": {
-  "fetched": "2026-10-09",
-  "implied_move": 0.059026647337371375,
+  "fetched": "2026-10-12",
+  "implied_move": 0.0634871620225929,
   "next": {
    "date": "2026-10-21",
    "estimated": true,
