@@ -62,6 +62,10 @@ Why these numbers:
 - Rolling for credit as a return source (QQQ 4.7% vs 5.0%; MSTR 23% vs 28%).
 - Put credit spreads in the IRA as the income engine (0.4% / −24% for a 6-ETF book).
 - A tastytrade-style premium book as the main strategy (3.9% / −16%; fine as a bond substitute only).
+- Pyramiding put size as a name falls ("start small, add bigger lower"): no gain in any book tested
+  (QQQ, 6 ETFs, tastytrade book, MSTR); flat-sized puts did better across start dates because small first
+  puts deploy too slowly. In a cash-secured IRA, "keep buying power to add" is the reserve + caps' job.
+  Scaling *total exposure* by drawdown is different and does help on MSTR (mode: target).
 - Selling MSTR puts whenever premium looks rich: the edge is IV above the realized vol that follows
   (IV = realized → about 0%); only sell when IV ≥ 1.15 x realized vol (the scanner's gate).
 - Standing collars or always-on puts (QQQ always collared 6.0%; collars on the BTC core cost ~19%/yr).
@@ -99,6 +103,7 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-10-11 (later): scale-in by trade size tested: no gain; keep flat sizes with caps and the reserve.
 - 2026-10-11 (later): convexity sleeve confirmed beyond MSTR (15Δ > 40Δ on every name tested); MSTR
   premium explained (the edge is IV vs later realized vol, not the premium size).
 - 2026-10-11 (later): core switched to QQQ 35 / GLD 35 / IBIT 20 / XLE 10 with monthly combo exits

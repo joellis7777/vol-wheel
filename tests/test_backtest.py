@@ -465,3 +465,16 @@ def test_run_states_scales_and_trades_on_signal(rules):
     st = B.run_states({"symbols": ["A"], "states": {}}, frames, meta, rates, rules, idx[0], idx[-1])
     assert st["max_dd_pct"] > hold["max_dd_pct"] + 15       # steps out on the way down
     assert st["state_days_pct"]["A"]["half"] > 0 and st["state_days_pct"]["A"]["out"] > 0
+
+
+def test_size_by_dd_sizes_up_as_the_name_falls(rules):
+    closes = np.r_[np.full(30, 100.0), np.linspace(100, 70, 40), np.full(30, 70.0)]
+    f = _frame(closes)
+    v = {"mode": "always", "entry_every_days": 5, "min_ivr": 0, "calls": "none", "entry_pct": 2,
+         "size_by_dd": [[0, 1], [10, 2], [20, 4]]}
+    s = _sim(rules, f, v)
+    puts = sorted(s.opts, key=lambda o: o.opened)
+    assert s._dd_mult("TEST", 0) == 1.0 and s._dd_mult("TEST", 69) == 4.0
+    flat = _sim(rules, f, {**v, "size_by_dd": None})
+    assert s.stats["puts_sold"] == flat.stats["puts_sold"]
+    assert s.result()["avg_deployed_pct"] > flat.result()["avg_deployed_pct"]

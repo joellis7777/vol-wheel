@@ -832,3 +832,24 @@ backtest:
        entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
     - {name: qqq_sleeve40_iv12, label: "QQQ sleeve · 40Δ, LEAP IV 1.2x", symbols: [QQQ], mode: sleeve, entry_delta: 40,
        entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
+    # Start small, scale in (Jordan 2026-10-11, tastytrade's "start small so you can keep adding"): each new put's
+    # size x a multiplier by the name's drawdown from its 1-year high (`size_by_dd`), same total caps as the flat
+    # versions. Controls: the same book at the small starting size, flat.
+    - {name: qqq_puts_small, label: "QQQ puts always + spike calls · small flat 3% puts", symbols: [QQQ], mode: always,
+       entry_pct: 3, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_scalein, label: "QQQ puts always + spike calls · 3% at highs → 15% at −20%", symbols: [QQQ],
+       mode: always, entry_pct: 3, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       size_by_dd: [[0, 1], [5, 2], [10, 3], [20, 5]], caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_scalein_steep, label: "QQQ puts always + spike calls · 2% at highs → 20% at −30%", symbols: [QQQ],
+       mode: always, entry_pct: 2, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       size_by_dd: [[0, 1], [10, 3], [20, 6], [30, 10]], caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: tasty_wheel_scalein, label: "6-ETF wheel · 2% puts at highs → 8% at −20%", symbols: [SPY, QQQ, IWM, GLD, TLT, XLE],
+       mode: always, put_delta: 16, entry_pct: 2, entry_every_days: 5, min_ivr: 0, calls: spike, vix_caps: true,
+       size_by_dd: [[0, 1], [5, 2], [10, 3], [20, 4]], caps: {total: 80, per_name: 25, Index: 50}}
+    - {name: tasty_csp_scalein, label: "tastytrade book (never assigned) · 2% puts at highs → 8% at −20%",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, entry_pct: 2, entry_every_days: 5,
+       min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
+       size_by_dd: [[0, 1], [5, 2], [10, 3], [20, 4]], caps: {total: 80, per_name: 25, Index: 50}}
+    - {name: mstr_puts_scalein, label: "MSTR puts always + spike calls · 3% at highs → 15% at −60%", symbols: [MSTR],
+       mode: always, entry_pct: 3, entry_every_days: 2, min_ivr: 0, calls: spike, start: "2020-09-01",
+       size_by_dd: [[0, 1], [20, 2], [40, 3], [60, 5]], caps: {total: 80, per_name: 80, Crypto: 80}}

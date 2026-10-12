@@ -303,6 +303,14 @@ class Sim:
             self.ffclose[s] = frames[s]["close"].ffill().reindex(self.cal).to_numpy()
             valid = frames[s]["close"].dropna()
             self.elig_from[s] = valid.index[min_bars - 1] if len(valid) >= min_bars else None
+        # scale-in sizing: each new put's size x a multiplier set by the name's drawdown from its N-day high
+        sbd = variant.get("size_by_dd")
+        self.size_dd = {}
+        if sbd:
+            look = int(variant.get("size_dd_lookback", 252))
+            for s in self.syms:
+                c = frames[s]["close"].ffill()
+                self.size_dd[s] = (1 - c / c.rolling(look, min_periods=20).max()).reindex(self.cal).fillna(0).to_numpy() * 100
         self.last_atm: dict = {}
         vix = meta.get("vix")
         self.vix = (vix.reindex(vix.index.union(self.cal)).ffill().reindex(self.cal).to_numpy()
@@ -577,6 +585,18 @@ class Sim:
             self.stats["puts_sold" if cp == "P" else "calls_sold"] += 1
         return o
 
+    def _dd_mult(self, s: str, i: int) -> float:
+        """`size_by_dd` [[drawdown %, multiplier], ...]: start small, size up as the name falls (step function)."""
+        bands = self.v.get("size_by_dd")
+        if not bands or s not in self.size_dd:
+            return 1.0
+        dd = float(self.size_dd[s][i])
+        m = bands[0][1]
+        for lvl, mult in bands:
+            if dd >= lvl:
+                m = mult
+        return float(m)
+
     def _dte(self, regime: str, default: int) -> int:
         d = self.v.get("dte")
         if d is None:
@@ -638,7 +658,7 @@ class Sim:
             wing = strike_for_delta(S, T, atm, self.v["put_wing_delta"] / 100, "P", self._slope(s), r)
             if not 0 < wing < K:
                 return
-        want = self._entry_frac(s) * E * size_mult     # spreads: entry_pct = max loss (width) per trade
+        want = self._entry_frac(s) * E * size_mult * self._dd_mult(s, i)   # spreads: entry_pct = max loss per trade
         by_sym, total = self._exposure(prices)
         room = self._room(s, by_sym, total, E)
         notional = min(want, room)

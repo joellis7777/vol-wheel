@@ -287,6 +287,16 @@ backtest changes the picture: edit it in the same change and add a line to its c
     windows −4% (NVDA 2012, a flat stretch), worst max DD −17 to −26%. Pricing the LEAPs at 1.2x the 30-day IV
     (`iv_scale`, term structure): QQQ 15Δ 9.7% vs 12.2%, MSTR 27.9% vs 30.9%, NVDA 11.7% (DD −29%): the ranking
     holds. Caveat: 2009–26 was a long bull market for all four; long calls bleed in flat years.
+  - Start small, scale in by trade size (2026-10-11, `size_by_dd` [[drawdown % from the 1-year high, size
+    multiplier]], `*_scalein`; same caps as the flat versions). QQQ puts + spike calls, 2007→: flat 10% puts
+    14.8% / −38.7%; flat 3% 15.0% / −34.6%; 3% → 15% at −20% 14.8% / −37.8%; 2% → 20% at −30% 14.9% / −36.3%.
+    Start-every-January medians 3y | 5y: flat 10% 6.6 | 7.8 beats every small-start version (3.7–5.2 | 5.1–6.3):
+    small first puts deploy too slowly in rising markets. 6-ETF wheel 5.8 | 5.7 vs scale-in 5.1 | 5.1; tasty
+    book 3.0 | 2.8 vs 2.7 | 2.6; MSTR 28.7% / −62.6% vs 28.2% / −60.9%. Trade size barely matters here because
+    the caps (VIX-scaled total, per name) bind first and assignment, not size, decides what the wheel ends up
+    owning. tastytrade's "start small" protects margin buying power, which expands in sell-offs; cash-secured
+    collateral doesn't expand, so in an IRA the same job is done by the reserve and the caps. What does change
+    results is total exposure by drawdown (`mode: target`: MSTR deeper schedule −67% → −42% max DD).
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
