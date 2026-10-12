@@ -19,8 +19,8 @@ rule-bound satellites (an MSTR/IBIT long-call sleeve and stock picks) for upside
 
 | Sleeve | Weight | What it holds | Rules | Where |
 |---|---|---|---|---|
-| **Core** | 65% | QQQ 35 / GLD 35 / IBIT 20 / XLE 10 (of the core) | Checked monthly: IBIT out below its 200-day, QQQ / GLD / XLE out only below a *falling* 200-day; exited weight in T-bills until back above; rebalance to weights monthly | IRA (exits would realize gains in taxable) |
-| **Reserve** | 20% | SGOV | Pyramid fund for the core: while a core name is in its uptrend, add to it as it falls (QQQ / GLD / XLE: +7% of the sleeve per 10% drop, to 100% at −30%; IBIT: +10% per 25% drop, to 100% at −70%), by stock or 16Δ cash-secured puts on IVR ≥ 50 down-spikes; trim back to base weight as new highs return. Nothing is added while a name is below a falling 200-day (the exit wins) | IRA |
+| **Core** | 65% | QQQ 35 / GLD 35 / IBIT 20 / XLE 10 (of the core) | Held, no trend exit (Jordan: buy dips, don't sell them); rebalance to weights monthly; trend state shown for information | IRA |
+| **Reserve** | 20% | SGOV | Pyramid fund: each core name has its own range, from its base weight at the high to fully invested near its historical worst drawdown (QQQ −80%, GLD −45%, IBIT −80%, XLE −75%); add at each step by stock or 16Δ cash-secured puts on IVR ≥ 50 down-spikes; trim back to base as new highs return | IRA |
 | **Convexity sleeve** | ≤ 5% at risk | MSTR (or IBIT) long calls | ~15–25Δ, ~15 months out, 1–2% of the account per position, sell half at +100%, rest out at 60Δ or 90 DTE, re-enter as a roll; no entry filter | IRA (or taxable for > 1-year holds) |
 | **Stock picks** | ≤ 10% | 5–10 names | See "Stock picker" below | Taxable (long-term holds) or IRA |
 | **Long-term taxable** | rest of taxable | Buy-and-hold core names | No short calls against LEAPs/shares held for long-term gains (tax straddles) | Taxable |
@@ -32,14 +32,9 @@ Why these numbers:
   at steady gains, 20% balances Jordan's bitcoin conviction (~13% of the whole account) against drawdown.
   These numbers carry bitcoin's 2016–21 hindsight; read them as relative, not as forecasts.
 - XLE 10% cut the 2022 loss (2022 −5% vs −9 to −11%) and is uncorrelated with gold.
-- Exit rule: monthly checks with the "combo" rule (plain 200-day for bitcoin, falling 200-day for the rest).
-  The daily three-state KISS signal lost on the long history: 2007→ start-every-January medians 2–3%/yr
-  lower on QQQ, QQQ/GLD and QQQ/GLD/XLE with no better worst drawdown; with bitcoin it cut ~5 pts of
-  drawdown for ~3–5%/yr. Daily on bitcoin only (hybrid) didn't beat the plain monthly rule either.
-- 20% reserve: the standing decision. Pyramiding it into core dips (only while the trend holds) beat leaving it
-  idle: core 21.8% / −21% vs 21.2% / −18% (2015→), QQQ alone ~+1%/yr. Fully invested with no exits earns more
-  (30.2%) at −31% drawdown and a −23% 2022; pyramiding with no exits sits between (25.5% / −27%). These all
-  share a Sharpe of ~1.3–1.4, so this is Jordan's risk dial: more conviction = less reserve / no exits.
+- Exit rule: none on the core (Jordan's call, 2026-10-11). Tested cost vs the trend-exit core (2015→): ~25% /
+  −26% max DD and ~−19% in 2022 vs ~22% / −21% and −6%; in a 2000-style bear (not in our data) the gap would
+  be larger, which is why the pyramid ranges go deep (QQQ fully invested only at −80%).
 - Convexity sleeve: 15Δ with exits beat 40Δ (with or without Soliel's trend filter) on MSTR, QQQ, NVDA,
   TSLA and modelled BTC, in start-every-January windows too, and still with LEAPs priced 20% richer. It is
   a bull-market result (2009–26) and bleeds in flat years, so keep it small: 1–2% of the account per
@@ -47,8 +42,9 @@ Why these numbers:
 
 ## What to implement
 
-1. Core trend states on the dashboard: each core name in / out (bitcoin vs its 200-day, the rest vs a
-   falling 200-day), target vs actual weight, and an alert at each monthly check when something changes. This replaces "spike = sell put"
+1. Core pyramid on the dashboard: each core name's drawdown from its high, target invested % from its range,
+   the price of the next add step, and alerts when a step is crossed (add) or new highs return (trim);
+   trend state shown for information, plus a bitcoin daily warning. This replaces "spike = sell put"
    as the main signal.
 2. Put entries on core names: the existing SELL_PUT alert, but only when the name is under its target
    weight, at 16Δ, using reserve cash. 16Δ beat 30Δ on drawdown; IVR ≥ 50 helps a little.
@@ -116,6 +112,7 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-10-11 (later): no trend exit on the core (Jordan); per-ticker pyramid ranges to each asset's worst drawdown.
 - 2026-10-11 (later): reserve becomes a pyramid fund for core dips in uptrends (beat an idle reserve).
 - 2026-10-11 (later): draft picks watchlist from Jordi Visser; picker entry question (momentum vs rubble) added.
 - 2026-10-11 (later): scale-in by trade size tested: no gain; keep flat sizes with caps and the reserve.

@@ -59,6 +59,12 @@ changes, update this list in the same change.
   staggered expiries, ex-dividend early assignment, LEAP 120-DTE exit) stay manual until private
   position tracking exists. Call-strike floors (net cost; LEAP strike + debit) and the High-regime
   LEAP exit ("close half or sell calls") are shown as text in the suggestion.
+- **Core: buy dips, no trend exit** (Jordan, 2026-10-11): "I want to be buying dips, not selling dips." The
+  core holds QQQ / GLD / IBIT / XLE 35/35/20/10 with no 200-day exit; the reserve pyramids into each name by
+  its own drawdown range, fully invested only near that asset's historical worst (QQQ −80% for 2000-02,
+  GLD −45%, BTC −80%, XLE −75%), trimmed back as new highs return. Accepted cost vs the trend-exit core
+  (2015→): ~25% / −26% max DD and a ~−19% 2022 vs ~22% / −21% and −6%. Trend states stay on the dashboard as
+  information. Pyramiding applies to the core assets only, not single-stock picks.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 - **The rulebook is a starting hypothesis, not a constraint** (Jordan, 2026-10-11): the goal is to
@@ -318,6 +324,11 @@ backtest changes the picture: edit it in the same change and add a line to its c
     reserve into dips beats leaving it idle by ~0.5–1%/yr at ~3–6 pts more drawdown; it doesn't beat being
     fully invested or the trend exit's drawdown control. Same Sharpe band (1.30–1.38): a risk dial, not a free
     lunch. Different from pyramiding put size inside a capped wheel (no gain, see above).
+  - Per-ticker pyramid ranges calibrated to each asset's worst drawdown (2026-10-11, `*_pyr_cal*`, no exits).
+    Worst drawdowns in our data (price only): QQQ −54% (2008; −83% in 2000-02, before the data), GLD −46%, BTC
+    −83%, XLE −82%, SPY −56%, MSTR −89%. Core 35/35/20/10 from 2015-10: QQQ full at −55% 25.0% / −25.7%, at −80%
+    24.8% / −25.9%, vs the fast −30% schedule 25.5% / −26.7%; start-every-January medians within ~1 pt. The
+    deep ranges cost little here and keep buying power for a 2000-style crash the data doesn't contain.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
