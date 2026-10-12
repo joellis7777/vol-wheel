@@ -233,6 +233,8 @@ def fetch_history(sym: str, cfg: dict) -> tuple[pd.DataFrame, str, list[str]]:
     """Daily history, CBOE first then Yahoo. Returns (df, source, notes)."""
     notes: list[str] = []
     df = None
+    if "-" in sym:                       # crypto pairs (BTC-USD) aren't on CBOE; go straight to Yahoo
+        return fetch_history_yf(sym), "yahoo", notes
     try:
         url = cfg["cboe_history_url"].format(sym=sym)
         df = parse_history(get_json(url, cfg.get("timeout_s", 30), cfg.get("retries", 3)))

@@ -338,6 +338,88 @@ def evaluate(result: dict, state: dict, today: str, rules: dict) -> tuple[list[d
     return out, state
 
 
+# ---------------------------------------------------------------- portfolio layer
+
+PORT_TRIGGERS = ("CORE_ADD", "CORE_TRIM", "PICK_ENTRY", "PICK_EXIT", "BTC_WARNING")
+
+
+def _pmsg(rules: dict, trig: str, title: str, body: str, priority: str, papply: tuple) -> dict:
+    ac = rules["alerts"]
+    return {"title": title, "body": body, "priority": priority, "tags": [ac.get("tags", {}).get(trig, "bell")],
+            "click": ac.get("dashboard_url", ""), "symbol": papply[1], "trigger": trig, "papply": papply}
+
+
+def evaluate_portfolio(result: dict, state: dict, today: str, rules: dict) -> list[dict]:
+    """Alerts for the portfolio layer (core pyramid steps, pick status changes, bitcoin trend state).
+    The first sighting of a name is recorded silently (state["portfolio"]), so only changes alert.
+    Returns messages carrying `papply` = (section, key, value), written to state after a send."""
+    port = result.get("portfolio") or {}
+    allowed = rules["alerts"].get("triggers", [])
+    ps = state.setdefault("portfolio", {})
+    core_s, pick_s = ps.setdefault("core", {}), ps.setdefault("picks", {})
+    out: list[dict] = []
+    for r in port.get("core") or []:
+        if r.get("error"):
+            continue
+        sym, step = r["symbol"], r["step"]
+        rec = core_s.get(sym)
+        if rec is None:
+            core_s[sym] = {"step": step, "date": today}
+            continue
+        nxt = r.get("next")
+        nxt_txt = (f"Next add at {_money(nxt['price'])} (−{nxt['dd_pct']:.0f}%) → {nxt['target_pct']:.0f}% of the sleeve."
+                   if nxt else "Fully invested: the deepest step is reached.")
+        where = (f"{sym} {_money(r['price'])} is {r['dd_pct']:.0f}% below its high ({_money(r['high'])}, "
+                 f"{r['high_date']}" + (f", measured on {r['ref_symbol']}" if r["ref_symbol"] != sym else "") + ").")
+        tgt = (f"Target: {r['target_pct']:.0f}% of the {sym} sleeve = {r['account_pct']:.1f}% of the account "
+               f"(sleeve {r['sleeve_pct']:.1f}%).")
+        if step > rec["step"] and "CORE_ADD" in allowed:
+            out.append(_pmsg(rules, "CORE_ADD", f"ADD · {sym} · step {step}/{r['steps']}",
+                             "\n".join([where, tgt, "Add with shares, or a 16Δ cash-secured put on a down-spike "
+                                         "(IVR ≥ 50). No trend exit: keep holding.", nxt_txt]),
+                             "high", ("core", sym, {"step": step, "date": today})))
+        elif step < rec["step"] and "CORE_TRIM" in allowed:
+            out.append(_pmsg(rules, "CORE_TRIM", f"TRIM · {sym} · back to step {step}/{r['steps']}",
+                             "\n".join([where, tgt, "Recovered above a pyramid step: trim the sleeve back toward "
+                                         "this target (or sell a covered call on the excess on an up-spike).", nxt_txt]),
+                             "default", ("core", sym, {"step": step, "date": today})))
+        elif step != rec["step"]:
+            core_s[sym] = {"step": step, "date": today}
+    for r in port.get("picks") or []:
+        sym, stt = r["symbol"], r.get("status")
+        if stt in (None, "NO_DATA"):
+            continue
+        prev = pick_s.get(sym)
+        if prev is None:
+            pick_s[sym] = stt
+            continue
+        if stt == prev:
+            continue
+        head = f"{sym} {_money(r.get('price'))} · {r.get('theme') or ''} · source: {r.get('source') or '?'}"
+        if stt == "ENTRY_OK" and "PICK_ENTRY" in allowed:
+            pr = port.get("picks_rules") or {}
+            out.append(_pmsg(rules, "PICK_ENTRY", f"PICK ENTRY · {sym}",
+                             "\n".join([head, f"Eligible: {r.get('why')}.", f"Thesis: {r.get('thesis') or '–'}",
+                                         f"Size {pr.get('per_name_pct', 1.5)}% of the account; enter on a pullback "
+                                         f"(down-spike put or shares). Stop if held: {_money(r.get('stop_price'))}."]),
+                             "default", ("picks", sym, stt)))
+        elif stt == "EXIT_IF_HELD" and "PICK_EXIT" in allowed:
+            out.append(_pmsg(rules, "PICK_EXIT", f"PICK EXIT · {sym}",
+                             "\n".join([head, f"Exit if held: {r.get('why')}."]), "high", ("picks", sym, stt)))
+        else:
+            pick_s[sym] = stt
+    w = port.get("btc_warning")
+    if w and w.get("state") is not None:
+        prev = ps.get("btc")
+        if prev is None:
+            ps["btc"] = w["state"]
+        elif w["state"] != prev and "BTC_WARNING" in allowed:
+            out.append(_pmsg(rules, "BTC_WARNING", f"BTC · {w['label']}",
+                             f"Bitcoin {_money(w['price'])} vs its 200-day {_money(w['sma200'])} (since {w['since']}). "
+                             + w.get("note", ""), "low", ("btc", None, w["state"])))
+    return out
+
+
 def digest(result: dict, state: dict, today: str, rules: dict) -> dict | None:
     """Low-priority post-close list of WATCH names (IVR ≥ 50, no spike), once per day."""
     if not rules["alerts"].get("daily_digest") or state.get("digest_date") == today:
@@ -390,6 +472,7 @@ def process(result: dict, mode: str, rules: dict, state_path: Path | None = None
     today = result.get("scan_date") or date.today().isoformat()
     state = load_state(state_path)
     msgs, state = evaluate(result, state, today, rules)
+    msgs += evaluate_portfolio(result, state, today, rules)
     if mode == "close":
         dg = digest(result, state, today, rules)
         if dg:
@@ -401,6 +484,12 @@ def process(result: dict, mode: str, rules: dict, state_path: Path | None = None
             if m.get("apply"):
                 sym, trig, rec = m["apply"]
                 state["tickers"][sym]["alerts"][trig] = rec
+            if m.get("papply"):
+                sec, key, val = m["papply"]
+                if sec == "btc":
+                    state["portfolio"]["btc"] = val
+                else:
+                    state["portfolio"][sec][key] = val
             if m["trigger"] == "DIGEST":
                 state["digest_date"] = today
         else:

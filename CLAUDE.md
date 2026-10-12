@@ -368,7 +368,9 @@ vol_wheel/
   schedule.py              resolve_mode(): post-close / intraday / skip from the cron string + ET clock
   earnings.py              earnings dates (Nasdaq → yfinance, cached), implied move, ex-earnings IV,
                            earnings-play setup, post-earnings gap
-  alerts.py                ntfy messages, dedup against data/alert_state.json, digest, test alert
+  alerts.py                ntfy messages, dedup against data/alert_state.json, digest, test alert,
+                           portfolio alerts (CORE_ADD / CORE_TRIM / PICK_ENTRY / PICK_EXIT / BTC_WARNING)
+  portfolio.py             portfolio layer: core pyramid targets/steps, picks watchlist status, BTC warning
   backtest.py              Black-Scholes wheel simulation of the rulebook on price + vol-index
                            history: variants from rules.yaml `backtest:`; `python -m vol_wheel.backtest`
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
@@ -441,6 +443,20 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
 - Body: price/change, regime, IVR (+source), top-scored strike with expiry, delta, mid, annualized,
   the value reason, and CSP eligibility at `alerts.sizing_tier` ($500k).
 - `alerts.daily_digest`: one low-priority post-close message listing WATCH names, once per day.
+
+## Portfolio layer (`portfolio.py`, config `portfolio:` and `picks:`)
+
+- Runs after the option scan; `latest.json.portfolio` = {core[], reserve_pct, btc_warning, picks[], picks_rules}.
+  History via `data.fetch_history` (crypto pairs like BTC-USD go straight to Yahoo). Failures become notes.
+- Core row: drawdown from the all-time high (on `history_symbol` when set: IBIT uses BTC-USD), target %
+  of the sleeve from `alloc`, step index, next add step (price converted back to the ETF), trim level,
+  trend state (information only: `trend_exit: false`), sleeve and account %.
+- Picks: trend state, RS score (mean of 6/12-month return ratio vs `rs_benchmark`), rank, status ENTRY_OK
+  (state 1 + top `rs_top_frac`) / WAIT / EXIT_IF_HELD (state 0 or `trailing_stop_pct` below the 1-year high).
+- Alerts (`alerts.evaluate_portfolio`, state in `alert_state.json.portfolio`): first sighting recorded
+  silently; CORE_ADD when the step index rises, CORE_TRIM when it falls, PICK_ENTRY / PICK_EXIT on status
+  changes, BTC_WARNING (low priority) on bitcoin trend-state changes.
+- Dashboard: "Portfolio" panel above the cards ($ from the account selector).
 
 ## Coverage check
 

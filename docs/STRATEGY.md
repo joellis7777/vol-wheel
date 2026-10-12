@@ -42,6 +42,9 @@ Why these numbers:
 
 ## What to implement
 
+Built 2026-10-11: items 1 (core pyramid panel + ADD/TRIM alerts), 4's alerts pending, 5 (picks watchlist status + ENTRY/EXIT alerts) and the bitcoin warning.
+
+
 1. Core pyramid on the dashboard: each core name's drawdown from its high, target invested % from its range,
    the price of the next add step, and alerts when a step is crossed (add) or new highs return (trim);
    trend state shown for information, plus a bitcoin daily warning. This replaces "spike = sell put"

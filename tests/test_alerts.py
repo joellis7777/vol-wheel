@@ -206,3 +206,36 @@ def test_alert_leads_with_suggested_trade(rules):
     assert lines[1] == ("⚠ Only if you hold 100 NVDA shares (or a LEAP on NVDA) per contract; cover at most 50% "
                         "of them. Strike must be above your net cost per share (LEAPs: above the LEAP strike + what you paid)")
     assert lines[2].startswith("ℹ IV rank is a realized-vol stand-in")  # ticker() uses the proxy source
+
+
+def _port(step=0, pick="WAIT", btc=1.0):
+    core = {"symbol": "QQQ", "weight": 35, "price": 600.0, "ref_symbol": "QQQ", "high": 760.0,
+            "high_date": "2026-09-01", "dd_pct": 21.0, "target_pct": 85.2, "base_pct": 80, "sleeve_pct": 29.75,
+            "account_pct": 25.3, "step": step, "steps": 4,
+            "next": {"dd_pct": 40, "target_pct": 90, "price": 456.0}}
+    picks = [{"symbol": "MU", "status": pick, "price": 200.0, "theme": "AI memory", "source": "Jordi Visser",
+              "why": "rising 200-day, strength rank 1/12", "thesis": "HBM", "stop_price": 150.0}]
+    return {"core": [core], "picks": picks, "picks_rules": {"per_name_pct": 1.5},
+            "btc_warning": {"state": btc, "label": "trend weakening", "price": 1, "sma200": 1, "since": "2026-10-01",
+                            "note": "Readiness only."}}
+
+
+def test_portfolio_alerts_first_sight_silent_then_changes(rules, tmp_path):
+    sent = []
+    sp = tmp_path / "s.json"
+
+    def run(port, day):
+        res = {**result(day=day), "portfolio": port}
+        return alerts.process(res, "close", rules, state_path=sp, topic="t", sender=lambda m, *a: sent.append(m) or True)
+    run(_port(), "2026-10-05")
+    assert [m["trigger"] for m in sent if m["trigger"] in alerts.PORT_TRIGGERS] == []
+    run(_port(step=1, pick="ENTRY_OK", btc=0.5), "2026-10-06")
+    trig = [m["trigger"] for m in sent]
+    assert "CORE_ADD" in trig and "PICK_ENTRY" in trig and "BTC_WARNING" in trig
+    add = next(m for m in sent if m["trigger"] == "CORE_ADD")
+    assert "ADD · QQQ" in add["title"] and "456.00" in add["body"]
+    n = len(sent)
+    run(_port(step=1, pick="ENTRY_OK", btc=0.5), "2026-10-07")         # no change: nothing new
+    assert len(sent) == n
+    run(_port(step=0, pick="EXIT_IF_HELD", btc=0.5), "2026-10-08")
+    assert {m["trigger"] for m in sent[n:]} == {"CORE_TRIM", "PICK_EXIT"}
