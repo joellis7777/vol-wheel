@@ -4,6 +4,26 @@
 
 bull_mode: true            # manual switch; LEAP buys also need SPY > SMA200
 
+# Stock-picks watchlist (DRAFT 2026-10-11, docs/STRATEGY.md "Stock picker"; not yet read by the scanner).
+# Ideas come from people and theses; the rules decide entries and exits. Symbols and theses only, never
+# positions or sizes. Entry needs a rising 200-day (state IN) plus top-third 6/12-month strength vs QQQ.
+picks:
+  rules: {per_name_pct: 1.5, max_names: 10, sleeve_cap_pct: 10, trailing_stop_pct: 28, half_off_gain_pct: 100,
+          rs_months: [6, 12], rs_top_frac: 0.3333}
+  watchlist:
+    - {symbol: MU,    theme: AI memory,       source: Jordi Visser, added: 2026-10-11, thesis: "HBM/compute scarcity; owned by Visser, 'probably doubles'"}
+    - {symbol: MRVL,  theme: AI networking,   source: Jordi Visser, added: 2026-10-11, thesis: "custom silicon / optics; Visser's largest holding"}
+    - {symbol: NVDA,  theme: AI compute,      source: Jordi Visser, added: 2026-10-11, thesis: "compute scarcity leader; multiple-compression risk"}
+    - {symbol: LITE,  theme: AI optics,       source: Jordi Visser, added: 2026-10-11, thesis: "optical interconnect bottleneck"}
+    - {symbol: PLTR,  theme: AI software,     source: Jordi Visser, added: 2026-10-11, thesis: "agentic AI deployment; owned by Visser"}
+    - {symbol: GOOGL, theme: AI platform,     source: Jordi Visser, added: 2026-10-11, thesis: "compute backlog; already in the scanner universe as GOOG"}
+    - {symbol: LLY,   theme: GLP-1,           source: Jordi Visser, added: 2026-10-11, thesis: "owned by Visser; non-AI diversifier"}
+    - {symbol: HOOD,  theme: tokenization,    source: Jordi Visser, added: 2026-10-11, thesis: "24/7 tokenized trading; in the scanner universe"}
+    - {symbol: TSLA,  theme: humanoids,       source: Jordi Visser, added: 2026-10-11, thesis: "robotics optionality; in the scanner universe"}
+    - {symbol: COIN,  theme: crypto rails,    source: Jordi Visser, added: 2026-10-11, thesis: "crypto volume cycle"}
+    - {symbol: ETHA,  theme: crypto,          source: Jordi Visser, added: 2026-10-11, thesis: "Visser prefers ETH beta over BTC for upside"}
+    - {symbol: SLV,   theme: debasement,      source: Jordi Visser, added: 2026-10-11, thesis: "silver among Visser's largest positions; overlaps GLD (corr 0.77)"}
+
 universe:
   # bucket: {cap: % of account, core: [...], opportunistic: [...]}
   Index:      {cap: 25, core: [QQQ, SPY], opportunistic: []}

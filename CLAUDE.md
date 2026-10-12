@@ -297,6 +297,15 @@ backtest changes the picture: edit it in the same change and add a line to its c
     owning. tastytrade's "start small" protects margin buying power, which expands in sell-offs; cash-secured
     collateral doesn't expand, so in an IRA the same job is done by the reserve and the caps. What does change
     results is total exposure by drawdown (`mode: target`: MSTR deeper schedule −67% → −42% max DD).
+    tastylive's double-down study (SPY 16Δ strangles 2021–26) agrees: doubling after each loss ended the
+    period about flat, and a loss after doubling was at least twice the first loss ~90% of the time.
+  - Bitcoin's 2025 top, our monthly rule vs a KISS-style daily signal (2026-10-11): peak $125k on 2025-10-06;
+    monthly 200-day rule exited 2025-12-01 at $86k, re-entered 2026-09-01 at $77k (low ~$60k in July 2026);
+    daily 3-state went half on 2025-11-03 ($107k), out 2025-11-26 ($91k), half 2026-08-19 ($69k), full
+    2026-09-03 ($81k), but flipped 4 times in Oct 2025. Daily sold ~14% higher this time; across start
+    dates the monthly rule still wins (whipsaws). 42 Macro sold their bitcoin the same way (two steps on
+    their trend signal, no calendar input). Keep monthly; show bitcoin's daily state on the dashboard as a
+    readiness warning only.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates

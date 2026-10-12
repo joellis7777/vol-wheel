@@ -66,8 +66,12 @@ Why these numbers:
   (QQQ, 6 ETFs, tastytrade book, MSTR); flat-sized puts did better across start dates because small first
   puts deploy too slowly. In a cash-secured IRA, "keep buying power to add" is the reserve + caps' job.
   Scaling *total exposure* by drawdown is different and does help on MSTR (mode: target).
+- Bigger trades after a loss: tastylive's 2021–26 SPY study found doubling size after each losing trade
+  wiped out the period's gains; losses cluster with volatility, so size-ups land in the worst stretches.
 - Selling MSTR puts whenever premium looks rich: the edge is IV above the realized vol that follows
   (IV = realized → about 0%); only sell when IV ≥ 1.15 x realized vol (the scanner's gate).
+  On indexes IV sits above realized most days (SPY ~84% of days 2016–26, tastylive), so the gate rarely
+  binds there; on single names it is the main safeguard (MSTR read 0.78x in Oct 2026).
 - Standing collars or always-on puts (QQQ always collared 6.0%; collars on the BTC core cost ~19%/yr).
 - The 16Δ / IVR ≥ 50 wheel as a standalone strategy (median 2.5–2.8%: it only works if a crash assigns
   it early).
@@ -89,6 +93,13 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 - Exits: state goes to "out" (below a falling 200-day) → sell; or a 25–30% trailing stop from the high;
   sell half at +100% and let the rest run with the trailing stop; thesis review each quarter.
 - Trims: up-spike calls on at most half the shares of winners (momentum-name rule).
+- Draft watchlist (rules.yaml `picks:`, 2026-10-11): 12 names from Jordi Visser's last 12 episodes. On
+  2026-10-08 data the ones passing entry (rising 200-day + strong 6/12-month RS vs QQQ) were MU, MRVL, LITE,
+  with PLTR, NVDA, GOOGL, LLY above their 200-day but middling on strength; HOOD, COIN, ETHA, SLV, TSLA
+  failed (half or out). Visser himself says he isn't a stock picker and recommends baskets: a thematic
+  ETF (e.g. a semiconductor fund) is the low-maintenance alternative for part of this sleeve.
+- Open design question to test: top-third relative strength (momentum) vs Visser's "comb the rubble"
+  (strongest trend, deepest pullback) for entries.
 - Testing: pick selection can't be backtested without hindsight; the exit and sizing rules can be tested
   on a list (with that caveat), and the live sleeve gets a private trade journal from day one.
 
@@ -99,10 +110,12 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
    the scanner's chains.
 3. Reserve put entries: core + 16Δ put entries on dips vs buying at the next rebalance.
 4. Stock-picker exit rules on a list of momentum names (with a hindsight caveat).
-5. Jordi Visser ingest (in progress): his themes for the picks watchlist and any exit discipline.
+5. Done 2026-10-11: Jordi Visser ingest → draft watchlist. Next: scanner support for `picks:` (states,
+   RS rank, trailing stop, half-off alerts) and a momentum-vs-rubble entry test on a name list.
 
 ## Change log
 
+- 2026-10-11 (later): draft picks watchlist from Jordi Visser; picker entry question (momentum vs rubble) added.
 - 2026-10-11 (later): scale-in by trade size tested: no gain; keep flat sizes with caps and the reserve.
 - 2026-10-11 (later): convexity sleeve confirmed beyond MSTR (15Δ > 40Δ on every name tested); MSTR
   premium explained (the edge is IV vs later realized vol, not the premium size).
