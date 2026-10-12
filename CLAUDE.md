@@ -61,6 +61,19 @@ changes, update this list in the same change.
   LEAP exit ("close half or sell calls") are shown as text in the suggestion.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
+- **The rulebook is a starting hypothesis, not a constraint** (Jordan, 2026-10-11): the goal is to
+  find the best strategy by testing every idea (ours, tastytrade's, Soliel's, others), and the
+  result may differ from the original rulebook. Flag conflicts with the decisions above, but don't
+  treat drift away from the wheel as a problem in itself. Sources: tastytrade (Jordan rates it
+  highly; plus Tom Sosnoff's own post-tastylive YouTube channel "More Tom Sosnoff", added 2026-10-11) and Soliel, who applies the same ideas to high-vol names with conviction in MSTR, ASST and
+  other bitcoin plays, plus some non-bitcoin names like TSLA. Research notes live in the private
+  `~/vol-wheel-research/` (notes/, brain.md), never in this repo.
+
+## Current recommendation (keep current)
+
+`docs/STRATEGY.md` is Claude's living recommendation for the whole build (sleeves, weights, what to
+implement, what not to). Jordan asked for it on 2026-10-11 and wants it updated whenever research or a
+backtest changes the picture: edit it in the same change and add a line to its change log.
 
 ## Jordan's thesis and goals (views, not decisions — keep current)
 
@@ -177,6 +190,88 @@ changes, update this list in the same change.
     P&L); only in the High regime 12.2% / −54% (didn't cover 2008/2022); 10% puts only in High 14.7%
     / −54% (−0.8%/yr, 2020 +44% vs +32%, nothing in slow bears); on the BTC core collars cost
     ~19%/yr (2017 +24% vs +224%). Fast crashes are what the monthly trend exit misses and puts catch.
+  - Combined exit plan (2026-10-11, `eq_qgb_combo*`: plain 200-day exit for BTC, exit below a falling
+    200-day for QQQ and GLD, optional 10% QQQ puts in High). Equal QQQ/GLD/BTC from 2015-10: combo 34.7%
+    / −32% (2022 −11%, Sharpe 1.36) vs plain exit on all 33.5% / −29% (2022 −9%, 1.34) vs falling on all
+    34.9% / −31% (2022 −18%). From 2020-09: 27.9% / −25% vs 26.8% / −23% vs 27.4% / −31%. With MSTR for
+    BTC: 41.4% / −40% vs 40.1% / −38%. 30/30/30 + XLE 10 (XLE falling too): 32.4% / −30% (2022 −6%) vs
+    31.1% / −27% (2022 −3%). So the combo buys ~1%/yr for ~2 pts of extra drawdown: a trade-off, not an
+    improvement. QQQ-only 10% puts in High cost only 0.2–0.3%/yr here (on 39–47% of days), lift 2020
+    (+80% vs +76%) and Sharpe (1.39), max DD unchanged (−32%). Spike-only calls not modelled in hold
+    mode (earlier: ~+0.1%/yr on a LEAP).
+  - tastylive management/entry studies on the best QQQ wheel (2026-10-11, `qqq_puts_hold_*`; base =
+    always-on puts + up-spike calls 14.8% / −39%, 2021→ 13.1% / −17%). Close ITM puts at 21 DTE instead of
+    taking assignment (tastytrade's way): 4.1% / −17% (2008 +0.1%, 2022 −1.2%; 2021→ 6.6% / −6.5%), i.e.
+    a T-bill-plus income stream: almost all of the wheel's return comes from the assigned shares (84% of
+    the account), not the premium. Profit target 25% ≈ 50% (14.8%); 75% 13.7%, none 13.5%: supports
+    closing at 50%. Fixed 16Δ puts: 14.6% / −33% (2008 +14%; 2021→ 10.3% / −10%, Sharpe 0.91) vs 30Δ
+    14.8% / −38%: 16Δ is the better risk trade. IVR ≥ 50 to sell: 15.0% / −38% (2021→ 14.0%, 2022 −5%
+    vs −14%); IVR ≥ 30 ≈ none. tastylive's 25→50% buying power by VIX: 12.6% / −31%. Knobs added:
+    per-variant `take_profit_pct`, `decide_itm: close`.
+    Combined: 16Δ + IVR ≥ 50 = 15.4% / −33% from 2007 (2008 +19%; ≈ QQQ hold's CAGR at −33% vs −54% DD)
+    but 4.6% from 2021 (9% deployed, never assigned, 91% cash). **The hold-to-assignment wheel is
+    path-dependent**: its return is set by whether an early drawdown puts it into shares, which it then
+    keeps (calls only on up-spikes). Judge wheel variants on several start dates, not one window.
+    16Δ + 25% target: 14.8% / −35% (2021→ 10.0% / −10%).
+  - One side vs both (2026-10-11, `calls: none` = puts only, assigned shares never written against):
+    QQQ puts only 14.7% / −39% vs + up-spike calls 14.8% / −39% (16Δ IVR ≥ 50: 15.3% / −35% vs 15.4% / −33%):
+    on an index the spike calls barely matter (few up-spikes). MSTR puts only 25.2% / −81% vs + up-spike
+    calls 28.7% / −63%: on a high-vol name the spike calls add ~3.5%/yr and cut the drawdown 18 pts.
+    Keep spike-only calls for volatile names; on QQQ they're optional.
+  - MSTR long-call convexity sleeve (2026-10-11, `mode: sleeve`, `mstr_sleeve*`): each position costs 5% of
+    equity (rest T-bills), ~456 DTE, half off at +100%, rest out at 60Δ or 90 DTE, re-enter = roll.
+    Account CAGR / max DD from 2020-09 | from 2021: 5% in shares 7.5% / −9% | 6.7%; Soliel's 2026 rule
+    (40Δ, above 200-day + higher high/low, not after a 30% pump) 5.0% / −8% | 3.7%: worse than shares;
+    40Δ no filter 13.1% / −10% | 9.1%; 25Δ no filter 17.0% / −13% | 10.6%; **15Δ no filter 30.9% / −14%
+    | 16.6%** (10 positions, 8 winners, payoff 3.1×, best 13.9×); 15Δ above the 200-day 29.8% / −14% |
+    15.6%; 70Δ 7.1% / −29%; call debit spreads 40/28 and 40/15 1–3% (the short leg caps the runs that pay).
+    Jordan's unmanaged version (15Δ, no exits but 90 DTE) 48.5% / −73% | 24.5% / −66%: one or two trades
+    (84×, 58×) grow until they are the account; that's a concentrated bet, not a sleeve. Robust across
+    IV mults (15Δ 28.5–31.0%) and skew (flat 17.7%, upside 14.1% with the stricter filter). So: deep OTM
+    beats 40Δ here, and the entry filter (esp. the "not after a pump" rule) is what costs; the exits
+    (half at +100%, 60Δ, 90 DTE) are what keep it a sleeve. Caveats: ~8–10 positions on one path whose
+    gains come from the 2020–21 and 2024 bitcoin runs; modelled IV (HV-based) and BS prices, while real
+    MSTR spreads on far-OTM LEAPs can be ~10–50% of the debit (`slippage_pct`, default 5% per leg).
+  - Fair tastytrade book in an IRA (2026-10-11, `tasty_*`; SPY/QQQ/IWM/GLD/TLT/XLE, 16Δ puts ~45 DTE, a new
+    put per name every 5 sessions, close at 50% or 21 DTE, never assigned, no calls). 2007→: cash-secured
+    3.9% / −16% (2021→ 6.6% / −2.4%); 16/5Δ put spreads at 1.5% max loss each, 25–50% total risk by VIX
+    0.4% / −24% (the wing costs more than it saves under skew; tastylive's own narrow-spread study agrees);
+    IVR ≥ 30 filter lowers both. Same 6 ETFs as our wheel (16Δ held to assignment, up-spike calls) 10.4% /
+    −25% vs SPY hold 8.9% / −57%. Blends (`mode: blend`, monthly rebalance): Tom's 30% book / 30% SPY / 40%
+    T-bills 4.7% / −20% (CSP) or 3.6% / −24% (spreads); 60% QQQ/GLD falling-exit core + 30% CSP book + 10%
+    T-bills 8.3% / −16%; 60% core + 40% 6-ETF wheel 11.2% / −21%; BTC core 60% + 30% CSP + 10% T-bills
+    22.2% / −21% (core alone 34.7% / −32%). In cash-secured form the premium book is a T-bill-plus-1–3%
+    sleeve: it lowers drawdowns, it doesn't compound.
+  - Start-date robustness (2026-10-11, `backtest.rolling`, every January 2007→, vs QQQ hold). Median CAGR
+    3y | 5y windows (worst): QQQ falling-200 exit 14.1% | 14.7% (4.7 | 8.4), max DD −29%, the most robust;
+    QQQ/GLD falling exit 9.8 | 10.8; QQQ wheel puts-always + spike calls 6.6 | 7.8 (3.8 | 5.5); **16Δ IVR ≥ 50
+    wheel 2.5 | 2.8**: its 15.4% from 2007 was the 2008 assignment, not the rule; tasty CSP book 3.0 | 2.8
+    (0.6 | 1.7, DD −16%); spreads 0.1 | −0.2; 6-ETF wheel 5.8 | 5.7; blends core + CSP 7.8 | 7.4, core + wheel
+    8.3 | 9.5 (DD −19%); Tom's split 4.5 | 4.7; SPY hold 9.4 | 12.5 (worst −8.2 | −2.4, DD −57%). QQQ hold won
+    most windows (2009–26 bull): beat rates 0–33% for everything but the BTC core (88–100% of 6–8 windows
+    from 2016, hindsight start). Caveat: option prices are modelled (index IV = vol index × 0.9, BS, skew);
+    real fills could make the premium book somewhat better or worse, not a different order of magnitude.
+  - 42 Macro KISS (2026-10-11, `kiss*`, `run_states`; spec and sources in the private research folder): 60%
+    stocks / 30% gold / 10% bitcoin, each scaled daily by its own trend state (1 / 0.5 / 0; our 200-day proxy
+    for their unpublished signal), next-close trades, rest in T-bills. From 2018: KISS 11.9% / −18% (2020 +11%,
+    2022 −13%) vs the same mix without the signal 16.6% / −26% vs 60/40 7.2% / −22%. 42 Macro claims ~14–16%
+    CAGR (their "20–26%" is an arithmetic mean) with −11 to −12% max DD; the proxy lands near, not on, that.
+    The half state is the useful part: same daily signal but all-or-nothing 11.4% / −26%. Regime-vote proxy
+    (SPY/IWM/EFA/EEM/HYG) 11.5% / −16% (2022 −9%). QQQ instead of SPY 17.2% / −21%. Our assets (equal QQQ /
+    GLD / BTC) with the KISS signal: 33.0% / −27% from 2015-10 vs our monthly combo exit 34.7% / −32%; from
+    2018 19.7% / −26% vs 22.8% / −30% (daily checks catch fast crashes but cost the V-rebounds: 2020 +59% vs
+    +76%). 2007→ without bitcoin: SPY 60 / GLD 30 / T-bills 10 with the signal 6.7% / −16% vs held 8.9% / −35%.
+    Same lesson as before: the weights (bitcoin share, QQQ vs SPY) set the return; the signal sets the
+    drawdown, and a 3-state daily signal buys ~5 pts of drawdown for ~1–3%/yr.
+  - Core design, start-every-January (2026-10-11, `core_*`, `qqq_states`, `eq_qg_states`, `qg_x_*`). 2007→ (no
+    bitcoin; 17 3y / 15 5y windows), monthly falling-200 exit vs daily 3-state, median CAGR: QQQ 14.1 | 14.7
+    vs 11.5 | 12.2; QQQ/GLD 9.8 | 10.8 vs 6.8 | 7.8; QQQ/GLD/XLE 45/45/10 9.6 | 9.9 vs 6.7 | 8.4, worst DD
+    about equal (−29 vs −25, −21 vs −22, −20 vs −21): the daily signal costs 2–3%/yr for nothing on the long
+    history. With bitcoin (2016→, 8 | 6 windows, QQQ/GLD/BTC/XLE 30/30/30/10): held 34.0 | 34.7 / −38%;
+    monthly combo 30.9 | 31.9 / −29.5%; daily 3-state 27.5 | 26.0 / −24.7%; BTC daily + rest monthly (blend)
+    28.8 | 27.7 / −27.4%. Bitcoin weight with monthly combo exits: 30% 30.9 / −29.5%, 20% (35/35/20/10)
+    25.5 | 26.3 / −21.8% (full window 26.1% / −21.8%, Sharpe 1.38, 2022 −5%), 10% (daily) 16.4 | 17.1 / −16.2%.
+    Chosen for docs/STRATEGY.md: 35/35/20/10 with monthly combo exits.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
@@ -187,7 +282,7 @@ changes, update this list in the same change.
     dips at low IVR with > 90 DTE (OTM LEAPs closed ~90 days out, deep-ITM ones become PMCCs),
     funded partly with a personal loan; no public record before 2024, no verified returns; his
     full rules are in his pinned X "Options Comprehensive Mega Thread".
-  Still to add: one side vs both; IVR 30/50/70 sweep. Real option history is paid.
+  Still to add: IVR 70. Real option history is paid.
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
 - Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
@@ -222,12 +317,14 @@ vol_wheel/
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
   target.py                target-allocation scaling by drawdown, via options or stock (`mode: target`)
   multi.py                 multi-asset core at fixed weights, rebalanced with options or stock (`mode: multi`)
+  sleeve.py                long-call convexity sleeve: premium-sized calls/debit spreads with delta exits (`mode: sleeve`)
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
 data/earnings.json         earnings cache: next/last report date + timing, implied move (workflow-written)
 docs/index.html            static phone-first dashboard (vanilla JS, light/dark) -> data/latest.json
 docs/data/latest.json      written by the scan workflow (do not hand-edit)
 docs/.nojekyll             serve docs/ as-is on GitHub Pages
+docs/STRATEGY.md           living recommended build (sleeves, weights, do / don't); keep current
 docs/HANDOFF.md            moving the work to the laptop (Cowork / Claude Code) + the research-brain prompt
 tests/                     pytest; conftest.py builds synthetic histories + Black-Scholes chains
 .github/workflows/scan.yml post-close 21:35 UTC + intraday 10:30/15:30 ET + manual; commits data
@@ -450,8 +547,9 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   `vol_index_atm_ratio` and get true IVR + the IV/HV gate. Other names: IV = `stock_iv_mult` x
   max(HV20, HV60), proxy IVR, no gate; run at each of `stock_iv_mults` because that multiple *is*
   the single-stock edge and it's assumed.
-- Lifecycle: 45 DTE, close at `management.take_profit_pct`, at `decide_dte` close if OTM else hold
-  to expiry and take assignment (`decide_itm: roll` rolls once), covered calls on assigned shares
+- Lifecycle: 45 DTE, close at `management.take_profit_pct` (or the variant's `take_profit_pct`), at
+  `decide_dte` close if OTM else hold to expiry and take assignment (`decide_itm`, global or per
+  variant: `roll` rolls once, `close` buys it back), covered calls on assigned shares
   (spike mode: on up-spikes; always mode: continuously; momentum names 50%; strike ≥ net cost in
   Low/Mid), caps per name/bucket/total, circuit breakers. Fractional contracts, T-bill yield on cash.
 - Modes: `spike` (rulebook), `always` (a put every `entry_every_days` while IVR ≥ `min_ivr`,
@@ -484,13 +582,35 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   calls on the overweight excess only; `stock_gap_pct` = hybrid, stock for big gaps). At 100%
   invested there is no cash to secure puts, so options rebalancing only buys after calls are
   exercised; `invested_pct: 80` (the SGOV reserve) is the realistic setting.
+- `put_wing_delta` (wheel `always`/`spike` variants): sell a put credit spread instead of a cash-secured put
+  (the IRA's defined-risk substitute for margin): long put at that delta, collateral = width, `entry_pct` =
+  max loss per trade, in-the-money at expiry = cash-settled at the width it lost (no assignment, no rolls).
+- `mode: blend` (`run_blend`): fixed `weights` of other variants' daily equity curves plus `tbills`,
+  rebalanced monthly (`rebalance: M|Q|Y`) at no cost (separate sleeves of one account). Components run
+  automatically, also under `--only`.
+- `backtest.rolling` {years, first_year, benchmark, variants}: start-date robustness. Each listed variant is
+  re-run from every January for each window length; the report's "Start-date robustness" table gives median
+  / worst / best CAGR, worst max DD, % of windows beating the benchmark and the worst start. Slow (minutes);
+  `--no-rolling` skips it.
+- `mode: sleeve` (`vol_wheel/sleeve.py`, defaults in `backtest.sleeve`): premium-sized long calls (or a call
+  debit spread via `short_delta`) on one name; entry filter `sma200` / `hhhl` (rising confirmed swings, no
+  look-ahead) / `max_runup_pct`; exits `half_off_pct`, `exit_delta`, `short_exit_delta`, `exit_dte`,
+  `stop_pct`; `call_skew` overrides the skew slope (scaled by √(skew_term_days/DTE) like the collars);
+  strikes by bisection (stable under upside skew). Report lists payoff multiple and the best positions.
+- Hold mode with `states` (`run_states`, KISS-style): fixed `weights` x each name's daily trend state
+  (`trend_states`: 1 above a rising `sma`-day average, `neutral` (0.5) when only one holds, 0 below a falling
+  one), traded at the next close (`lag_days`), re-traded on any state change and rebalanced monthly,
+  `stock_cost_bps` per trade; `regime_vote` {symbols, halve, mult} scales the `halve` names when most vote
+  symbols are at state 0. Report gives state-day shares and trades per year.
 - Hold mode (`run_hold`) defensive knobs, checked at the monthly rebalance: `trend_sma` (below the
-  N-day average → T-bills until back above), `trend_falling` (only while that average is falling),
+  N-day average → T-bills until back above), `trend_falling` (only while that average is falling;
+  true = all names, a list = only those, the rest use the plain exit),
   `trend_arm` {symbols, high_within_days} (exit needs a High regime in the window), `trend_to`
   {symbols, lookback} (exited weight to the best-trending defensive name if it beats T-bills),
-  `collar` {put_otm_pct, dte, roll_days, call, call_otm_pct, regimes} (puts financed by zero-cost
+  `collar` {put_otm_pct, dte, roll_days, call, call_otm_pct, regimes, symbols} (puts financed by zero-cost
   calls, legs resized to the holding at each rebalance; longer-dated skew = slope × √(45/DTE),
   `skew_term_days`).
+- Local runs: `--only name1,name2 --out <scratch dir>` runs a subset without touching docs/backtest.
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
 ## Conventions
