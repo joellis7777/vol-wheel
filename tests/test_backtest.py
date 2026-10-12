@@ -478,3 +478,17 @@ def test_size_by_dd_sizes_up_as_the_name_falls(rules):
     flat = _sim(rules, f, {**v, "size_by_dd": None})
     assert s.stats["puts_sold"] == flat.stats["puts_sold"]
     assert s.result()["avg_deployed_pct"] > flat.result()["avg_deployed_pct"]
+
+
+def test_blend_tilt_overweights_the_laggard():
+    idx = pd.bdate_range("2020-01-01", periods=80)
+    a = pd.Series(np.linspace(100, 150, 80), index=idx)
+    b = pd.Series(np.r_[np.linspace(100, 50, 40), np.linspace(50, 100, 40)], index=idx)
+    rates = pd.Series(0.0, index=idx)
+    bt = {"account": 1000.0, "periods": {}}
+    dds = {"a": (1 - a / a.cummax()) * 100, "b": (1 - b / b.cummax()) * 100}
+    flat = B.run_blend({"weights": {"a": 50, "b": 50}}, {"a": a, "b": b}, rates, bt, idx[0], idx[-1])
+    tilt = B.run_blend({"weights": {"a": 50, "b": 50}, "tilt": {"k": 2, "max_mult": 3}}, {"a": a, "b": b}, rates, bt,
+                       idx[0], idx[-1], dds)
+    assert tilt["avg_tilted_weights_pct"]["b"] > 50 > tilt["avg_tilted_weights_pct"]["a"]
+    assert tilt["final"] > flat["final"]          # bought more of b near its low, before the recovery

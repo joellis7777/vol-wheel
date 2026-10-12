@@ -1135,11 +1135,14 @@ def run_states(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules:
     return out
 
 
-def run_blend(v: dict, parts: dict, rates: pd.Series, bt: dict, start, end) -> dict:
+def run_blend(v: dict, parts: dict, rates: pd.Series, bt: dict, start, end, dds: dict | None = None) -> dict:
     """Fixed-weight mix of other variants' daily equity curves (plus "tbills" at the cash yield),
     rebalanced to `weights` every `rebalance` ("M" monthly, "Q" quarterly, "Y" yearly; default M).
     Rebalancing is free: the parts are separate sleeves of one account, so moving cash between them
-    costs nothing beyond what each sleeve already pays."""
+    costs nothing beyond what each sleeve already pays.
+    `tilt` {k, max_mult}: rotate toward the laggards. At each rebalance a part's weight is scaled by
+    (1 + k x its underlying's drawdown from the all-time high, as a fraction), capped at max_mult, then all
+    weights renormalized; `dds` = {part: drawdown % series} supplied by the caller."""
     cal = rates.index[(rates.index >= start) & (rates.index <= end)]
     w = {k: float(x) for k, x in v["weights"].items()}
     tot = sum(w.values())
@@ -1157,10 +1160,25 @@ def run_blend(v: dict, parts: dict, rates: pd.Series, bt: dict, start, end) -> d
     hold = {k: E * w[k] for k in w}
     eq = []
     prev = None
+    tilt = v.get("tilt") or {}
+    ddm = {k: dds[k].reindex(cal).ffill().fillna(0).to_numpy() for k in (dds or {}) if k in w}
+    tilt_sum, tilt_n = {k: 0.0 for k in w}, 0
+
+    def weights_at(i):
+        if not tilt or not ddm:
+            return w
+        raw = {k: w[k] * min(1 + tilt.get("k", 1.0) * (ddm[k][i] / 100 if k in ddm else 0.0), tilt.get("max_mult", 3.0))
+               for k in w}
+        t = sum(raw.values()) or 1.0
+        return {k: x / t for k, x in raw.items()}
     for i, d in enumerate(cal):
         if prev is not None and period[i] != prev:
             E = sum(hold.values())
-            hold = {k: E * w[k] for k in w}
+            wt = weights_at(i - 1)              # yesterday's drawdowns: no look-ahead
+            hold = {k: E * wt[k] for k in w}
+            for k in w:
+                tilt_sum[k] += wt[k]
+            tilt_n += 1
         prev = period[i]
         if i:
             for k in hold:
@@ -1170,6 +1188,8 @@ def run_blend(v: dict, parts: dict, rates: pd.Series, bt: dict, start, end) -> d
     out = metrics(eqs, rates.reindex(cal), bt)
     out["avg_deployed_pct"] = round(100 * (1 - w.get("tbills", 0.0)), 1)
     out["blend_weights_pct"] = {k: round(x * 100, 1) for k, x in w.items()}
+    if tilt and tilt_n:
+        out["avg_tilted_weights_pct"] = {k: round(100 * tilt_sum[k] / tilt_n, 1) for k in w}
     out["equity_weekly"] = weekly(eqs)
     out["_eq"] = eqs
     return out
@@ -1337,7 +1357,16 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             return cache_[name]
         if v["mode"] == "blend":
             parts = {c: (None if c == "tbills" else run_named(c, start_, end_, cache_)["_eq"]) for c in v["weights"]}
-            res = run_blend(v, parts, rates, bt, vs, end_)
+            dds = None
+            if v.get("tilt"):
+                dds = {}
+                for c in v["weights"]:
+                    if c == "tbills":
+                        continue
+                    sym = resolve_symbols(by_name[c]["symbols"], rules)[0]
+                    cl = frames_by_mult[base_mult][sym]["close"].dropna()
+                    dds[c] = (1 - cl / cl.cummax()) * 100
+            res = run_blend(v, parts, rates, bt, vs, end_, dds)
         else:
             v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
             res = run_one(v, base_mult, vs, end_)

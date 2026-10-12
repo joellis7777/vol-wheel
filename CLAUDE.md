@@ -65,11 +65,14 @@ changes, update this list in the same change.
   GLD −45%, BTC −80%, XLE −75%), trimmed back as new highs return. Accepted cost vs the trend-exit core
   (2015→): ~25% / −26% max DD and a ~−19% 2022 vs ~22% / −21% and −6%. Trend states stay on the dashboard as
   information. Pyramiding applies to the core assets only, not single-stock picks.
-- **Core scale-out and weights by size** (Jordan, 2026-10-11): aggressive scale-out caps (ETFs 85% of the sleeve at
-  +30% off the 3-year low → 35% at +150%; BTC 80% at +100% → 30% at +1000%). Core weights follow account size
-  (`portfolio.profiles`, dashboard selector): $25k 25/15/50/10 QQQ/GLD/IBIT/XLE (max growth), $50k 30/20/40/10,
-  $150k 35/25/30/10, $500k 35/35/20/10, $1M 40/40/10/10 (preservation). Defaults by typical risk capacity;
-  age/goals can override. Under ~$150k: fractional shares, puts only on IBIT/XLE, no picks or LEAP sleeve.
+- **Core scale-out and weights by risk profile** (Jordan, 2026-10-11): aggressive scale-out caps (ETFs 85% of the
+  sleeve at +30% off the 3-year low → 35% at +150%; BTC 80% at +100% → 30% at +1000%). Core weights are a risk
+  profile chosen on the dashboard (`portfolio.profiles`), defaulting by account size (`profile_by_size`): max
+  growth 20/15/60/10 QQQ/GLD/IBIT/XLE ($25k), growth 25/15/50/10 ($50k), balanced 30/20/40/10 ($150k), moderate
+  35/25/30/10 ($500k), steady 35/35/20/10 ($1M; Jordan prefers it over 40/40/10/10: 3.2%/yr more for ~0.5 pt of
+  drawdown). Account size decides the instruments: a name is "shares only" when one cash-secured put exceeds
+  half its sleeve (puts on IBIT from $25k; GLD/XLE from ~$500k, QQQ at $1M; IAU for gold puts); picks and the
+  LEAP sleeve start at $150k. No extra rotation tilt (the cycle sleeves + monthly rebalance already rotate).
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 - **The rulebook is a starting hypothesis, not a constraint** (Jordan, 2026-10-11): the goal is to
@@ -361,6 +364,13 @@ backtest changes the picture: edit it in the same change and add a line to its c
     1.36 / 1.08 (start-every-January medians 3y: 24.3 / 21.9 / 19.4 / 16.8 / 13.8 / 11.8). Drawdown stays
     flat because the caps cut bitcoin after its runs (2018, 2022 came after big gains); a crash without a prior
     run wouldn't be caught, so real drawdowns at 40–50% BTC could be deeper. Bitcoin hindsight from 2015.
+    BTC 60% (20/15/60/10): 30.6% / −25.5%, worst 12 months −25%, 2022 −18%, Sharpe 1.47.
+  - Rotation toward laggards (2026-10-11, blend `tilt` {k, max_mult}: monthly weights x (1 + k x drawdown)): core
+    35/35/20/10 fixed 18.6% / −16.6% vs k=1 18.9% / −17.4% vs k=2 19.1% / −18.0%; QQQ/GLD/XLE 2007→ 9.3% vs
+    9.2% / 9.1%. Negligible: the cycle sleeves already pyramid into their own drawdowns and the monthly
+    rebalance already moves money from winners to laggards. Not adopted. Also: on the long 2007→ history
+    without bitcoin the aggressive caps cost QQQ ~2.3%/yr (11.1% vs 13.4% pyramid-only) and don't help 2008;
+    the core's results lean on bitcoin.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
@@ -691,7 +701,8 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   (the IRA's defined-risk substitute for margin): long put at that delta, collateral = width, `entry_pct` =
   max loss per trade, in-the-money at expiry = cash-settled at the width it lost (no assignment, no rolls).
 - `mode: blend` (`run_blend`): fixed `weights` of other variants' daily equity curves plus `tbills`,
-  rebalanced monthly (`rebalance: M|Q|Y`) at no cost (separate sleeves of one account). Components run
+  rebalanced monthly (`rebalance: M|Q|Y`) at no cost (separate sleeves of one account); `tilt` {k,
+  max_mult} scales each part's weight by its underlying's drawdown at each rebalance. Components run
   automatically, also under `--only`.
 - `backtest.rolling` {years, first_year, benchmark, variants}: start-date robustness. Each listed variant is
   re-run from every January for each window length; the report's "Start-date robustness" table gives median

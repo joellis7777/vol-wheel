@@ -85,6 +85,8 @@ def test_core_row_scale_out_cap_by_gain_from_low():
 def test_build_passes_profiles_through():
     h = _hist(np.linspace(100, 120, 300))
     rules = {"portfolio": {"budget_pct": 85, "core": {"QQQ": {"weight": 35, "alloc": ALLOC}},
-                           "profiles": {25000: {"QQQ": 25, "label": "max growth"}}}}
+                           "profiles": {"growth": {"QQQ": 25, "label": "growth"}},
+                           "profile_by_size": {25000: "growth"}, "put_max_sleeve_frac": 0.5}}
     out = P.build(rules, lambda s: h)
-    assert out["profiles"]["25000"]["QQQ"] == 25
+    assert out["profiles"]["growth"]["QQQ"] == 25 and out["profile_by_size"]["25000"] == "growth"
+    assert out["put_max_sleeve_frac"] == 0.5

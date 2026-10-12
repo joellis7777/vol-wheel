@@ -19,7 +19,7 @@ rule-bound satellites (an MSTR/IBIT long-call sleeve and stock picks) for upside
 
 | Sleeve | Weight | What it holds | Rules | Where |
 |---|---|---|---|---|
-| **Core** | 65% | QQQ / GLD / IBIT / XLE by account size: $25k 25/15/50/10, $50k 30/20/40/10, $150k 35/25/30/10, $500k 35/35/20/10, $1M 40/40/10/10 | Held, no trend exit (Jordan: buy dips, don't sell them). Scale out as each name's bull run matures: aggressive caps by its gain from the 3-year low (QQQ/GLD/XLE 85% at +30% → 35% at +150%; IBIT 80% at +100% → 30% at +1000%), so the account is light going into the next bear; trades in stock (options lag the targets) | IRA |
+| **Core** | 65% | QQQ / GLD / IBIT / XLE by risk profile (dashboard; default by size): max growth 20/15/60/10, growth 25/15/50/10, balanced 30/20/40/10, moderate 35/25/30/10, steady 35/35/20/10 | Held, no trend exit (Jordan: buy dips, don't sell them). Scale out as each name's bull run matures: aggressive caps by its gain from the 3-year low (QQQ/GLD/XLE 85% at +30% → 35% at +150%; IBIT 80% at +100% → 30% at +1000%), so the account is light going into the next bear; trades in stock (options lag the targets) | IRA |
 | **Reserve** | 20% | SGOV | Pyramid fund: each core name has its own range, from its base weight at the high to fully invested near its historical worst drawdown (QQQ −80%, GLD −45%, IBIT −80%, XLE −75%); add at each step by stock or 16Δ cash-secured puts on IVR ≥ 50 down-spikes; trim back to base as new highs return | IRA |
 | **Convexity sleeve** | ≤ 5% at risk | MSTR (or IBIT) long calls | ~15–25Δ, ~15 months out, 1–2% of the account per position, sell half at +100%, rest out at 60Δ or 90 DTE, re-enter as a roll; no entry filter | IRA (or taxable for > 1-year holds) |
 | **Stock picks** | ≤ 10% | 5–10 names | See "Stock picker" below | Taxable (long-term holds) or IRA |
@@ -61,6 +61,14 @@ Built 2026-10-11: items 1 (core pyramid panel + ADD/TRIM alerts), 4's alerts pen
    on MSTR they added ~3.5%/yr and cut the drawdown 18 pts; on QQQ they don't matter.
 4. Convexity sleeve signals: entry / half-off / 60Δ / 90-DTE alerts.
 5. Stock-picks watchlist with entry/exit alerts (below).
+
+## Small accounts
+
+Account size decides the instruments, the risk profile decides the weights. One cash-secured put = 100 shares
+of collateral (QQQ ~$75k, GLD ~$38k, XLE ~$6.5k, IBIT ~$4.6k), so the dashboard marks a name "shares only"
+when one put would exceed half its sleeve: puts on IBIT from $25k, GLD/XLE from ~$500k, QQQ at $1M; IAU (~$70)
+for gold puts in between. Whole shares are fine (Schwab's fractional shares don't cover ETFs). Picks and the
+LEAP sleeve start at $150k. Not IBIT-only: the rotation between the four assets is what the cycle relies on.
 
 ## What not to do (tested and rejected)
 
@@ -121,6 +129,7 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-10-11 (later): weights become risk profiles chosen on the dashboard (one step more bitcoin per size); small-account instrument rules; rotation tilt tested, not adopted.
 - 2026-10-11 (later): aggressive caps live; core weights by account size ($25k 50% BTC → $1M 10%).
 - 2026-10-11 (later): core scales out as bull runs mature (cycle plan); trades in stock, not via assignment.
 - 2026-10-11 (later): no trend exit on the core (Jordan); per-ticker pyramid ranges to each asset's worst drawdown.

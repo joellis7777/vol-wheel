@@ -196,6 +196,9 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         <label class="acct">Account
           <select id="acct" aria-label="Account size"></select>
         </label>
+        <label class="acct" id="riskWrap" hidden>Risk
+          <select id="risk" aria-label="Risk profile (core weights)"></select>
+        </label>
         <button class="theme-btn" id="theme" type="button" aria-label="Toggle light/dark theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="display:block"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
       </div>
     </div>
@@ -214,7 +217,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
 <script>
 (function () {
   "use strict";
-  var state = { data: null, acct: 500000, filter: "all", open: {} };
+  var state = { data: null, acct: 500000, risk: null, filter: "all", open: {} };
   var $ = function (id) { return document.getElementById(id); };
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -249,6 +252,17 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     state.acct = s.tiers.indexOf(saved) >= 0 ? saved : s.default_tier;
     $("acct").innerHTML = s.tiers.map(function (t) { return '<option value="' + t + '"' + (t === state.acct ? " selected" : "") + ">" + kmoney(t) + "</option>"; }).join("");
     $("acct").addEventListener("change", function (e) { state.acct = parseInt(e.target.value, 10); store("vw-acct", state.acct); render(); });
+    var p = d.portfolio;
+    if (p && p.profiles) {
+      var names = Object.keys(p.profiles), savedRisk = store("vw-risk");
+      state.risk = names.indexOf(savedRisk) >= 0 ? savedRisk : "auto";
+      $("risk").innerHTML = '<option value="auto">by size</option>' + names.map(function (n) {
+        return '<option value="' + n + '"' + (n === state.risk ? " selected" : "") + ">" + esc(p.profiles[n].label || n) + "</option>";
+      }).join("");
+      if (state.risk === "auto") $("risk").value = "auto";
+      $("risk").addEventListener("change", function (e) { state.risk = e.target.value; store("vw-risk", state.risk); render(); });
+      $("riskWrap").hidden = false;
+    }
     renderHeader();
     render();
   }
@@ -335,10 +349,15 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   function renderPortfolio() {
     var p = state.data.portfolio, el = $("portfolio"), a = state.acct;
     if (!p || !p.core || !p.core.length) { el.hidden = true; return; }
-    // per-account-size weights: the profile for the selected size (or the nearest smaller one)
-    var prof = null, tiers = Object.keys(p.profiles || {}).map(Number).sort(function (x, y) { return x - y; });
-    tiers.forEach(function (t) { if (t <= a) prof = p.profiles[String(t)]; });
-    if (!prof && tiers.length) prof = p.profiles[String(tiers[0])];
+    // risk profile: the one chosen in the header, else the default for the selected account size
+    var prof = null, key = state.risk;
+    if (!key || key === "auto") {
+      var tiers = Object.keys(p.profile_by_size || {}).map(Number).sort(function (x, y) { return x - y; });
+      tiers.forEach(function (t) { if (t <= a) key = p.profile_by_size[String(t)]; });
+      if ((!key || key === "auto") && tiers.length) key = p.profile_by_size[String(tiers[0])];
+    }
+    if (p.profiles && p.profiles[key]) prof = p.profiles[key];
+    var sleeveFrac = p.put_max_sleeve_frac || 0.5;
     var used = 0;
     p.core.forEach(function (r) {
       if (r.error) return;
@@ -356,7 +375,10 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       var tr = trend[r.trend_state] || ["wait", "–"];
       var nx = r.next ? money(r.next.price) + '<span class="sub2">−' + num(r.next.dd_pct) + "% → " + num(r.next.target_pct) + "% · +" +
         money(a * r.sleeve_pct / 100 * (r.next.target_pct - r.target_pct) / 100) + "</span>" : '<span class="sub2">fully invested</span>';
-      return "<tr><td><b>" + esc(r.symbol) + '</b><span class="sub2">' + r.weight + "% of core · " + '<span class="pill ' + tr[0] + '">' + tr[1] + "</span></span></td>" +
+      var putsOk = r.price * 100 <= sleeveFrac * a * r.sleeve_pct / 100;
+      var how = putsOk ? '<span class="pill ok">puts ok</span>' :
+        '<span class="pill wait">shares only' + (r.symbol === "GLD" && p.gold_put_alt ? " · puts via " + esc(p.gold_put_alt) : "") + "</span>";
+      return "<tr><td><b>" + esc(r.symbol) + '</b><span class="sub2">' + r.weight + "% of core · " + '<span class="pill ' + tr[0] + '">' + tr[1] + "</span> " + how + "</span></td>" +
         '<td class="n">' + money(r.price) + '<span class="sub2">−' + num(r.dd_pct, 1) + "% from " + money(r.high) + "</span></td>" +
         '<td class="n">' + num(r.target_pct) + '%<div class="bar"><b style="width:' + num(r.target_pct) + '%"></b></div><span class="sub2">step ' + r.step + "/" + r.steps +
           (r.scale_cap_pct != null ? " · cap " + num(r.scale_cap_pct) + "% (+" + num(r.gain_pct) + "% off 3y low)" : "") + "</span></td>" +
@@ -364,12 +386,14 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         '<td class="n">' + nx + "</td></tr>";
     }).join("");
     var h = "<h2>Portfolio · " + kmoney(a) + " account" + (prof && prof.label ? " · " + esc(prof.label) : "") + "</h2>" +
-      '<div class="legend">Core held with no trend exit: the reserve pyramids into each name by its own drawdown range (fully invested only near its historical worst), and a cap scales each name out as its bull run matures (gain from the 3-year low). Weights, targets and $ follow the selected account size (smaller = more bitcoin; $1M = preservation). Under ~$150k use fractional shares for QQQ/GLD; puts only on IBIT/XLE.</div>' +
+      '<div class="legend">Core held with no trend exit: the reserve pyramids into each name by its own drawdown range (fully invested only near its historical worst), and a cap scales each name out as its bull run matures (gain from the 3-year low). Weights follow the Risk profile (default by account size); targets and $ use the account size. "Shares only" = one cash-secured put would tie up more than ' + Math.round((p.put_max_sleeve_frac || 0.5) * 100) + '% of that name\'s sleeve.</div>' +
       '<div class="tbl"><table style="margin-top:6px"><thead><tr><th>Core</th><th class="n">Price</th><th class="n">Target</th><th class="n">Hold</th><th class="n">Next add</th></tr></thead><tbody>' + core +
       '<tr><td><b>Reserve</b><span class="sub2">SGOV, pyramid fund</span></td><td></td><td></td><td class="n">' + money(a * p.reserve_pct / 100) + '<span class="sub2">' + num(p.reserve_pct, 1) + '% of acct</span></td><td></td></tr></tbody></table></div>';
     var w = p.btc_warning;
     if (w) h += '<div class="legend" style="margin-top:6px"><span class="pill ' + (w.state === 1 ? "ok" : w.state === 0 ? "exit" : "warn") + '">BTC ' + esc(w.label) + "</span> since " + esc(w.since) + " · " + money(w.price) + " vs 200-day " + money(w.sma200) + ". " + esc(w.note) + "</div>";
-    if (p.picks && p.picks.length) {
+    if (p.picks && p.picks.length && p.min_satellite_account && a < p.min_satellite_account) {
+      h += '<div class="legend" style="margin-top:8px">Stock picks and the LEAP sleeve start at ' + kmoney(p.min_satellite_account) + ": below that a 1.5% position is too small to be worth the trading.</div>";
+    } else if (p.picks && p.picks.length) {
       var pr = p.picks_rules || {}, cls = { ENTRY_OK: "ok", WAIT: "wait", EXIT_IF_HELD: "exit", NO_DATA: "wait" },
           lbl = { ENTRY_OK: "entry ok", WAIT: "wait", EXIT_IF_HELD: "exit if held", NO_DATA: "no data" };
       h += "<h3>Stock picks · " + (pr.per_name_pct || 1.5) + "% each (" + money(a * (pr.per_name_pct || 1.5) / 100) + "), ≤ " + (pr.max_names || 10) + " names, sleeve ≤ " + (pr.sleeve_cap_pct || 10) + "%</h3>" +
