@@ -379,6 +379,13 @@ backtest changes the picture: edit it in the same change and add a line to its c
     −33.2% (start-year medians 2.5 | 2.4 vs 2.5 | 2.8); never-assigned QQQ 25Δ 4.5% / −14.9% vs 20Δ 4.1% /
     −16.7%; 6-ETF book 25Δ 4.1% vs 16Δ 3.9%. Within 16–25Δ the strike barely matters (his own "30Δ ≈ 16Δ in
     theory"); it doesn't change the build.
+  - PMCC with calls far above the LEAP (Jordan 2026-10-12, `*_pmcc_far`, `*_shares_far`, `*_leap80_hold`; 80Δ ~1-year
+    LEAP rolled at 120 DTE, 10Δ 45-DTE calls sold continuously, bought back at 85% captured or before expiry).
+    QQQ 2007→: held 15.4% / −54%; 80Δ LEAP alone 9.3% (−6%/yr of time value vs shares); PMCC far 4.0%; shares +
+    10Δ calls 11.3%. The 10Δ calls lost 4.5–5.4%/yr net: rare surges through the strike cost more than all the
+    small wins. MSTR 2020-09→ (model IV): held 46.3% / −89%; LEAP alone 32.5%; PMCC far 28.0% (2021→ −10.6%); shares
+    + 10Δ calls 26.5% (call P&L −9 to −53%/yr across IV mults). Far-OTM calls sold continuously still cost money on
+    trending assets; only spike-only calls held up. Fix: pmcc mode now uses the stock skew for non-index names.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates

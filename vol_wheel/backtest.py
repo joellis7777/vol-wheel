@@ -1343,7 +1343,8 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
         if v["mode"] == "pmcc":
             from .pmcc import PMCC
             sym = v["symbols"][0]
-            return PMCC(v, fr[sym], rates, rules, vs, end_, bt["skew_slope"]["index"]).run().result()
+            slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
+            return PMCC(v, fr[sym], rates, rules, vs, end_, slope).run().result()
         return Sim(v, fr, meta, rates, rules, vs, end_).run().result()
 
     def run_named(name: str, start_, end_, cache_: dict) -> dict:

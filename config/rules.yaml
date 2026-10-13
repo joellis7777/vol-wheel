@@ -1055,3 +1055,18 @@ backtest:
        symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 25, entry_pct: 5, entry_every_days: 5,
        min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
        caps: {total: 80, per_name: 25, Index: 50}}
+    # PMCC with calls only far above the LEAP (Jordan 2026-10-12): 80Δ LEAP ~1 year (rolled at 120 DTE) vs shares at
+    # the same notional, short calls 10Δ ~45 DTE (bought back once 85% of the extrinsic is captured), or no calls.
+    - {name: qqq_pmcc_far, label: "QQQ PMCC · 80Δ LEAP + 10Δ 45-DTE calls", symbols: [QQQ], mode: pmcc, long: leap,
+       leap_delta: 80, calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45}
+    - {name: qqq_shares_far, label: "QQQ shares + 10Δ 45-DTE calls", symbols: [QQQ], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45}
+    - {name: qqq_leap80_hold, label: "QQQ 80Δ LEAP held (rolled at 120 DTE), no calls", symbols: [QQQ], mode: pmcc,
+       long: leap, leap_delta: 80, calls: none}
+    - {name: mstr_pmcc_far, label: "MSTR PMCC · 80Δ LEAP + 10Δ 45-DTE calls", symbols: [MSTR], mode: pmcc, long: leap,
+       leap_delta: 80, calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45, start: "2020-09-01"}
+    - {name: mstr_shares_far, label: "MSTR shares + 10Δ 45-DTE calls", symbols: [MSTR], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45, start: "2020-09-01"}
+    - {name: mstr_leap80_hold, label: "MSTR 80Δ LEAP held, no calls", symbols: [MSTR], mode: pmcc, long: leap,
+       leap_delta: 80, calls: none, start: "2020-09-01"}
+    - {name: mstr_hold100, label: "MSTR · buy & hold 100%", symbols: [MSTR], mode: hold, weight: 100, start: "2020-09-01"}
