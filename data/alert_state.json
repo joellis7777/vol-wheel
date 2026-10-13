@@ -71,15 +71,15 @@
    "seen": "2026-10-09"
   },
   "SOFI": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-12",
-     "em": 2.5068,
-     "price": 15.31,
+     "active": true,
+     "date": "2026-10-13",
+     "em": 2.2522,
+     "price": 15.17,
      "rung": 1,
-     "strike": 15.31
+     "strike": 15.17
     }
    },
    "seen": "2026-10-13"
