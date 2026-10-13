@@ -30,10 +30,10 @@ portfolio:
     steady:     {QQQ: 35, GLD: 35, IBIT: 20, XLE: 10, label: "steady"}
   profile_by_size: {25000: max_growth, 50000: growth, 150000: balanced, 500000: moderate, 1000000: steady}
   # Small accounts: one cash-secured put needs 100 shares of collateral (QQQ ~$75k, GLD ~$38k). The dashboard marks
-  # a name "shares only" when one put's collateral exceeds put_max_sleeve_frac of that name's sleeve; IAU stands
-  # in for GLD puts (~$70). Picks and the LEAP sleeve start at min_satellite_account.
+  # a name "shares only" when one put's collateral exceeds put_max_sleeve_frac of that name's sleeve. No cheap gold
+  # substitute: IAU's 10–30Δ puts had ~111% bid/ask spreads and OI ~1 (2026-10-12); GLDM isn't on CBOE's feed.
+  # Picks and the LEAP sleeve start at min_satellite_account.
   put_max_sleeve_frac: 0.5
-  gold_put_alt: IAU
   min_satellite_account: 150000
   # Bitcoin's daily trend state (1 above a rising 200-day, 0.5 one of the two, 0 below a falling one): a
   # readiness warning only, never an exit (the 2025 top: daily state sold ~14% higher but whipsawed).
@@ -1044,3 +1044,14 @@ backtest:
        weights: {qqq_cyc_aggr: 45, gld_cyc_aggr: 45, xle_cyc_aggr: 10}, tilt: {k: 1, max_mult: 3}}
     - {name: qgx_cyc_tilt2, label: "Cycle QQQ / GLD / XLE 45/45/10 · tilt to laggards k=2 (2007→)", mode: blend,
        weights: {qqq_cyc_aggr: 45, gld_cyc_aggr: 45, xle_cyc_aggr: 10}, tilt: {k: 2, max_mult: 3}}
+    # Tom Sosnoff's "25-delta is optimal" (Puts, Calls and Hedges guide, 2026-10-12): fixed 25Δ, IVR ≥ 50.
+    - {name: qqq_puts_hold_d25_ivr50, label: "QQQ puts always · fixed 25Δ, IVR ≥ 50 (Tom's optimal)", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 50, vix_caps: true, calls: spike, put_delta: 25,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_d25_close21, label: "QQQ puts always · fixed 25Δ, close at 21 DTE (never assigned)", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: none, put_delta: 25,
+       decide_itm: close, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: tasty_csp_d25, label: "tastytrade book · cash-secured 25Δ puts, 6 ETFs, close 50% / 21 DTE",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 25, entry_pct: 5, entry_every_days: 5,
+       min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
+       caps: {total: 80, per_name: 25, Index: 50}}

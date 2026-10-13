@@ -71,7 +71,8 @@ changes, update this list in the same change.
   growth 20/15/60/10 QQQ/GLD/IBIT/XLE ($25k), growth 25/15/50/10 ($50k), balanced 30/20/40/10 ($150k), moderate
   35/25/30/10 ($500k), steady 35/35/20/10 ($1M; Jordan prefers it over 40/40/10/10: 3.2%/yr more for ~0.5 pt of
   drawdown). Account size decides the instruments: a name is "shares only" when one cash-secured put exceeds
-  half its sleeve (puts on IBIT from $25k; GLD/XLE from ~$500k, QQQ at $1M; IAU for gold puts); picks and the
+  half its sleeve (puts on IBIT from $25k; GLD/XLE from ~$500k, QQQ at $1M; no cheap gold substitute: IAU's
+  options are too thin); picks and the
   LEAP sleeve start at $150k. No extra rotation tilt (the cycle sleeves + monthly rebalance already rotate).
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
@@ -371,6 +372,13 @@ backtest changes the picture: edit it in the same change and add a line to its c
     rebalance already moves money from winners to laggards. Not adopted. Also: on the long 2007→ history
     without bitcoin the aggressive caps cost QQQ ~2.3%/yr (11.1% vs 13.4% pyramid-only) and don't help 2008;
     the core's results lean on bitcoin.
+  - Option liquidity check, real CBOE quotes 2026-10-12 (10–30Δ puts, 30–60 DTE; median spread % of mid, median OI):
+    QQQ 1.2% / 138, GLD 4.3% / 75, IBIT 5.0% / 278, SLV 5.6% / 93, XLE 33.8% / 87 (weekend close quotes, may be
+    wide), IAU 111% / 1 (untradeable); GLDM not on CBOE's feed.
+  - Sosnoff's "25Δ is optimal" (2026-10-12): QQQ puts + spike calls at IVR ≥ 50, 25Δ 14.9% / −33.1% vs 16Δ 15.4% /
+    −33.2% (start-year medians 2.5 | 2.4 vs 2.5 | 2.8); never-assigned QQQ 25Δ 4.5% / −14.9% vs 20Δ 4.1% /
+    −16.7%; 6-ETF book 25Δ 4.1% vs 16Δ 3.9%. Within 16–25Δ the strike barely matters (his own "30Δ ≈ 16Δ in
+    theory"); it doesn't change the build.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates

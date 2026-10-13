@@ -66,8 +66,8 @@ Built 2026-10-11: items 1 (core pyramid panel + ADD/TRIM alerts), 4's alerts pen
 
 Account size decides the instruments, the risk profile decides the weights. One cash-secured put = 100 shares
 of collateral (QQQ ~$75k, GLD ~$38k, XLE ~$6.5k, IBIT ~$4.6k), so the dashboard marks a name "shares only"
-when one put would exceed half its sleeve: puts on IBIT from $25k, GLD/XLE from ~$500k, QQQ at $1M; IAU (~$70)
-for gold puts in between. Whole shares are fine (Schwab's fractional shares don't cover ETFs). Picks and the
+when one put would exceed half its sleeve: puts on IBIT from $25k, GLD/XLE from ~$500k, QQQ at $1M. There's no
+cheap gold substitute (IAU's options are untradeably thin). Whole shares are fine (Schwab's fractional shares don't cover ETFs). Picks and the
 LEAP sleeve start at $150k. Not IBIT-only: the rotation between the four assets is what the cycle relies on.
 
 ## What not to do (tested and rejected)
