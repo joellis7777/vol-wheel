@@ -31,8 +31,17 @@
    "seen": "2026-10-14"
   },
   "GOOG": {
-   "action": "NO_SHORT",
-   "alerts": {},
+   "action": "LEAP_BUY",
+   "alerts": {
+    "LEAP_BUY": {
+     "active": true,
+     "date": "2026-10-14",
+     "em": 35.0726,
+     "price": 343.815,
+     "rung": 1,
+     "strike": 343.815
+    }
+   },
    "seen": "2026-10-14"
   },
   "HOOD": {
