@@ -492,3 +492,14 @@ def test_blend_tilt_overweights_the_laggard():
                        idx[0], idx[-1], dds)
     assert tilt["avg_tilted_weights_pct"]["b"] > 50 > tilt["avg_tilted_weights_pct"]["a"]
     assert tilt["final"] > flat["final"]          # bought more of b near its low, before the recovery
+
+
+def test_margin_frac_puts_carry_more_notional(rules):
+    closes = np.full(80, 100.0)
+    f = _frame(closes)
+    v = {"mode": "always", "entry_every_days": 5, "min_ivr": 0, "calls": "none", "decide_itm": "close", "entry_pct": 2}
+    cash = _sim(rules, f, v)
+    marg = _sim(rules, f, {**v, "margin_frac": 0.2})
+    assert marg.premium == pytest.approx(5 * cash.premium, rel=0.05)     # same buying power, 5x the contracts
+    o = B.Opt("X", "P", 100.0, 10.0, f.index[0], f.index[30], 1.0, mfrac=0.2)
+    assert o.collateral == pytest.approx(200.0)

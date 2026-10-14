@@ -1070,3 +1070,18 @@ backtest:
     - {name: mstr_leap80_hold, label: "MSTR 80Δ LEAP held, no calls", symbols: [MSTR], mode: pmcc, long: leap,
        leap_delta: 80, calls: none, start: "2020-09-01"}
     - {name: mstr_hold100, label: "MSTR · buy & hold 100%", symbols: [MSTR], mode: hold, weight: 100, start: "2020-09-01"}
+    # tastytrade as they actually trade it (2026-10-13): naked puts on margin (buying power = 20% of the strike,
+    # Reg-T-like), never assigned, close at 50% / 21 DTE; entry_pct and caps are buying power. Their stated use:
+    # 25-50% of buying power, more when VIX is high. Not available in an IRA.
+    - {name: tasty_margin_bp25_50, label: "tastytrade book on margin · 16Δ naked puts, 6 ETFs, BP 25→50% by VIX",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 3,
+       entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 25], [20, 35], [30, 50]], caps: {total: 50, per_name: 12, Index: 24}}
+    - {name: tasty_margin_bp40_60, label: "tastytrade book on margin · BP 40→60% by VIX (heavier)",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 4,
+       entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 40], [20, 50], [30, 60]], caps: {total: 60, per_name: 15, Index: 30}}
+    - {name: spy_margin_bp25_50, label: "SPY naked 16Δ puts on margin · BP 25→50% by VIX", symbols: [SPY],
+       mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 5, entry_every_days: 2, min_ivr: 0, calls: none,
+       decide_itm: close, take_profit_pct: 50, vix_caps: [[0, 25], [20, 35], [30, 50]],
+       caps: {total: 50, per_name: 50, Index: 50}}

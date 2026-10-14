@@ -386,6 +386,14 @@ backtest changes the picture: edit it in the same change and add a line to its c
     small wins. MSTR 2020-09→ (model IV): held 46.3% / −89%; LEAP alone 32.5%; PMCC far 28.0% (2021→ −10.6%); shares
     + 10Δ calls 26.5% (call P&L −9 to −53%/yr across IV mults). Far-OTM calls sold continuously still cost money on
     trending assets; only spike-only calls held up. Fix: pmcc mode now uses the stock skew for non-index names.
+  - tastytrade as they trade it, on margin (2026-10-13, `margin_frac: 0.2` = naked-put buying power, `tasty_margin_*`;
+    6 ETFs, 16Δ, never assigned, close 50% / 21 DTE, BP 25→50% by VIX). 2021→: 12.7% / −8.5% max DD (2022 +10%,
+    Sharpe 1.44; heavier BP 40→60% 16.2% / −9.8%) vs SPY 13.7% / −25% and QQQ 16.6% / −36%: SPY-like returns at a
+    third of the drawdown, which is what they've lived through. 2007→: 7.2% / −43% (2020 −25%; heavier 5.4% /
+    −55%, 2020 −46%) vs SPY 8.9% / −57%; start-every-January medians 3y | 5y 6.8 | 6.2 (worst −5.8%) vs SPY 9.4 |
+    12.5. Margin roughly doubles the cash-secured book (3.9% → 7.2%, 2021→ 6.6% → 12.7%); the cost sits in rare
+    fast crashes (2020), where closing tested puts at 21 DTE near peak vol locks the loss (they'd roll; rolling
+    didn't help in our earlier tests). Not available in the IRA; in taxable the premium is short-term income.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates

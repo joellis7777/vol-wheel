@@ -279,11 +279,15 @@ class Opt:
     rolls: int = 0
     dte0: int = 45   # DTE at entry; options opened at or inside the decision DTE are held to expiry
     wing: float | None = None   # long put strike when this is a put credit spread (IRA defined risk)
+    mfrac: float = 1.0          # margin: share of the strike held as buying power (1 = cash-secured)
 
     @property
     def collateral(self) -> float:
-        """Cash it ties up: the strike for a cash-secured put, the width for a spread."""
-        return (self.strike - self.wing if self.wing is not None else self.strike) * self.qty
+        """Buying power it ties up: the strike for a cash-secured put (x `mfrac` on margin), the width for a
+        spread."""
+        if self.wing is not None:
+            return (self.strike - self.wing) * self.qty
+        return self.strike * self.qty * self.mfrac
 
 
 class Sim:
@@ -576,7 +580,8 @@ class Sim:
             px -= wmid + max(wmid * self._slip(sym), 0.01) + self._comm()
         if px <= 0:
             return None
-        o = Opt(sym, cp, K, qty, d, d + pd.Timedelta(days=dte), mid, dte0=dte, wing=wing)
+        o = Opt(sym, cp, K, qty, d, d + pd.Timedelta(days=dte), mid, dte0=dte, wing=wing,
+                mfrac=float(self.v.get("margin_frac", 1.0)) if cp == "P" and wing is None else 1.0)
         self.opts.append(o)
         self.cash += px * qty
         self.cf[sym] += px * qty
@@ -659,12 +664,13 @@ class Sim:
             if not 0 < wing < K:
                 return
         want = self._entry_frac(s) * E * size_mult * self._dd_mult(s, i)   # spreads: entry_pct = max loss per trade
+        mf = float(self.v.get("margin_frac", 1.0))      # margin (naked puts): entry_pct = buying power per put
         by_sym, total = self._exposure(prices)
         room = self._room(s, by_sym, total, E)
         notional = min(want, room)
         if notional < 0.5 * want or notional <= 0:
             return
-        o = self._sell(s, "P", K, notional / (K - wing if wing else K), d, atm, r, dte, wing=wing)
+        o = self._sell(s, "P", K, notional / (K - wing if wing else K * mf), d, atm, r, dte, wing=wing)
         if o:
             em_iv = max(atm, float(row["hv20"])) if s in self.rules.get("weekend_gap_names", []) else atm
             self.last_put[s] = (i, K, S * em_iv * math.sqrt(self.rules["sizing"]["ladder_dte"] / 365))
