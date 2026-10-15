@@ -13,28 +13,28 @@
      "strike": 305.0
     }
    },
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "CEG": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "FNV": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "GLD": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "GOOG": {
-   "action": "LEAP_BUY",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-14",
      "em": 35.0726,
      "price": 343.815,
@@ -42,7 +42,7 @@
      "strike": 343.815
     }
    },
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "HOOD": {
    "action": "EARNINGS_PLAY",
@@ -56,22 +56,22 @@
      "strike": 80.0
     }
    },
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "IBIT": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "MRVL": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "MSTR": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "NVDA": {
    "action": "LEAP_BUY",
@@ -85,12 +85,12 @@
      "strike": 218.6
     }
    },
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "QQQ": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -109,12 +109,12 @@
      "strike": 12.0
     }
    },
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "SPY": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   },
   "TSLA": {
    "action": "NO_SHORT",
@@ -128,7 +128,7 @@
      "strike": 460.0
     }
    },
-   "seen": "2026-10-14"
+   "seen": "2026-10-15"
   }
  }
 }
