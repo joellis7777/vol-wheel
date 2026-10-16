@@ -4,6 +4,62 @@
 
 bull_mode: true            # manual switch; LEAP buys also need SPY > SMA200
 
+# Portfolio layer (docs/STRATEGY.md; vol_wheel/portfolio.py): the core is held with no trend exit (Jordan
+# 2026-10-11) and the reserve pyramids into each name by its own drawdown range. alloc = [[drawdown % from
+# the all-time high, % of that name's sleeve invested]]; fully invested only near the asset's historical worst
+# (QQQ −80% for 2000-02, GLD −45%, BTC −80%, XLE −75%). budget_pct = core + reserve, % of the account.
+# Each alloc point past the first is a "step": crossing one deeper alerts ADD, recovering above one alerts TRIM.
+# alloc_gain = scale-out cap by the gain from the 3-year low (bull maturity): crossing a level alerts SCALE OUT.
+# Aggressive caps chosen by Jordan 2026-10-11 (core 18.6% / −16.6% max DD, 2022 −8.6%, Sharpe 1.51 from 2015-10).
+portfolio:
+  budget_pct: 85
+  trend_exit: false
+  core:
+    QQQ:  {weight: 35, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]]}
+    GLD:  {weight: 35, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]]}
+    IBIT: {weight: 20, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [100, 80], [250, 60], [500, 40], [1000, 30]], history_symbol: BTC-USD}
+    XLE:  {weight: 10, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]]}
+  # Core weights by risk profile (Jordan 2026-10-11): chosen on the dashboard; account size only sets the default.
+  # Cycle rules + aggressive caps, 2015-10→ (bitcoin hindsight): BTC 60% 30.6% / −25.5% max DD (worst 12m −25%),
+  # 50% 28.4% / −23.5%, 40% 25.3% / −20.5%, 30% 22.1% / −17.8% (best Sharpe 1.53), 20% 18.6% / −16.6%.
+  profiles:
+    max_growth: {QQQ: 20, GLD: 15, IBIT: 60, XLE: 10, label: "max growth"}
+    growth:     {QQQ: 25, GLD: 15, IBIT: 50, XLE: 10, label: "growth"}
+    balanced:   {QQQ: 30, GLD: 20, IBIT: 40, XLE: 10, label: "balanced"}
+    moderate:   {QQQ: 35, GLD: 25, IBIT: 30, XLE: 10, label: "moderate"}
+    steady:     {QQQ: 35, GLD: 35, IBIT: 20, XLE: 10, label: "steady"}
+  profile_by_size: {25000: max_growth, 50000: growth, 150000: balanced, 500000: moderate, 1000000: steady}
+  # Small accounts: one cash-secured put needs 100 shares of collateral (QQQ ~$75k, GLD ~$38k). The dashboard marks
+  # a name "shares only" when one put's collateral exceeds put_max_sleeve_frac of that name's sleeve. No cheap gold
+  # substitute: IAU's 10–30Δ puts had ~111% bid/ask spreads and OI ~1 (2026-10-12); GLDM isn't on CBOE's feed.
+  # Picks and the LEAP sleeve start at min_satellite_account.
+  put_max_sleeve_frac: 0.5
+  min_satellite_account: 150000
+  # Bitcoin's daily trend state (1 above a rising 200-day, 0.5 one of the two, 0 below a falling one): a
+  # readiness warning only, never an exit (the 2025 top: daily state sold ~14% higher but whipsawed).
+  btc_warning: {symbol: BTC-USD}
+  rs_benchmark: QQQ
+
+# Stock-picks watchlist (DRAFT 2026-10-11, docs/STRATEGY.md "Stock picker"; not yet read by the scanner).
+# Ideas come from people and theses; the rules decide entries and exits. Symbols and theses only, never
+# positions or sizes. Entry needs a rising 200-day (state IN) plus top-third 6/12-month strength vs QQQ.
+picks:
+  rules: {per_name_pct: 1.5, max_names: 10, sleeve_cap_pct: 10, trailing_stop_pct: 28, half_off_gain_pct: 100,
+          rs_months: [6, 12], rs_top_frac: 0.3333}
+  watchlist:
+    - {symbol: MU,    theme: AI memory,       source: Jordi Visser, added: 2026-10-11, thesis: "HBM/compute scarcity; owned by Visser, 'probably doubles'"}
+    - {symbol: MRVL,  theme: AI networking,   source: Jordi Visser, added: 2026-10-11, thesis: "custom silicon / optics; Visser's largest holding"}
+    - {symbol: NVDA,  theme: AI compute,      source: Jordi Visser, added: 2026-10-11, thesis: "compute scarcity leader; multiple-compression risk"}
+    - {symbol: LITE,  theme: AI optics,       source: Jordi Visser, added: 2026-10-11, thesis: "optical interconnect bottleneck"}
+    - {symbol: PLTR,  theme: AI software,     source: Jordi Visser, added: 2026-10-11, thesis: "agentic AI deployment; owned by Visser"}
+    - {symbol: GOOGL, theme: AI platform,     source: Jordi Visser, added: 2026-10-11, thesis: "compute backlog; already in the scanner universe as GOOG"}
+    - {symbol: LLY,   theme: GLP-1,           source: Jordi Visser, added: 2026-10-11, thesis: "owned by Visser; non-AI diversifier"}
+    - {symbol: HOOD,  theme: tokenization,    source: Jordi Visser, added: 2026-10-11, thesis: "24/7 tokenized trading; in the scanner universe"}
+    - {symbol: TSLA,  theme: humanoids,       source: Jordi Visser, added: 2026-10-11, thesis: "robotics optionality; in the scanner universe"}
+    - {symbol: COIN,  theme: crypto rails,    source: Jordi Visser, added: 2026-10-11, thesis: "crypto volume cycle"}
+    - {symbol: ETHA,  theme: crypto,          source: Jordi Visser, added: 2026-10-11, thesis: "Visser prefers ETH beta over BTC for upside"}
+    - {symbol: SLV,   theme: debasement,      source: Jordi Visser, added: 2026-10-11, thesis: "silver among Visser's largest positions; overlaps GLD (corr 0.77)"}
+
 universe:
   # bucket: {cap: % of account, core: [...], opportunistic: [...]}
   Index:      {cap: 25, core: [QQQ, SPY], opportunistic: []}
@@ -184,7 +240,7 @@ alerts:
   enabled: true
   ntfy_server: https://ntfy.sh  # topic comes from the NTFY_TOPIC repo secret, never from here
   dashboard_url: https://joellis7777.github.io/vol-wheel/
-  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, HEDGE]
+  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, HEDGE, CORE_ADD, CORE_TRIM, PICK_ENTRY, PICK_EXIT, BTC_WARNING]
   sizing_tier: 500000           # CSP eligibility in the message is shown for this account size
   max_rungs: 3                  # re-alert when price reaches rung 2 and 3 (1 and 2 expected moves past the last alerted strike)
   daily_digest: true            # one low-priority post-close message listing WATCH names
@@ -197,6 +253,11 @@ alerts:
     EARNINGS_PLAY: date
     HEDGE: shield
     DIGEST: eyes
+    CORE_ADD: heavy_plus_sign
+    CORE_TRIM: scissors
+    PICK_ENTRY: dart
+    PICK_EXIT: door
+    BTC_WARNING: warning
 
 earnings:
   # Single stocks only; these have no earnings.
@@ -250,7 +311,7 @@ backtest:
   cash_yield_symbol: _IRX   # 13-week T-bill yield (Yahoo ^IRX); cash and put collateral earn it
   cash_yield_fallback_pct: 2.0
   # Implied vol: CBOE volatility indexes where they exist (true IV rank + the IV/HV gate) ...
-  vol_index: {QQQ: _VXN, SPY: _VIX, GLD: _GVZ}
+  vol_index: {QQQ: _VXN, SPY: _VIX, GLD: _GVZ, IWM: _RVX}
   vol_index_atm_ratio: 0.9  # VIX-style indexes sit above ATM IV; price options at 0.9 x the index
   # ... otherwise IV = mult x max(HV20, HV60), an assumption; run at several values as a sensitivity.
   stock_iv_mult: 1.15
@@ -278,8 +339,9 @@ backtest:
   # put every entry_every_days while IVR >= min_ivr; hold = buy-and-hold at weight% (rest in T-bills).
   # Optional per variant: entry_pct (number or {bucket: pct, default: pct}), caps ({total, per_name,
   # <bucket>, <symbol>}: % of account), max_rungs, min_ivr, put_delta / call_delta (fixed or by
-  # regime), calls (spike|always), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps,
-  # roll_itm {puts, calls, max_rolls, dte, call_regimes}, start (later window start for this variant).
+  # regime), calls (spike|always|none), call_coverage (% of shares), call_regimes, dte, decide_dte, vix_caps,
+  # roll_itm {puts, calls, max_rolls, dte, call_regimes}, start (later window start for this variant),
+  # take_profit_pct, decide_itm (hold|roll|close).
   target:                   # defaults for mode: target variants (vol_wheel/target.py)
     band_pct: 5             # act when shares are this far (% of the account) from the target
     slice_pct: 10           # each put/call slice (or no limit for stock) covers up to 10% of the account
@@ -287,10 +349,35 @@ backtest:
     dte: 45
     stock_cost_bps: 5       # stock execution: cost per trade (bps of notional)
     high_lookback_days: null   # drawdown measured from the all-time high (or a rolling window)
-  liquid_option_syms: [QQQ, SPY, GLD, XLE, TLT]   # index-style slippage in mode: multi (others: stock slippage)
+  liquid_option_syms: [QQQ, SPY, GLD, XLE, TLT, IWM]   # index-style slippage in mode: multi (others: stock slippage)
   # Extra symbols loaded only for the report's correlation table (diversifier candidates).
   correlation_symbols: [QQQ, SPY, GLD, BTC-USD, XLE, TLT, XLP, XLU, XLV, FNV, SLV, IEF]
   correlation_start: "2015-10-01"
+  # Start-date robustness (python -m vol_wheel.backtest; skip with --no-rolling): each listed variant is
+  # re-run from every January for each window length; the report gives median / worst / best CAGR, worst
+  # max DD and how often it beat `benchmark` over the same window.
+  rolling:
+    years: [3, 5]
+    first_year: 2007
+    benchmark: qqq_hold
+    variants: [spy_hold, qqq_puts_hold, qqq_puts_hold_d16_ivr50, qqq_puts_hold_close21, qqq_trend_falling,
+               eq_qg_2007_trend_falling, tasty_csp, tasty_csp_ivr30, tasty_spreads, tasty_spreads_ivr30,
+               tasty_wheel, blend_tom, blend_tom_csp, blend_core_income, blend_core_csp, blend_core_wheel,
+               eq_qgb_combo, blend_core_income_btc, blend_core_csp_btc]
+  sleeve:                   # defaults for mode: sleeve variants (vol_wheel/sleeve.py): long-call convexity sleeve
+    debit_pct: 5            # each position costs this % of equity (premium-sized: a total loss costs 5%)
+    entry_delta: 40         # Soliel 2026: ~40-delta, not deep OTM
+    dte: 456                # 456+ days: a >1-year hold still exits by 90 DTE (taxable long-term gains)
+    entry_filter: [sma200, hhhl]   # above the 200-day and a higher high + higher low
+    swing_order: 5
+    max_runup_pct: 30       # not after a pump: skip entries when the 20-day return is above this
+    runup_days: 20
+    half_off_pct: 100       # sell half once the position doubles
+    exit_delta: 60          # close the rest when the long call reaches 60 delta (re-enter = roll up)
+    exit_dte: 90            # never hold long options inside 90 DTE
+    short_exit_delta: 40    # spreads: close once the short leg reaches 40 delta
+    stop_pct: null
+    call_skew: null         # null = the stock skew slope; 0 = flat; negative = OTM calls richer
   pmcc:                     # defaults for mode: pmcc variants (vol_wheel/pmcc.py)
     exposure_pct: 100       # long-leg notional (shares controlled x price) as % of the account
     leap_delta: 85
@@ -572,3 +659,429 @@ backtest:
     - {name: qqq_hold, label: "Buy & hold QQQ 100%", symbols: [QQQ], mode: hold, weight: 100}
     - {name: qqq_hold_80, label: "Buy & hold QQQ 80% / T-bills 20%", symbols: [QQQ], mode: hold, weight: 80}
     - {name: basket_hold_80, label: "Buy & hold basket 80% (equal weight)", symbols: universe, mode: hold, weight: 80}
+    # Combined defensive plan (2026-10-11): plain 200-day exit for bitcoin (fast crashes, best on the BTC
+    # core), falling-200-day exit for QQQ and gold (fewer whipsaws), 10% puts on QQQ only when stretched.
+    - {name: eq_qgb_combo, label: "Equal QQQ / GLD / BTC · BTC plain exit, QQQ+GLD falling exit", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_falling: [QQQ, GLD], start: "2015-10-01"}
+    - {name: eq_qgb_combo_puts, label: "Equal QQQ / GLD / BTC · combo exits + QQQ 10% puts in High", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_falling: [QQQ, GLD], collar: {put_otm_pct: 10, dte: 182, roll_days: 91, regimes: [High], call: false,
+       symbols: [QQQ]}, start: "2015-10-01"}
+    - {name: eq_qgb_2020_combo, label: "Equal QQQ / GLD / BTC · combo exits (from 2020-09)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_falling: [QQQ, GLD], start: "2020-09-01"}
+    - {name: eq_qg_mstr_2020_combo, label: "Equal QQQ / GLD / MSTR · combo exits (from 2020-09)", mode: hold,
+       symbols: [QQQ, GLD, MSTR], weights: {QQQ: 1, GLD: 1, MSTR: 1}, trend_sma: 200,
+       trend_falling: [QQQ, GLD], start: "2020-09-01"}
+    - {name: eq_qgbx_combo, label: "QQQ / GLD / BTC 30 + XLE 10 · combo exits (XLE falling)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 30, GLD: 30, BTC-USD: 30, XLE: 10}, trend_sma: 200,
+       trend_falling: [QQQ, GLD, XLE], start: "2015-10-01"}
+    # tastylive studies (research batch 1, 2026-10-11) applied to the best QQQ wheel (qqq_puts_hold).
+    # Management: close everything at 21 DTE (never take assignment) vs our hold-to-assignment; profit targets.
+    - {name: qqq_puts_hold_close21, label: "QQQ puts always · close ITM at 21 DTE (tastytrade, no assignment)",
+       symbols: [QQQ], mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       decide_itm: close, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_tp25, label: "QQQ puts always · take profit at 25%", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, take_profit_pct: 25,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_tp75, label: "QQQ puts always · take profit at 75%", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, take_profit_pct: 75,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_tp100, label: "QQQ puts always · no profit target (21-DTE decision only)", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, take_profit_pct: 100,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    # Delta: tastytrade's 16-delta (1 SD) vs our 20 / regime deltas, and a 30-delta put.
+    - {name: qqq_puts_hold_d16, label: "QQQ puts always · fixed 16Δ puts", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, put_delta: 16, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_d30, label: "QQQ puts always · fixed 30Δ puts", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, put_delta: 30, caps: {total: 80, per_name: 80, Index: 80}}
+    # Entry filters: IVR sweep (open item) and tastylive's "25-50% of capital in use, more when VIX is high".
+    - {name: qqq_puts_hold_ivr30, label: "QQQ puts always · only at IVR ≥ 30", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 30, vix_caps: true, calls: spike, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_ivr50, label: "QQQ puts always · only at IVR ≥ 50", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 50, vix_caps: true, calls: spike, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_tastybp, label: "QQQ puts always · tastylive BP 25→50% by VIX", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, calls: spike, vix_caps: [[0, 25], [15, 30], [20, 35], [30, 40], [40, 50]],
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_d16_ivr50, label: "QQQ puts always · 16Δ puts, only at IVR ≥ 50", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 50, vix_caps: true, calls: spike, put_delta: 16,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_hold_d16_tp25, label: "QQQ puts always · 16Δ puts, take profit at 25%", symbols: [QQQ], mode: always,
+       entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, put_delta: 16, take_profit_pct: 25,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    # One side vs both (open item): puts only, assigned shares held with no calls written.
+    - {name: qqq_puts_only, label: "QQQ puts always · no calls (puts only)", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: none, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_only_d16_ivr50, label: "QQQ puts only · 16Δ at IVR ≥ 50", symbols: [QQQ], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 50, vix_caps: true, calls: none, put_delta: 16, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: mstr_puts_only, label: "MSTR · puts always · no calls", symbols: [MSTR], mode: always, entry_pct: 10,
+       entry_every_days: 2, min_ivr: 0, calls: none, start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    # MSTR long-call convexity sleeve (2026-10-11). Soliel's 2026 rule vs Jordan's deep-OTM idea vs a LEAP-like
+    # 70-delta, each spending 5% of equity per position; baseline = 5% of the account in MSTR shares.
+    - {name: mstr_shares5, label: "MSTR · 5% in shares (baseline)", symbols: [MSTR], mode: hold, weight: 5, start: "2020-09-01"}
+    - {name: mstr_sleeve40, label: "MSTR sleeve · 40Δ 456d, filter, half at +100%, out at 60Δ / 90 DTE", symbols: [MSTR],
+       mode: sleeve, start: "2020-09-01"}
+    - {name: mstr_sleeve15, label: "MSTR sleeve · 15Δ deep OTM, same rules", symbols: [MSTR], mode: sleeve,
+       entry_delta: 15, start: "2020-09-01"}
+    - {name: mstr_sleeve70, label: "MSTR sleeve · 70Δ, same rules (no 60Δ exit)", symbols: [MSTR], mode: sleeve,
+       entry_delta: 70, exit_delta: null, start: "2020-09-01"}
+    - {name: mstr_sleeve15_hold, label: "MSTR sleeve · 15Δ deep OTM, no filter, held to 90 DTE", symbols: [MSTR],
+       mode: sleeve, entry_delta: 15, entry_filter: [], max_runup_pct: null, half_off_pct: null, exit_delta: null,
+       start: "2020-09-01"}
+    - {name: mstr_sleeve40_nofilter, label: "MSTR sleeve · 40Δ, no entry filter", symbols: [MSTR], mode: sleeve,
+       entry_filter: [], max_runup_pct: null, start: "2020-09-01"}
+    - {name: mstr_sleeve_spread, label: "MSTR sleeve · 40/28Δ call debit spread", symbols: [MSTR], mode: sleeve,
+       short_delta: 28, start: "2020-09-01"}
+    # Skew sensitivity: our stock skew prices OTM calls below ATM IV; MSTR often has upside skew in rallies.
+    - {name: mstr_sleeve40_flat, label: "MSTR sleeve · 40Δ, flat skew", symbols: [MSTR], mode: sleeve, call_skew: 0,
+       start: "2020-09-01"}
+    - {name: mstr_sleeve15_flat, label: "MSTR sleeve · 15Δ, flat skew", symbols: [MSTR], mode: sleeve, entry_delta: 15,
+       call_skew: 0, start: "2020-09-01"}
+    - {name: mstr_sleeve15_upskew, label: "MSTR sleeve · 15Δ, upside skew (-0.3)", symbols: [MSTR], mode: sleeve,
+       entry_delta: 15, call_skew: -0.3, start: "2020-09-01"}
+    - {name: mstr_sleeve_spread15, label: "MSTR sleeve · 40/15Δ wide call debit spread", symbols: [MSTR], mode: sleeve,
+       short_delta: 15, start: "2020-09-01"}
+    - {name: mstr_sleeve15_nofilter, label: "MSTR sleeve · 15Δ, no entry filter, half at +100%, 60Δ / 90 DTE exits",
+       symbols: [MSTR], mode: sleeve, entry_delta: 15, entry_filter: [], max_runup_pct: null, start: "2020-09-01"}
+    - {name: mstr_sleeve25_nofilter, label: "MSTR sleeve · 25Δ, no entry filter, same exits", symbols: [MSTR], mode: sleeve,
+       entry_delta: 25, entry_filter: [], max_runup_pct: null, start: "2020-09-01"}
+    - {name: mstr_sleeve15_sma, label: "MSTR sleeve · 15Δ, only above the 200-day", symbols: [MSTR], mode: sleeve,
+       entry_delta: 15, entry_filter: [sma200], max_runup_pct: null, start: "2020-09-01"}
+    # Fair tastytrade book in an IRA (2026-10-11): six liquid ETFs, 16-delta puts ~45 DTE, a new put per name
+    # every 5 sessions, close at 50% or at 21 DTE (never assigned), no calls. Cash-secured: entry_pct = put
+    # notional (5%), deployment by VIX. Spreads (the IRA's margin substitute): 16/5-delta put credit spreads,
+    # entry_pct = max loss per trade (1.5%), total max loss 25-50% of the account by VIX (Tom: 20-35% BP).
+    - {name: spy_hold, label: "Buy & hold SPY 100%", symbols: [SPY], mode: hold, weight: 100}
+    - {name: tasty_csp, label: "tastytrade book · cash-secured 16Δ puts, 6 ETFs, close 50% / 21 DTE",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, entry_pct: 5, entry_every_days: 5,
+       min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
+       caps: {total: 80, per_name: 25, Index: 50}}
+    - {name: tasty_csp_ivr30, label: "tastytrade book · cash-secured, only at IVR ≥ 30",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, entry_pct: 5, entry_every_days: 5,
+       min_ivr: 30, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
+       caps: {total: 80, per_name: 25, Index: 50}}
+    - {name: tasty_spreads, label: "tastytrade book · 16/5Δ put spreads, 1.5% risk each, 25-50% by VIX",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, put_wing_delta: 5, entry_pct: 1.5,
+       entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 25], [20, 35], [30, 50]], caps: {total: 50, per_name: 12, Index: 24}}
+    - {name: tasty_spreads_ivr30, label: "tastytrade book · put spreads, only at IVR ≥ 30",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, put_wing_delta: 5, entry_pct: 1.5,
+       entry_every_days: 5, min_ivr: 30, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 25], [20, 35], [30, 50]], caps: {total: 50, per_name: 12, Index: 24}}
+    - {name: tasty_wheel, label: "Same 6 ETFs · our wheel (16Δ puts held to assignment, up-spike calls)",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, entry_pct: 5, entry_every_days: 5,
+       min_ivr: 0, calls: spike, vix_caps: true, caps: {total: 80, per_name: 25, Index: 50}}
+    # Blends: separate sleeves of one account at fixed weights, rebalanced monthly ("tbills" = cash yield).
+    - {name: blend_tom, label: "Blend · Tom's split: 30% tastytrade spreads / 30% SPY / 40% T-bills", mode: blend,
+       weights: {tasty_spreads: 30, spy_hold: 30, tbills: 40}}
+    - {name: blend_core_income, label: "Blend · 60% QQQ/GLD falling-exit core / 30% tastytrade spreads / 10% T-bills",
+       mode: blend, weights: {eq_qg_2007_trend_falling: 60, tasty_spreads: 30, tbills: 10}}
+    - {name: blend_core_income_btc, label: "Blend · 60% QQQ/GLD/BTC combo-exit core / 30% spreads / 10% T-bills",
+       mode: blend, weights: {eq_qgb_combo: 60, tasty_spreads: 30, tbills: 10}, start: "2015-10-01"}
+    - {name: blend_tom_csp, label: "Blend · Tom's split with cash-secured puts: 30% tasty CSP / 30% SPY / 40% T-bills",
+       mode: blend, weights: {tasty_csp: 30, spy_hold: 30, tbills: 40}}
+    - {name: blend_core_csp, label: "Blend · 60% QQQ/GLD falling-exit core / 30% tasty CSP / 10% T-bills", mode: blend,
+       weights: {eq_qg_2007_trend_falling: 60, tasty_csp: 30, tbills: 10}}
+    - {name: blend_core_wheel, label: "Blend · 60% QQQ/GLD falling-exit core / 40% 6-ETF wheel", mode: blend,
+       weights: {eq_qg_2007_trend_falling: 60, tasty_wheel: 40}}
+    - {name: blend_core_csp_btc, label: "Blend · 60% QQQ/GLD/BTC combo-exit core / 30% tasty CSP / 10% T-bills",
+       mode: blend, weights: {eq_qgb_combo: 60, tasty_csp: 30, tbills: 10}, start: "2015-10-01"}
+    # 42 Macro KISS (2026-10-11; spec in vol-wheel-research/notes/macro42_KISS_spec.md): 60% stocks / 30% gold /
+    # 10% bitcoin, each scaled daily by its own trend state (1 above a rising 200-day, 0.5 if only one holds,
+    # 0 below a falling one; the signal formula is our proxy: theirs is unpublished), next-close execution,
+    # monthly rebalance, T-bills for the rest. regime_vote = proxy for their risk-off regime (halves stocks + BTC).
+    - {name: kiss_naked, label: "KISS base · SPY/GLD/BTC 60/30/10, monthly rebalance, no signal (from 2018)", mode: hold,
+       symbols: [SPY, GLD, BTC-USD], weights: {SPY: 60, GLD: 30, BTC-USD: 10}, start: "2018-01-01"}
+    - {name: kiss, label: "KISS · 60/30/10 x daily 3-state trend signal (from 2018)", mode: hold,
+       symbols: [SPY, GLD, BTC-USD], weights: {SPY: 60, GLD: 30, BTC-USD: 10}, states: {}, start: "2018-01-01"}
+    - {name: kiss_regime, label: "KISS · + risk-off regime vote halves SPY and BTC", mode: hold,
+       symbols: [SPY, GLD, BTC-USD], weights: {SPY: 60, GLD: 30, BTC-USD: 10}, states: {},
+       regime_vote: {symbols: [SPY, IWM, EFA, EEM, HYG], halve: [SPY, BTC-USD]}, start: "2018-01-01"}
+    - {name: kiss_binary, label: "KISS · daily signal, no half state (out only below a falling 200-day)", mode: hold,
+       symbols: [SPY, GLD, BTC-USD], weights: {SPY: 60, GLD: 30, BTC-USD: 10}, states: {neutral: 1.0},
+       start: "2018-01-01"}
+    - {name: kiss_qqq, label: "KISS with QQQ · 60/30/10 x 3-state signal (from 2018)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 60, GLD: 30, BTC-USD: 10}, states: {}, start: "2018-01-01"}
+    - {name: kiss_2015, label: "KISS · from 2015-10 (BTC hindsight)", mode: hold,
+       symbols: [SPY, GLD, BTC-USD], weights: {SPY: 60, GLD: 30, BTC-USD: 10}, states: {}, start: "2015-10-01"}
+    - {name: eq_qgb_states, label: "Our core assets (equal QQQ/GLD/BTC) x KISS 3-state daily signal (from 2015-10)",
+       mode: hold, symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, states: {}, start: "2015-10-01"}
+    - {name: eq_qgb_combo_2018, label: "Our core · equal QQQ/GLD/BTC combo exits (from 2018, KISS window)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, trend_sma: 200,
+       trend_falling: [QQQ, GLD], start: "2018-01-01"}
+    - {name: eq_qgb_states_2018, label: "Our core assets x KISS signal (from 2018)", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD], weights: {QQQ: 1, GLD: 1, BTC-USD: 1}, states: {}, start: "2018-01-01"}
+    - {name: sixty_forty_2018, label: "60/40 · SPY/AGG hold (KISS's benchmark, from 2018)", mode: hold,
+       symbols: [SPY, AGG], weights: {SPY: 60, AGG: 40}, start: "2018-01-01"}
+    - {name: kiss_sg_2007, label: "KISS ex-bitcoin · SPY 60 / GLD 30 x 3-state signal, 10% T-bills (2007→)", mode: hold,
+       symbols: [SPY, GLD], weights: {SPY: 60, GLD: 30}, weight: 90, states: {}}
+    - {name: sg_6030_2007, label: "SPY 60 / GLD 30 / T-bills 10 hold (2007→)", mode: hold, symbols: [SPY, GLD],
+       weights: {SPY: 60, GLD: 30}, weight: 90}
+    # Core design (2026-10-11, docs/STRATEGY.md): exit rule and bitcoin weight, run through the start-date test.
+    - {name: core_x_combo, label: "Core QQQ/GLD/BTC/XLE 30/30/30/10 · monthly combo exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 30, GLD: 30, BTC-USD: 30, XLE: 10}, trend_sma: 200,
+       trend_falling: [QQQ, GLD, XLE], start: "2015-10-01"}
+    - {name: core_x_states, label: "Core 30/30/30/10 · daily 3-state signal", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 30, GLD: 30, BTC-USD: 30, XLE: 10}, states: {},
+       start: "2015-10-01"}
+    - {name: core_btc20_states, label: "Core 35/35/20/10 (BTC 20%) · daily 3-state", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 35, GLD: 35, BTC-USD: 20, XLE: 10}, states: {},
+       start: "2015-10-01"}
+    - {name: core_btc10_states, label: "Core 40/40/10/10 (BTC 10%) · daily 3-state", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 40, GLD: 40, BTC-USD: 10, XLE: 10}, states: {},
+       start: "2015-10-01"}
+    - {name: core_btc20_combo, label: "Core 35/35/20/10 (BTC 20%) · monthly combo exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 35, GLD: 35, BTC-USD: 20, XLE: 10}, trend_sma: 200,
+       trend_falling: [QQQ, GLD, XLE], start: "2015-10-01"}
+    - {name: core_x_hold, label: "Core 30/30/30/10 · held, monthly rebalance, no exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 30, GLD: 30, BTC-USD: 30, XLE: 10}, start: "2015-10-01"}
+    - {name: qqq_states, label: "QQQ · daily 3-state signal (2007→)", mode: hold, symbols: [QQQ], states: {}}
+    - {name: eq_qg_states, label: "Equal QQQ / GLD · daily 3-state signal (2007→)", mode: hold, symbols: [QQQ, GLD],
+       weights: {QQQ: 1, GLD: 1}, states: {}}
+    - {name: qg_x_states, label: "QQQ / GLD / XLE 45/45/10 · daily 3-state (2007→, no bitcoin)", mode: hold,
+       symbols: [QQQ, GLD, XLE], weights: {QQQ: 45, GLD: 45, XLE: 10}, states: {}}
+    - {name: qg_x_combo, label: "QQQ / GLD / XLE 45/45/10 · monthly falling exits (2007→)", mode: hold,
+       symbols: [QQQ, GLD, XLE], weights: {QQQ: 45, GLD: 45, XLE: 10}, trend_sma: 200, trend_falling: true}
+    # Hybrid: daily 3-state signal on bitcoin only (fast crashes), monthly falling-200 exits on the rest.
+    - {name: btc_states, label: "BTC · daily 3-state signal", mode: hold, symbols: [BTC-USD], states: {}, start: "2015-10-01"}
+    - {name: qgx_falling, label: "QQQ / GLD / XLE 3/3/1 · monthly falling exits", mode: hold, symbols: [QQQ, GLD, XLE],
+       weights: {QQQ: 30, GLD: 30, XLE: 10}, trend_sma: 200, trend_falling: true}
+    - {name: core_hybrid, label: "Core 30/30/30/10 · BTC daily 3-state, QQQ/GLD/XLE monthly falling exits", mode: blend,
+       weights: {qgx_falling: 70, btc_states: 30}, start: "2015-10-01"}
+    - {name: core_hybrid20, label: "Core 35/35/20/10 · hybrid exits (BTC daily, rest monthly)", mode: blend,
+       weights: {qgx_falling: 80, btc_states: 20}, start: "2015-10-01"}
+    # Where MSTR premium goes (2026-10-11): 30-delta puts ~45 DTE, a new one every 5 sessions, 10% notional each,
+    # close at 50% or 21 DTE, never assigned. Premium/yr vs the net return shows the losses that offset it.
+    - {name: mstr_csp30, label: "MSTR · 30Δ puts, close 50% / 21 DTE, never assigned", symbols: [MSTR], mode: always,
+       put_delta: 30, entry_pct: 10, entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close,
+       start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_csp20, label: "MSTR · 20Δ puts, close 50% / 21 DTE, never assigned", symbols: [MSTR], mode: always,
+       put_delta: 20, entry_pct: 10, entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close,
+       start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    - {name: mstr_csp30_full, label: "MSTR · 30Δ puts, close 50% / 21 DTE · kept fully deployed (new put every session)",
+       symbols: [MSTR], mode: always, put_delta: 30, entry_pct: 20, entry_every_days: 1, min_ivr: 0, calls: none,
+       decide_itm: close, start: "2020-09-01", caps: {total: 80, per_name: 80, Crypto: 80}}
+    # Convexity sleeve beyond MSTR (2026-10-11): same rules (15Δ / 40Δ, no filter, half at +100%, 60Δ / 90 DTE)
+    # on other volatile names; BTC-USD has no listed options before 2024, so it's a modelled what-if.
+    - {name: tsla_sleeve15, label: "TSLA sleeve · 15Δ, no filter", symbols: [TSLA], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null, start: "2012-01-01"}
+    - {name: tsla_sleeve40, label: "TSLA sleeve · 40Δ, no filter", symbols: [TSLA], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null, start: "2012-01-01"}
+    - {name: tsla_shares5, label: "TSLA · 5% in shares", symbols: [TSLA], mode: hold, weight: 5, start: "2012-01-01"}
+    - {name: nvda_sleeve15, label: "NVDA sleeve · 15Δ, no filter", symbols: [NVDA], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null}
+    - {name: nvda_sleeve40, label: "NVDA sleeve · 40Δ, no filter", symbols: [NVDA], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null}
+    - {name: nvda_shares5, label: "NVDA · 5% in shares", symbols: [NVDA], mode: hold, weight: 5}
+    - {name: btc_sleeve15, label: "BTC sleeve · 15Δ, no filter (modelled)", symbols: [BTC-USD], mode: sleeve,
+       entry_delta: 15, entry_filter: [], max_runup_pct: null, start: "2015-10-01"}
+    - {name: btc_sleeve40, label: "BTC sleeve · 40Δ, no filter (modelled)", symbols: [BTC-USD], mode: sleeve,
+       entry_delta: 40, entry_filter: [], max_runup_pct: null, start: "2015-10-01"}
+    - {name: btc_shares5, label: "BTC · 5% held", symbols: [BTC-USD], mode: hold, weight: 5, start: "2015-10-01"}
+    - {name: qqq_sleeve15, label: "QQQ sleeve · 15Δ, no filter", symbols: [QQQ], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null}
+    - {name: qqq_sleeve40, label: "QQQ sleeve · 40Δ, no filter", symbols: [QQQ], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null}
+    - {name: qqq_shares5, label: "QQQ · 5% in shares", symbols: [QQQ], mode: hold, weight: 5}
+    # Term-structure check: price the long-dated calls at 1.2x the 30-day IV (LEAP IV runs above 30-day in calm markets).
+    - {name: qqq_sleeve15_iv12, label: "QQQ sleeve · 15Δ, LEAP IV 1.2x", symbols: [QQQ], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
+    - {name: mstr_sleeve15_iv12, label: "MSTR sleeve · 15Δ no filter, LEAP IV 1.2x", symbols: [MSTR], mode: sleeve,
+       entry_delta: 15, entry_filter: [], max_runup_pct: null, iv_scale: 1.2, start: "2020-09-01"}
+    - {name: nvda_sleeve15_iv12, label: "NVDA sleeve · 15Δ, LEAP IV 1.2x", symbols: [NVDA], mode: sleeve, entry_delta: 15,
+       entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
+    - {name: qqq_sleeve40_iv12, label: "QQQ sleeve · 40Δ, LEAP IV 1.2x", symbols: [QQQ], mode: sleeve, entry_delta: 40,
+       entry_filter: [], max_runup_pct: null, iv_scale: 1.2}
+    # Start small, scale in (Jordan 2026-10-11, tastytrade's "start small so you can keep adding"): each new put's
+    # size x a multiplier by the name's drawdown from its 1-year high (`size_by_dd`), same total caps as the flat
+    # versions. Controls: the same book at the small starting size, flat.
+    - {name: qqq_puts_small, label: "QQQ puts always + spike calls · small flat 3% puts", symbols: [QQQ], mode: always,
+       entry_pct: 3, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_scalein, label: "QQQ puts always + spike calls · 3% at highs → 15% at −20%", symbols: [QQQ],
+       mode: always, entry_pct: 3, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       size_by_dd: [[0, 1], [5, 2], [10, 3], [20, 5]], caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_scalein_steep, label: "QQQ puts always + spike calls · 2% at highs → 20% at −30%", symbols: [QQQ],
+       mode: always, entry_pct: 2, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       size_by_dd: [[0, 1], [10, 3], [20, 6], [30, 10]], caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: tasty_wheel_scalein, label: "6-ETF wheel · 2% puts at highs → 8% at −20%", symbols: [SPY, QQQ, IWM, GLD, TLT, XLE],
+       mode: always, put_delta: 16, entry_pct: 2, entry_every_days: 5, min_ivr: 0, calls: spike, vix_caps: true,
+       size_by_dd: [[0, 1], [5, 2], [10, 3], [20, 4]], caps: {total: 80, per_name: 25, Index: 50}}
+    - {name: tasty_csp_scalein, label: "tastytrade book (never assigned) · 2% puts at highs → 8% at −20%",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, entry_pct: 2, entry_every_days: 5,
+       min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
+       size_by_dd: [[0, 1], [5, 2], [10, 3], [20, 4]], caps: {total: 80, per_name: 25, Index: 50}}
+    - {name: mstr_puts_scalein, label: "MSTR puts always + spike calls · 3% at highs → 15% at −60%", symbols: [MSTR],
+       mode: always, entry_pct: 3, entry_every_days: 2, min_ivr: 0, calls: spike, start: "2020-09-01",
+       size_by_dd: [[0, 1], [20, 2], [40, 3], [60, 5]], caps: {total: 80, per_name: 80, Crypto: 80}}
+    # Pyramiding by total exposure into high-conviction assets (Jordan 2026-10-11): hold back a reserve at the high,
+    # buy more of the asset the further it falls (stock), trim back toward the base weight as it recovers to new
+    # highs. mode: target, exec: stock; alloc = [[drawdown % from the all-time high, % of the sleeve invested]].
+    - {name: qqq_pyr, label: "QQQ pyramid · 80% at the high → 100% at −30%", symbols: [QQQ], mode: target, exec: stock,
+       alloc: [[0, 80], [10, 87], [20, 94], [30, 100]]}
+    - {name: qqq_pyr_steep, label: "QQQ pyramid · 60% at the high → 100% at −30%", symbols: [QQQ], mode: target,
+       exec: stock, alloc: [[0, 60], [10, 75], [20, 90], [30, 100]]}
+    - {name: qqq_pyr_trend, label: "QQQ pyramid 80→100% · capped at 50% below a falling 200-day", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 50}
+    - {name: gld_pyr, label: "GLD pyramid · 80% → 100% at −30%", symbols: [GLD], mode: target, exec: stock,
+       alloc: [[0, 80], [10, 87], [20, 94], [30, 100]]}
+    - {name: xle_pyr, label: "XLE pyramid · 80% → 100% at −30%", symbols: [XLE], mode: target, exec: stock,
+       alloc: [[0, 80], [10, 87], [20, 94], [30, 100]]}
+    - {name: btc_pyr, label: "BTC pyramid · 70% at the high → 100% at −70%", symbols: [BTC-USD], mode: target, exec: stock,
+       alloc: [[0, 70], [25, 80], [50, 90], [70, 100]], start: "2015-10-01"}
+    - {name: btc_pyr_trend, label: "BTC pyramid 70→100% · capped at 30% below a falling 200-day", symbols: [BTC-USD],
+       mode: target, exec: stock, alloc: [[0, 70], [25, 80], [50, 90], [70, 100]], trend_cap_pct: 30, start: "2015-10-01"}
+    - {name: btc_hold_80, label: "BTC 80% held / 20% T-bills", symbols: [BTC-USD], mode: hold, weight: 80, start: "2015-10-01"}
+    - {name: core_btc20_hold, label: "Core 35/35/20/10 · held, monthly rebalance, no exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 35, GLD: 35, BTC-USD: 20, XLE: 10}, start: "2015-10-01"}
+    - {name: core_btc20_80, label: "Core 35/35/20/10 · 80% invested, 20% T-bills, no exits", mode: hold,
+       symbols: [QQQ, GLD, BTC-USD, XLE], weights: {QQQ: 35, GLD: 35, BTC-USD: 20, XLE: 10}, weight: 80,
+       start: "2015-10-01"}
+    - {name: core_pyr, label: "Core 35/35/20/10 · each sleeve pyramids into its own drawdown (80/70% at highs)",
+       mode: blend, weights: {qqq_pyr: 35, gld_pyr: 35, btc_pyr: 20, xle_pyr: 10}, start: "2015-10-01"}
+    - {name: core_pyr_trend, label: "Core 35/35/20/10 · pyramids, QQQ and BTC capped below a falling 200-day",
+       mode: blend, weights: {qqq_pyr_trend: 35, gld_pyr: 35, btc_pyr_trend: 20, xle_pyr: 10}, start: "2015-10-01"}
+    # Pyramid into dips only while the trend holds; out (0%) below a falling 200-day.
+    - {name: qqq_pyr_exit, label: "QQQ pyramid 80→100% in uptrends · out below a falling 200-day", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 0}
+    - {name: gld_pyr_exit, label: "GLD pyramid 80→100% · out below a falling 200-day", symbols: [GLD], mode: target,
+       exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 0}
+    - {name: xle_pyr_exit, label: "XLE pyramid 80→100% · out below a falling 200-day", symbols: [XLE], mode: target,
+       exec: stock, alloc: [[0, 80], [10, 87], [20, 94], [30, 100]], trend_cap_pct: 0}
+    - {name: btc_pyr_exit, label: "BTC pyramid 70→100% · out below a falling 200-day", symbols: [BTC-USD], mode: target,
+       exec: stock, alloc: [[0, 70], [25, 80], [50, 90], [70, 100]], trend_cap_pct: 0, start: "2015-10-01"}
+    - {name: core_pyr_exit, label: "Core 35/35/20/10 · pyramid dips in uptrends, out below a falling 200-day",
+       mode: blend, weights: {qqq_pyr_exit: 35, gld_pyr_exit: 35, btc_pyr_exit: 20, xle_pyr_exit: 10}, start: "2015-10-01"}
+    - {name: core_combo_80, label: "Account 80% core (combo exits) + 20% T-bills reserve, never deployed", mode: blend,
+       weights: {core_btc20_combo: 80, tbills: 20}, start: "2015-10-01"}
+    - {name: qqq_trend_80, label: "80% QQQ falling-200 exit + 20% T-bills reserve, never deployed", mode: blend,
+       weights: {qqq_trend_falling: 80, tbills: 20}}
+    # Per-ticker pyramid ranges calibrated to each asset's history (Jordan 2026-10-11: no trend exit; fully invested
+    # only near its historical worst drawdown). Worst drawdowns in our data: QQQ −54% (2008; −83% in 2000–02, before
+    # the data), GLD −46%, BTC −83%, XLE −82% (price only, no dividends).
+    - {name: qqq_pyr_cal55, label: "QQQ pyramid 80% → 100% at −55% (worst in data)", symbols: [QQQ], mode: target,
+       exec: stock, alloc: [[0, 80], [15, 85], [30, 90], [45, 95], [55, 100]]}
+    - {name: qqq_pyr_cal80, label: "QQQ pyramid 80% → 100% at −80% (2000-02 crash)", symbols: [QQQ], mode: target,
+       exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]]}
+    - {name: gld_pyr_cal, label: "GLD pyramid 80% → 100% at −45%", symbols: [GLD], mode: target, exec: stock,
+       alloc: [[0, 80], [15, 87], [30, 94], [45, 100]]}
+    - {name: btc_pyr_cal, label: "BTC pyramid 70% → 100% at −80%", symbols: [BTC-USD], mode: target, exec: stock,
+       alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], start: "2015-10-01"}
+    - {name: xle_pyr_cal, label: "XLE pyramid 80% → 100% at −75%", symbols: [XLE], mode: target, exec: stock,
+       alloc: [[0, 80], [25, 87], [50, 94], [75, 100]]}
+    - {name: core_pyr_cal55, label: "Core 35/35/20/10 · per-ticker pyramid ranges, no exits (QQQ full at −55%)",
+       mode: blend, weights: {qqq_pyr_cal55: 35, gld_pyr_cal: 35, btc_pyr_cal: 20, xle_pyr_cal: 10}, start: "2015-10-01"}
+    - {name: core_pyr_cal80, label: "Core 35/35/20/10 · per-ticker pyramid ranges, no exits (QQQ full at −80%)",
+       mode: blend, weights: {qqq_pyr_cal80: 35, gld_pyr_cal: 35, btc_pyr_cal: 20, xle_pyr_cal: 10}, start: "2015-10-01"}
+    # Jordan's full plan (2026-10-11): pyramid in as it falls (per-ticker ranges) AND scale out as the bull matures
+    # (calls assigned higher and higher), so the account is light going into the next bear. alloc_gain caps the
+    # share % by the gain from the 3-year low (gain_lookback_days 756). exec options = puts on the shortfall,
+    # calls on the excess (assignment does the selling); exec stock = same targets traded directly.
+    - {name: qqq_cycle, label: "QQQ cycle · pyramid to −80% + scale out to 40% at +200% off the 3y low · stock", symbols: [QQQ],
+       mode: target, exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]],
+       alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
+    - {name: qqq_cycle_opts, label: "QQQ cycle · same targets via puts / assigned calls", symbols: [QQQ], mode: target,
+       exec: options, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]],
+       alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]]}
+    - {name: gld_cycle, label: "GLD cycle · pyramid to −45% + scale out to 50% at +150%", symbols: [GLD], mode: target,
+       exec: stock, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: gld_cycle_opts, label: "GLD cycle · via options", symbols: [GLD], mode: target, exec: options,
+       alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: xle_cycle, label: "XLE cycle · pyramid to −75% + scale out to 50% at +150%", symbols: [XLE], mode: target,
+       exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: xle_cycle_opts, label: "XLE cycle · via options", symbols: [XLE], mode: target, exec: options,
+       alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]]}
+    - {name: btc_cycle, label: "BTC cycle · pyramid to −80% + scale out to 30% at +1500% off the 3y low", symbols: [BTC-USD],
+       mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]],
+       alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], start: "2015-10-01"}
+    - {name: btc_cycle_opts, label: "BTC cycle · via options (modelled)", symbols: [BTC-USD], mode: target, exec: options,
+       alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]],
+       index: false, start: "2015-10-01"}
+    - {name: core_cycle, label: "Core 35/35/20/10 · pyramid in + scale out (stock)", mode: blend,
+       weights: {qqq_cycle: 35, gld_cycle: 35, btc_cycle: 20, xle_cycle: 10}, start: "2015-10-01"}
+    - {name: core_cycle_opts, label: "Core 35/35/20/10 · pyramid in + scale out via puts / assigned calls", mode: blend,
+       weights: {qqq_cycle_opts: 35, gld_cycle_opts: 35, btc_cycle_opts: 20, xle_cycle_opts: 10}, start: "2015-10-01"}
+    # Scale-out cap sensitivity (2026-10-11): gentle / aggressive caps, and 2y / 5y lookbacks for the base caps.
+    - {name: qqq_cyc_gentle, label: "QQQ cycle · gentle", symbols: [QQQ], mode: target, exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [75, 90], [150, 70], [250, 50]], gain_lookback_days: 756}
+    - {name: gld_cyc_gentle, label: "GLD cycle · gentle", symbols: [GLD], mode: target, exec: stock, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [75, 90], [150, 70], [250, 50]], gain_lookback_days: 756}
+    - {name: xle_cyc_gentle, label: "XLE cycle · gentle", symbols: [XLE], mode: target, exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [75, 90], [150, 70], [250, 50]], gain_lookback_days: 756}
+    - {name: btc_cyc_gentle, label: "BTC-USD cycle · gentle", symbols: [BTC-USD], mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [400, 85], [1000, 65], [2000, 45]], gain_lookback_days: 756, start: "2015-10-01"}
+    - {name: core_cyc_gentle, label: "Core cycle · gentle caps", mode: blend, weights: {"qqq_cyc_gentle": 35, "gld_cyc_gentle": 35, "xle_cyc_gentle": 10, "btc_cyc_gentle": 20}, start: "2015-10-01"}
+    - {name: qqq_cyc_aggr, label: "QQQ cycle · aggr", symbols: [QQQ], mode: target, exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]], gain_lookback_days: 756}
+    - {name: gld_cyc_aggr, label: "GLD cycle · aggr", symbols: [GLD], mode: target, exec: stock, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]], gain_lookback_days: 756}
+    - {name: xle_cyc_aggr, label: "XLE cycle · aggr", symbols: [XLE], mode: target, exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [30, 85], [60, 65], [100, 45], [150, 35]], gain_lookback_days: 756}
+    - {name: btc_cyc_aggr, label: "BTC-USD cycle · aggr", symbols: [BTC-USD], mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [100, 80], [250, 60], [500, 40], [1000, 30]], gain_lookback_days: 756, start: "2015-10-01"}
+    - {name: core_cyc_aggr, label: "Core cycle · aggressive caps", mode: blend, weights: {"qqq_cyc_aggr": 35, "gld_cyc_aggr": 35, "xle_cyc_aggr": 10, "btc_cyc_aggr": 20}, start: "2015-10-01"}
+    - {name: qqq_cyc_lb504, label: "QQQ cycle · lb504", symbols: [QQQ], mode: target, exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]], gain_lookback_days: 504}
+    - {name: gld_cyc_lb504, label: "GLD cycle · lb504", symbols: [GLD], mode: target, exec: stock, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]], gain_lookback_days: 504}
+    - {name: xle_cyc_lb504, label: "XLE cycle · lb504", symbols: [XLE], mode: target, exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]], gain_lookback_days: 504}
+    - {name: btc_cyc_lb504, label: "BTC-USD cycle · lb504", symbols: [BTC-USD], mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], gain_lookback_days: 504, start: "2015-10-01"}
+    - {name: core_cyc_lb504, label: "Core cycle · base caps, 2-year low", mode: blend, weights: {"qqq_cyc_lb504": 35, "gld_cyc_lb504": 35, "xle_cyc_lb504": 10, "btc_cyc_lb504": 20}, start: "2015-10-01"}
+    - {name: qqq_cyc_lb1260, label: "QQQ cycle · lb1260", symbols: [QQQ], mode: target, exec: stock, alloc: [[0, 80], [20, 85], [40, 90], [60, 95], [80, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50], [200, 40]], gain_lookback_days: 1260}
+    - {name: gld_cyc_lb1260, label: "GLD cycle · lb1260", symbols: [GLD], mode: target, exec: stock, alloc: [[0, 80], [15, 87], [30, 94], [45, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]], gain_lookback_days: 1260}
+    - {name: xle_cyc_lb1260, label: "XLE cycle · lb1260", symbols: [XLE], mode: target, exec: stock, alloc: [[0, 80], [25, 87], [50, 94], [75, 100]], alloc_gain: [[0, 100], [50, 90], [100, 70], [150, 50]], gain_lookback_days: 1260}
+    - {name: btc_cyc_lb1260, label: "BTC-USD cycle · lb1260", symbols: [BTC-USD], mode: target, exec: stock, alloc: [[0, 70], [25, 78], [50, 86], [80, 100]], alloc_gain: [[0, 100], [200, 85], [400, 65], [800, 45], [1500, 30]], gain_lookback_days: 1260, start: "2015-10-01"}
+    - {name: core_cyc_lb1260, label: "Core cycle · base caps, 5-year low", mode: blend, weights: {"qqq_cyc_lb1260": 35, "gld_cyc_lb1260": 35, "xle_cyc_lb1260": 10, "btc_cyc_lb1260": 20}, start: "2015-10-01"}
+    # Weights by account size / risk profile (2026-10-11): cycle sleeves with aggressive caps, BTC 0–50% of the core.
+    - {name: mixc_btc50, label: "Cycle core · QQQ 25 / GLD 15 / BTC 50 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 25, "gld_cyc_aggr": 15, "xle_cyc_aggr": 10, "btc_cyc_aggr": 50}, start: "2015-10-01"}
+    - {name: mixc_btc40, label: "Cycle core · QQQ 30 / GLD 20 / BTC 40 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 30, "gld_cyc_aggr": 20, "xle_cyc_aggr": 10, "btc_cyc_aggr": 40}, start: "2015-10-01"}
+    - {name: mixc_btc30, label: "Cycle core · QQQ 35 / GLD 25 / BTC 30 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 35, "gld_cyc_aggr": 25, "xle_cyc_aggr": 10, "btc_cyc_aggr": 30}, start: "2015-10-01"}
+    - {name: mixc_btc20, label: "Cycle core · QQQ 35 / GLD 35 / BTC 20 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 35, "gld_cyc_aggr": 35, "xle_cyc_aggr": 10, "btc_cyc_aggr": 20}, start: "2015-10-01"}
+    - {name: mixc_btc10, label: "Cycle core · QQQ 40 / GLD 40 / BTC 10 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 40, "gld_cyc_aggr": 40, "xle_cyc_aggr": 10, "btc_cyc_aggr": 10}, start: "2015-10-01"}
+    - {name: mixc_btc0, label: "Cycle core · QQQ 50 / GLD 40 / BTC 0 / XLE 10 (aggressive caps)", mode: blend, weights: {"qqq_cyc_aggr": 50, "gld_cyc_aggr": 40, "xle_cyc_aggr": 10}, start: "2015-10-01"}
+    - {name: mixc_btc60, label: "Cycle core · QQQ 20 / GLD 15 / BTC 60 / XLE 10 (aggressive caps)", mode: blend,
+       weights: {qqq_cyc_aggr: 20, gld_cyc_aggr: 15, btc_cyc_aggr: 60, xle_cyc_aggr: 10}, start: "2015-10-01"}
+    # Rotation toward the laggards (Jordan 2026-10-11): at each monthly rebalance, weight x (1 + k x drawdown), capped.
+    - {name: mixc_btc20_tilt1, label: "Cycle core 35/35/20/10 · tilt to laggards k=1", mode: blend,
+       weights: {qqq_cyc_aggr: 35, gld_cyc_aggr: 35, btc_cyc_aggr: 20, xle_cyc_aggr: 10}, tilt: {k: 1, max_mult: 3}, start: "2015-10-01"}
+    - {name: mixc_btc20_tilt2, label: "Cycle core 35/35/20/10 · tilt to laggards k=2", mode: blend,
+       weights: {qqq_cyc_aggr: 35, gld_cyc_aggr: 35, btc_cyc_aggr: 20, xle_cyc_aggr: 10}, tilt: {k: 2, max_mult: 3}, start: "2015-10-01"}
+    - {name: mixc_btc40_tilt1, label: "Cycle core 30/20/40/10 · tilt to laggards k=1", mode: blend,
+       weights: {qqq_cyc_aggr: 30, gld_cyc_aggr: 20, btc_cyc_aggr: 40, xle_cyc_aggr: 10}, tilt: {k: 1, max_mult: 3}, start: "2015-10-01"}
+    - {name: qgx_cyc, label: "Cycle QQQ / GLD / XLE 45/45/10 · fixed weights (2007→)", mode: blend,
+       weights: {qqq_cyc_aggr: 45, gld_cyc_aggr: 45, xle_cyc_aggr: 10}}
+    - {name: qgx_cyc_tilt1, label: "Cycle QQQ / GLD / XLE 45/45/10 · tilt to laggards k=1 (2007→)", mode: blend,
+       weights: {qqq_cyc_aggr: 45, gld_cyc_aggr: 45, xle_cyc_aggr: 10}, tilt: {k: 1, max_mult: 3}}
+    - {name: qgx_cyc_tilt2, label: "Cycle QQQ / GLD / XLE 45/45/10 · tilt to laggards k=2 (2007→)", mode: blend,
+       weights: {qqq_cyc_aggr: 45, gld_cyc_aggr: 45, xle_cyc_aggr: 10}, tilt: {k: 2, max_mult: 3}}
+    # Tom Sosnoff's "25-delta is optimal" (Puts, Calls and Hedges guide, 2026-10-12): fixed 25Δ, IVR ≥ 50.
+    - {name: qqq_puts_hold_d25_ivr50, label: "QQQ puts always · fixed 25Δ, IVR ≥ 50 (Tom's optimal)", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 50, vix_caps: true, calls: spike, put_delta: 25,
+       caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: qqq_puts_d25_close21, label: "QQQ puts always · fixed 25Δ, close at 21 DTE (never assigned)", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: none, put_delta: 25,
+       decide_itm: close, caps: {total: 80, per_name: 80, Index: 80}}
+    - {name: tasty_csp_d25, label: "tastytrade book · cash-secured 25Δ puts, 6 ETFs, close 50% / 21 DTE",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 25, entry_pct: 5, entry_every_days: 5,
+       min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50, vix_caps: true,
+       caps: {total: 80, per_name: 25, Index: 50}}
+    # PMCC with calls only far above the LEAP (Jordan 2026-10-12): 80Δ LEAP ~1 year (rolled at 120 DTE) vs shares at
+    # the same notional, short calls 10Δ ~45 DTE (bought back once 85% of the extrinsic is captured), or no calls.
+    - {name: qqq_pmcc_far, label: "QQQ PMCC · 80Δ LEAP + 10Δ 45-DTE calls", symbols: [QQQ], mode: pmcc, long: leap,
+       leap_delta: 80, calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45}
+    - {name: qqq_shares_far, label: "QQQ shares + 10Δ 45-DTE calls", symbols: [QQQ], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45}
+    - {name: qqq_leap80_hold, label: "QQQ 80Δ LEAP held (rolled at 120 DTE), no calls", symbols: [QQQ], mode: pmcc,
+       long: leap, leap_delta: 80, calls: none}
+    - {name: mstr_pmcc_far, label: "MSTR PMCC · 80Δ LEAP + 10Δ 45-DTE calls", symbols: [MSTR], mode: pmcc, long: leap,
+       leap_delta: 80, calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45, start: "2020-09-01"}
+    - {name: mstr_shares_far, label: "MSTR shares + 10Δ 45-DTE calls", symbols: [MSTR], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 10, neutral: 10, down: 10}, call_dte: 45, start: "2020-09-01"}
+    - {name: mstr_leap80_hold, label: "MSTR 80Δ LEAP held, no calls", symbols: [MSTR], mode: pmcc, long: leap,
+       leap_delta: 80, calls: none, start: "2020-09-01"}
+    - {name: mstr_hold100, label: "MSTR · buy & hold 100%", symbols: [MSTR], mode: hold, weight: 100, start: "2020-09-01"}
+    # tastytrade as they actually trade it (2026-10-13): naked puts on margin (buying power = 20% of the strike,
+    # Reg-T-like), never assigned, close at 50% / 21 DTE; entry_pct and caps are buying power. Their stated use:
+    # 25-50% of buying power, more when VIX is high. Not available in an IRA.
+    - {name: tasty_margin_bp25_50, label: "tastytrade book on margin · 16Δ naked puts, 6 ETFs, BP 25→50% by VIX",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 3,
+       entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 25], [20, 35], [30, 50]], caps: {total: 50, per_name: 12, Index: 24}}
+    - {name: tasty_margin_bp40_60, label: "tastytrade book on margin · BP 40→60% by VIX (heavier)",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 4,
+       entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 40], [20, 50], [30, 60]], caps: {total: 60, per_name: 15, Index: 30}}
+    - {name: spy_margin_bp25_50, label: "SPY naked 16Δ puts on margin · BP 25→50% by VIX", symbols: [SPY],
+       mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 5, entry_every_days: 2, min_ivr: 0, calls: none,
+       decide_itm: close, take_profit_pct: 50, vix_caps: [[0, 25], [20, 35], [30, 50]],
+       caps: {total: 50, per_name: 50, Index: 50}}

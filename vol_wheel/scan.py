@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import alerts, data, earnings, ivhistory, schedule, signals, strikes
+from . import alerts, data, earnings, ivhistory, portfolio, schedule, signals, strikes
 from .config import ROOT, load_rules, universe
 
 log = logging.getLogger("vol_wheel")
@@ -650,6 +650,13 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
             earnings.save_cache(earn_cache, ec)
         except OSError as e:
             notes.append(f"earnings cache not written: {e}")
+    try:
+        port = portfolio.build(rules, lambda sym: data.fetch_history(sym, rules["data"])[0])
+        notes += port.pop("notes", [])
+    except Exception as e:  # noqa: BLE001 - the portfolio layer never fails the scan
+        log.error("portfolio failed: %s\n%s", e, traceback.format_exc())
+        port = None
+        notes.append(f"portfolio layer failed: {str(e)[:120]}")
     hedge = hedge_card(rules, results, index_hists, spy_regime)
     for r in results:
         r.pop("hedge_puts", None)
@@ -658,7 +665,7 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
     return clean({
         "generated_at": started.isoformat(timespec="seconds"),
         "scan_mode": mode, "scan_slot": slot, "scan_et": et, "coverage": cov, "session_date": today.isoformat(),
-        "hedge": hedge, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
+        "hedge": hedge, "portfolio": port, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
                                                                   "play_size_frac")},
         "scan_date": today.isoformat(),
         "bull_gate": gate, "spy_regime": spy_regime, "notes": notes,

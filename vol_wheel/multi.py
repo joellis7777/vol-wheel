@@ -198,4 +198,5 @@ class Multi:
         out["turnover_per_year_pct"] = round(self.stock_traded / yrs / float(eq.mean()) * 100, 1)
         out["stats"] = dict(self.stats)
         out["equity_weekly"] = weekly(eq)
+        out["_eq"] = eq
         return out
