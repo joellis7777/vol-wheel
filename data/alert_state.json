@@ -117,15 +117,15 @@
    "seen": "2026-10-16"
   },
   "TSLA": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-15",
-     "em": 53.8375,
-     "price": 356.1,
+     "active": true,
+     "date": "2026-10-16",
+     "em": 49.4393,
+     "price": 364.38,
      "rung": 1,
-     "strike": 310.0
+     "strike": 315.0
     }
    },
    "seen": "2026-10-16"
