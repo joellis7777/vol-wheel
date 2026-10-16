@@ -40,10 +40,10 @@
    "seen": "2026-10-16"
   },
   "GOOG": {
-   "action": "EARNINGS_PLAY",
+   "action": "LEAP_BUY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 37.2836,
      "price": 335.925,
@@ -51,12 +51,12 @@
      "strike": 295.0
     },
     "LEAP_BUY": {
-     "active": false,
-     "date": "2026-10-14",
-     "em": 35.0726,
-     "price": 343.815,
+     "active": true,
+     "date": "2026-10-16",
+     "em": 38.0587,
+     "price": 336.945,
      "rung": 1,
-     "strike": 343.815
+     "strike": 336.945
     }
    },
    "seen": "2026-10-16"
@@ -91,10 +91,10 @@
    "seen": "2026-10-16"
   },
   "NVDA": {
-   "action": "NO_SHORT",
+   "action": "LEAP_BUY",
    "alerts": {
     "LEAP_BUY": {
-     "active": false,
+     "active": true,
      "date": "2026-10-16",
      "em": 27.9053,
      "price": 214.83,
