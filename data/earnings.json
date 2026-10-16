@@ -31,7 +31,7 @@
  },
  "GOOG": {
   "fetched": "2026-10-16",
-  "implied_move": 0.07481421152812706,
+  "implied_move": 0.07008362881156528,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -41,7 +41,7 @@
  },
  "HOOD": {
   "fetched": "2026-10-16",
-  "implied_move": 0.08588883225920187,
+  "implied_move": 0.08590390968186576,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -60,7 +60,7 @@
  },
  "MSTR": {
   "fetched": "2026-10-16",
-  "implied_move": 0.06502122940988271,
+  "implied_move": 0.07329693082587536,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
