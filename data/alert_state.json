@@ -78,7 +78,7 @@
    "seen": "2026-10-16"
   },
   "MSTR": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {},
    "seen": "2026-10-16"
   },
@@ -107,13 +107,13 @@
    "seen": "2026-10-09"
   },
   "SOFI": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-14",
-     "em": 2.2894,
-     "price": 14.785,
+     "active": true,
+     "date": "2026-10-16",
+     "em": 2.3679,
+     "price": 14.75,
      "rung": 1,
      "strike": 12.0
     }
