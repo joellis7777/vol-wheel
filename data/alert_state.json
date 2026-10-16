@@ -2,10 +2,10 @@
  "digest_date": "2026-10-15",
  "tickers": {
   "AMZN": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
+     "active": true,
      "date": "2026-10-16",
      "em": 28.625,
      "price": 253.33,
@@ -26,8 +26,17 @@
    "seen": "2026-10-16"
   },
   "GLD": {
-   "action": "NO_SHORT",
-   "alerts": {},
+   "action": "LEAP_BUY",
+   "alerts": {
+    "LEAP_BUY": {
+     "active": true,
+     "date": "2026-10-16",
+     "em": 27.0048,
+     "price": 382.73,
+     "rung": 1,
+     "strike": 382.73
+    }
+   },
    "seen": "2026-10-16"
   },
   "GOOG": {
