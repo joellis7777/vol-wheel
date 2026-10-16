@@ -45,13 +45,13 @@
    "seen": "2026-10-16"
   },
   "HOOD": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-14",
-     "em": 20.8756,
-     "price": 100.5635,
+     "active": true,
+     "date": "2026-10-16",
+     "em": 21.6826,
+     "price": 102.34,
      "rung": 1,
      "strike": 80.0
     }
