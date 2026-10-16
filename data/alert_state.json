@@ -1,5 +1,5 @@
 {
- "digest_date": "2026-10-15",
+ "digest_date": "2026-10-16",
  "tickers": {
   "AMZN": {
    "action": "EARNINGS_PLAY",
@@ -40,10 +40,10 @@
    "seen": "2026-10-16"
   },
   "GOOG": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 37.2836,
      "price": 335.925,
@@ -91,10 +91,10 @@
    "seen": "2026-10-16"
   },
   "NVDA": {
-   "action": "LEAP_BUY",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 27.9053,
      "price": 214.83,
