@@ -2,33 +2,33 @@
  "digest_date": "2026-10-15",
  "tickers": {
   "AMZN": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-09",
-     "em": 33.2831,
-     "price": 260.2,
+     "active": true,
+     "date": "2026-10-16",
+     "em": 28.625,
+     "price": 253.33,
      "rung": 1,
-     "strike": 305.0
+     "strike": 220.0
     }
    },
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "CEG": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "FNV": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "GLD": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "GOOG": {
    "action": "NO_SHORT",
@@ -42,7 +42,7 @@
      "strike": 343.815
     }
    },
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "HOOD": {
    "action": "NO_SHORT",
@@ -56,22 +56,22 @@
      "strike": 80.0
     }
    },
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "IBIT": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "MRVL": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "MSTR": {
-   "action": "WATCH",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "NVDA": {
    "action": "LEAP_BUY",
@@ -85,12 +85,12 @@
      "strike": 218.6
     }
    },
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "QQQ": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -109,12 +109,12 @@
      "strike": 12.0
     }
    },
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "SPY": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   },
   "TSLA": {
    "action": "NO_SHORT",
@@ -128,7 +128,7 @@
      "strike": 310.0
     }
    },
-   "seen": "2026-10-15"
+   "seen": "2026-10-16"
   }
  }
 }
