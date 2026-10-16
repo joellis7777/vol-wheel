@@ -91,15 +91,15 @@
    "seen": "2026-10-16"
   },
   "NVDA": {
-   "action": "NO_SHORT",
+   "action": "LEAP_BUY",
    "alerts": {
     "LEAP_BUY": {
-     "active": false,
-     "date": "2026-10-14",
-     "em": 25.7768,
-     "price": 218.6,
+     "active": true,
+     "date": "2026-10-16",
+     "em": 27.9053,
+     "price": 214.83,
      "rung": 1,
-     "strike": 218.6
+     "strike": 214.83
     }
    },
    "seen": "2026-10-16"
