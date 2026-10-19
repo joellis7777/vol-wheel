@@ -2,7 +2,7 @@
  "digest_date": "2026-10-16",
  "tickers": {
   "AMZN": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
