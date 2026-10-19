@@ -105,8 +105,16 @@
    "seen": "2026-10-19"
   },
   "QQQ": {
-   "action": "WATCH",
+   "action": "SELL_CALL",
    "alerts": {
+    "SELL_CALL": {
+     "active": true,
+     "date": "2026-10-19",
+     "em": 50.919,
+     "price": 723.82,
+     "rung": 1,
+     "strike": 763.0
+    },
     "SELL_PUT": {
      "active": false,
      "date": "2026-10-16",
