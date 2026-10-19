@@ -1,5 +1,5 @@
 {
- "digest_date": "2026-10-16",
+ "digest_date": "2026-10-19",
  "tickers": {
   "AMZN": {
    "action": "WATCH",
@@ -132,13 +132,13 @@
    "seen": "2026-10-09"
   },
   "SOFI": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-16",
-     "em": 2.3679,
-     "price": 14.75,
+     "active": true,
+     "date": "2026-10-19",
+     "em": 2.3786,
+     "price": 14.29,
      "rung": 1,
      "strike": 12.0
     }
