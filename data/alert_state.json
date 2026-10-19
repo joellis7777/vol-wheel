@@ -2,10 +2,10 @@
  "digest_date": "2026-10-16",
  "tickers": {
   "AMZN": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 28.625,
      "price": 253.33,
@@ -13,17 +13,17 @@
      "strike": 220.0
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "CEG": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "FNV": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "GLD": {
    "action": "LEAP_BUY",
@@ -37,13 +37,13 @@
      "strike": 382.73
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "GOOG": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 37.2836,
      "price": 335.925,
@@ -59,7 +59,7 @@
      "strike": 336.945
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "HOOD": {
    "action": "EARNINGS_PLAY",
@@ -73,22 +73,22 @@
      "strike": 80.0
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "IBIT": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "MRVL": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "MSTR": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "NVDA": {
    "action": "NO_SHORT",
@@ -102,13 +102,13 @@
      "strike": 214.83
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "QQQ": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 55.1063,
      "price": 707.81,
@@ -116,7 +116,7 @@
      "strike": 696.0
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -124,10 +124,10 @@
    "seen": "2026-10-09"
   },
   "SOFI": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-16",
      "em": 2.3679,
      "price": 14.75,
@@ -135,12 +135,12 @@
      "strike": 12.0
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "SPY": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   },
   "TSLA": {
    "action": "EARNINGS_PLAY",
@@ -154,7 +154,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-10-16"
+   "seen": "2026-10-19"
   }
  }
 }
