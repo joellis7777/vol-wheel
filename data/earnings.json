@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.07556659137408704,
+  "fetched": "2026-10-20",
+  "implied_move": 0.0737050173939407,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,8 +10,8 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.1245613988134525,
+  "fetched": "2026-10-20",
+  "implied_move": 0.08290370728150592,
   "next": {
    "date": "2026-11-06",
    "estimated": true,
@@ -20,8 +20,8 @@
   }
  },
  "FNV": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.022673984851390754,
+  "fetched": "2026-10-20",
+  "implied_move": 0.013755419702210298,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -30,8 +30,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.06183647039126747,
+  "fetched": "2026-10-20",
+  "implied_move": 0.062053561943712386,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -40,8 +40,8 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.08846337359444516,
+  "fetched": "2026-10-20",
+  "implied_move": 0.08858724711972084,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -50,7 +50,7 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-10-19",
+  "fetched": "2026-10-20",
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -59,8 +59,8 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.0397494805932909,
+  "fetched": "2026-10-20",
+  "implied_move": 0.03772091679162609,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -69,8 +69,8 @@
   }
  },
  "NVDA": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.06867018016457821,
+  "fetched": "2026-10-20",
+  "implied_move": 0.08993364442308127,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -89,8 +89,8 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.09968006634339226,
+  "fetched": "2026-10-20",
+  "implied_move": 0.09974741726224913,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -99,8 +99,8 @@
   }
  },
  "TSLA": {
-  "fetched": "2026-10-19",
-  "implied_move": 0.06932901011723458,
+  "fetched": "2026-10-20",
+  "implied_move": 0.07113482818438459,
   "next": {
    "date": "2026-10-21",
    "estimated": true,

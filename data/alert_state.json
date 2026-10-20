@@ -13,17 +13,17 @@
      "strike": 220.0
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "CEG": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "FNV": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "GLD": {
    "action": "LEAP_BUY",
@@ -37,18 +37,18 @@
      "strike": 382.73
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "GOOG": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-16",
-     "em": 37.2836,
-     "price": 335.925,
+     "active": true,
+     "date": "2026-10-20",
+     "em": 36.1734,
+     "price": 338.03,
      "rung": 1,
-     "strike": 295.0
+     "strike": 300.0
     },
     "LEAP_BUY": {
      "active": false,
@@ -59,7 +59,7 @@
      "strike": 336.945
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "HOOD": {
    "action": "EARNINGS_PLAY",
@@ -73,22 +73,22 @@
      "strike": 80.0
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "IBIT": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "MRVL": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "MSTR": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "NVDA": {
    "action": "NO_SHORT",
@@ -102,7 +102,7 @@
      "strike": 214.83
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "QQQ": {
    "action": "WATCH",
@@ -124,7 +124,7 @@
      "strike": 696.0
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -132,10 +132,10 @@
    "seen": "2026-10-09"
   },
   "SOFI": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-19",
      "em": 2.3786,
      "price": 14.29,
@@ -143,12 +143,12 @@
      "strike": 12.0
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "SPY": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   },
   "TSLA": {
    "action": "NO_SHORT",
@@ -162,7 +162,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-10-19"
+   "seen": "2026-10-20"
   }
  }
 }
