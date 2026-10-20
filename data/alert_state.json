@@ -40,10 +40,10 @@
    "seen": "2026-10-20"
   },
   "GOOG": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-20",
      "em": 36.1734,
      "price": 338.03,
