@@ -105,7 +105,7 @@
    "seen": "2026-10-20"
   },
   "QQQ": {
-   "action": "WATCH",
+   "action": "NEUTRAL",
    "alerts": {
     "SELL_CALL": {
      "active": false,
