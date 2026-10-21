@@ -283,11 +283,19 @@ class Opt:
 
     @property
     def collateral(self) -> float:
-        """Buying power it ties up: the strike for a cash-secured put (x `mfrac` on margin), the width for a
-        spread."""
+        """Buying power at entry: the strike for a cash-secured put (x `mfrac` on margin), the width for a
+        spread. Margin puts are re-priced daily with `margin_req`."""
         if self.wing is not None:
             return (self.strike - self.wing) * self.qty
         return self.strike * self.qty * self.mfrac
+
+    def margin_req(self, S: float) -> float:
+        """Reg-T-style naked-put requirement at price S: max(mfrac x S − OTM amount, mfrac/2 x strike) plus
+        the in-the-money amount. It grows as the stock falls toward and through the strike."""
+        if self.wing is not None or self.mfrac >= 1:
+            return self.collateral
+        otm = max(S - self.strike, 0.0)
+        return (max(self.mfrac * S - otm, 0.5 * self.mfrac * self.strike) + max(self.strike - S, 0.0)) * self.qty
 
 
 class Sim:
@@ -331,7 +339,7 @@ class Sim:
         self.cf = {s: 0.0 for s in self.syms}   # per-name cash flow (P&L attribution)
         self.stats = {k: 0 for k in ("puts_sold", "calls_sold", "closed_profit", "closed_21dte", "closed_21dte_itm", "rolled",
                                      "rolled_puts", "rolled_calls",
-                                     "assigned", "called_away", "expired_worthless", "spread_loss", "breaker_days")}
+                                     "assigned", "called_away", "expired_worthless", "spread_loss", "margin_calls", "breaker_days")}
         self.premium = 0.0
         self.peak = self.cash
         self.equity, self.deployed, self.short_open, self.in_shares = [], [], [], []
@@ -378,8 +386,27 @@ class Sim:
         by_sym = {s: self.shares[s] * prices[s] for s in self.syms}
         for o in self.opts:
             if o.cp == "P":
-                by_sym[o.sym] += o.collateral
+                by_sym[o.sym] += o.margin_req(prices.get(o.sym, o.strike)) if o.mfrac < 1 else o.collateral
         return by_sym, sum(by_sym.values())
+
+    def _margin_call(self, d, prices, atms, r) -> None:
+        """Margin puts: when their requirement exceeds equity, buy back the biggest requirements until it is
+        back under `margin_call_restore` (90%) of equity, as a broker's forced liquidation would."""
+        marg = [o for o in self.opts if o.cp == "P" and o.mfrac < 1]
+        if not marg:
+            return
+        E = self._equity(d, prices, atms, r)
+        req = sum(o.margin_req(prices[o.sym]) for o in marg)
+        if req <= E:
+            return
+        target = E * self.v.get("margin_call_restore", 0.9)
+        for o in sorted(marg, key=lambda o: -o.margin_req(prices[o.sym])):
+            if req <= target:
+                break
+            req -= o.margin_req(prices[o.sym])
+            self._buy_back(o, self._mark(o, prices[o.sym], self.last_atm.get(o.sym, 0.2), d, r))
+            self.opts.remove(o)
+            self.stats["margin_calls"] += 1
 
     def _room(self, sym: str, by_sym: dict, total: float, E: float) -> float:
         bucket = self.meta["bucket"].get(sym)
@@ -393,7 +420,8 @@ class Sim:
             if vc is not None:
                 tcap = vc / 100
         in_bucket = sum(v for s, v in by_sym.items() if self.meta["bucket"].get(s) == bucket)
-        collateral = sum(o.collateral for o in self.opts if o.cp == "P")
+        collateral = sum((o.margin_req(self.cur_price.get(o.sym, o.strike)) if o.mfrac < 1 else o.collateral)
+                         for o in self.opts if o.cp == "P")
         free_cash = self.cash - collateral
         return min(name_cap * E - by_sym[sym], bcap * E - in_bucket, tcap * E - total, free_cash)
 
@@ -423,6 +451,7 @@ class Sim:
 
             self.cur_price = prices
             self._manage(d, i, prices, atms, r, tp, decide_dte, dte)
+            self._margin_call(d, prices, atms, r)
             E = self._equity(d, prices, atms, r)
             self.peak = max(self.peak, E)
             dd = 1 - E / self.peak if self.peak > 0 else 0.0

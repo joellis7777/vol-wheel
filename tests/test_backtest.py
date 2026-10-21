@@ -503,3 +503,16 @@ def test_margin_frac_puts_carry_more_notional(rules):
     assert marg.premium == pytest.approx(5 * cash.premium, rel=0.05)     # same buying power, 5x the contracts
     o = B.Opt("X", "P", 100.0, 10.0, f.index[0], f.index[30], 1.0, mfrac=0.2)
     assert o.collateral == pytest.approx(200.0)
+
+
+def test_margin_requirement_grows_and_forces_buybacks(rules):
+    o = B.Opt("X", "P", 90.0, 100.0, pd.Timestamp("2020-01-01"), pd.Timestamp("2020-02-15"), 1.0, mfrac=0.2)
+    assert o.margin_req(100.0) == pytest.approx((20 - 10) * 100)          # 20% of price minus the OTM amount
+    assert o.margin_req(80.0) == pytest.approx((16 + 10) * 100)           # in the money: requirement balloons
+    # a crash with heavy margin puts triggers forced buybacks
+    closes = np.r_[np.full(10, 100.0), np.linspace(100, 50, 15), np.full(30, 50.0)]
+    f = _frame(closes)
+    v = {"mode": "always", "entry_every_days": 1, "min_ivr": 0, "calls": "none", "decide_itm": "close",
+         "entry_pct": 20, "margin_frac": 0.2, "caps": {"total": 100, "per_name": 100, "Test": 100}}
+    s = _sim(rules, f, v)
+    assert s.stats["margin_calls"] >= 1

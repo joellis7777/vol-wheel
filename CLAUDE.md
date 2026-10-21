@@ -394,6 +394,13 @@ backtest changes the picture: edit it in the same change and add a line to its c
     12.5. Margin roughly doubles the cash-secured book (3.9% → 7.2%, 2021→ 6.6% → 12.7%); the cost sits in rare
     fast crashes (2020), where closing tested puts at 21 DTE near peak vol locks the loss (they'd roll; rolling
     didn't help in our earlier tests). Not available in the IRA; in taxable the premium is short-term income.
+    Re-run 2026-10-20 with margin recomputed daily (`Opt.margin_req`: Reg-T-like max(20% x price − OTM amount,
+    10% x strike) + ITM amount) and forced buybacks when requirements exceed equity (`margin_call_restore`):
+    BP 25→50% 7.8% / −42% (2020 −27%; 2021→ 13.6% / −7%); heavier 5.2% / −54% (2020 −45%, 4 forced
+    liquidations); Tom's 30% size cut for futures / portfolio margin (BP 17.5→35%, `tasty_margin_cut30`)
+    6.6% / −29% (2020 −9%, Sharpe 0.66; 2021→ 10.4% / −4.7%; start-year medians 6.2 | 5.4, worst −1.0%). The
+    cut gives up ~1%/yr for a third less drawdown; still below SPY's 8.9% over the full window. Futures options
+    (/ES, /NQ, /GC, /CL) would behave like this book, with 60/40 (Section 1256) tax treatment in taxable.
   - Sosnoff's "25Δ covered calls / short puts beat holding on every major index, 2006–2019" (2026-10-20, `*_bw25_*`,
     `*_putwrite25`; buy-write = pmcc shares + 25Δ 45-DTE calls; put-write = 25Δ CSPs at 100% notional, never
     assigned). 2006–2019: SPY hold 6.3% / −57% vs buy-write to expiry 5.9%, managed 7.4%, put-write 6.0% / −24%

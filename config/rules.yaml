@@ -1106,3 +1106,7 @@ backtest:
     - {name: qqq_putwrite25, label: "QQQ put-write · 25Δ cash-secured, 100% notional, held to expiry", symbols: [QQQ],
        mode: always, put_delta: 25, entry_pct: 100, entry_every_days: 1, min_ivr: 0, calls: none, take_profit_pct: 100,
        decide_dte: 4, decide_itm: close, caps: {total: 100, per_name: 100, Index: 100}}
+    - {name: tasty_margin_cut30, label: "tastytrade book on margin · Tom's 30% size cut (BP 17.5→35% by VIX)",
+       symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 2.1,
+       entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
+       vix_caps: [[0, 17.5], [20, 24.5], [30, 35]], caps: {total: 35, per_name: 8.4, Index: 16.8}}
