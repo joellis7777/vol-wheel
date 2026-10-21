@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.07464763389803691,
+  "fetched": "2026-10-21",
+  "implied_move": 0.07446505965611686,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,8 +10,8 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.08596939322473193,
+  "fetched": "2026-10-21",
+  "implied_move": 0.09129398497578733,
   "next": {
    "date": "2026-11-06",
    "estimated": true,
@@ -20,8 +20,8 @@
   }
  },
  "FNV": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.04803304992683652,
+  "fetched": "2026-10-21",
+  "implied_move": 0.04684982090870872,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -30,8 +30,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.06490341763229615,
+  "fetched": "2026-10-21",
+  "implied_move": 0.06107647254894084,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -40,8 +40,8 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.0801717139532367,
+  "fetched": "2026-10-21",
+  "implied_move": 0.08325893065759718,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -50,7 +50,7 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-10-20",
+  "fetched": "2026-10-21",
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -59,8 +59,8 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.008510023444241201,
+  "fetched": "2026-10-21",
+  "implied_move": 0.04087153392905967,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -69,8 +69,8 @@
   }
  },
  "NVDA": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.07887721514159297,
+  "fetched": "2026-10-21",
+  "implied_move": 0.07888719807148345,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -89,8 +89,8 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.0939450305610855,
+  "fetched": "2026-10-21",
+  "implied_move": 0.09118873733113626,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -99,13 +99,13 @@
   }
  },
  "TSLA": {
-  "fetched": "2026-10-20",
-  "implied_move": 0.07341223331298401,
+  "fetched": "2026-10-21",
+  "implied_move": 0.0647382569877211,
   "next": {
    "date": "2026-10-21",
    "estimated": true,
-   "source": "nasdaq",
-   "timing": "amc"
+   "source": "yfinance",
+   "timing": null
   }
  }
 }
