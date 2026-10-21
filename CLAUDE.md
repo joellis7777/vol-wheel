@@ -394,6 +394,14 @@ backtest changes the picture: edit it in the same change and add a line to its c
     12.5. Margin roughly doubles the cash-secured book (3.9% → 7.2%, 2021→ 6.6% → 12.7%); the cost sits in rare
     fast crashes (2020), where closing tested puts at 21 DTE near peak vol locks the loss (they'd roll; rolling
     didn't help in our earlier tests). Not available in the IRA; in taxable the premium is short-term income.
+  - Sosnoff's "25Δ covered calls / short puts beat holding on every major index, 2006–2019" (2026-10-20, `*_bw25_*`,
+    `*_putwrite25`; buy-write = pmcc shares + 25Δ 45-DTE calls; put-write = 25Δ CSPs at 100% notional, never
+    assigned). 2006–2019: SPY hold 6.3% / −57% vs buy-write to expiry 5.9%, managed 7.4%, put-write 6.0% / −24%
+    (half the vol); QQQ hold 12.3% vs buy-write 7.7%, put-write 5.9%; IWM (2010–19) 10.0% vs 9.6%. 2007→: SPY
+    hold 8.9% vs buy-write 10.2% / 8.9%, put-write 7.2% / −25%; QQQ 15.4% vs buy-write 11.5%, put-write 7.8%.
+    Real records, total return: XYLD 8.0% vs SPY 14.0% (2013→), QYLD 8.5% vs QQQ 18.9% (2014→). Holds on the S&P
+    500 as "similar return, much lower volatility", not as "outperforms everywhere"; on the Nasdaq-100 calls cost
+    4–5%/yr (model) to ~10%/yr (QYLD).
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates

@@ -1085,3 +1085,24 @@ backtest:
        mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 5, entry_every_days: 2, min_ivr: 0, calls: none,
        decide_itm: close, take_profit_pct: 50, vix_caps: [[0, 25], [20, 35], [30, 50]],
        caps: {total: 50, per_name: 50, Index: 50}}
+    # Tom Sosnoff's claim (More Tom Sosnoff, "Stop Fighting Your Covered Calls", 2026-10-20): every major index, 2006–2019,
+    # 25Δ covered calls or sold puts beat holding the underlying. Buy-write = shares + 25Δ ~45-DTE calls (pmcc mode,
+    # shares long): held to expiry (an ITM call settled at intrinsic = called away and bought back) or managed
+    # (bought back at 85% of the extrinsic captured). Put-write = 25Δ cash-secured puts, 100% notional, held to
+    # the day before expiry, never assigned.
+    - {name: spy_bw25_exp, label: "SPY buy-write · 25Δ 45-DTE calls held to expiry", symbols: [SPY], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 25, neutral: 25, down: 25}, call_dte: 45, roll_at_captured_pct: 100}
+    - {name: spy_bw25_mgd, label: "SPY buy-write · 25Δ, closed at 85% captured", symbols: [SPY], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 25, neutral: 25, down: 25}, call_dte: 45}
+    - {name: qqq_bw25_exp, label: "QQQ buy-write · 25Δ 45-DTE calls held to expiry", symbols: [QQQ], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 25, neutral: 25, down: 25}, call_dte: 45, roll_at_captured_pct: 100}
+    - {name: iwm_bw25_exp, label: "IWM buy-write · 25Δ 45-DTE calls held to expiry", symbols: [IWM], mode: pmcc, long: shares,
+       calls: trend, trend_call_delta: {up: 25, neutral: 25, down: 25}, call_dte: 45, roll_at_captured_pct: 100,
+       start: "2010-01-04"}
+    - {name: iwm_hold, label: "Buy & hold IWM 100%", symbols: [IWM], mode: hold, weight: 100, start: "2010-01-04"}
+    - {name: spy_putwrite25, label: "SPY put-write · 25Δ cash-secured, 100% notional, held to expiry", symbols: [SPY],
+       mode: always, put_delta: 25, entry_pct: 100, entry_every_days: 1, min_ivr: 0, calls: none, take_profit_pct: 100,
+       decide_dte: 4, decide_itm: close, caps: {total: 100, per_name: 100, Index: 100}}
+    - {name: qqq_putwrite25, label: "QQQ put-write · 25Δ cash-secured, 100% notional, held to expiry", symbols: [QQQ],
+       mode: always, put_delta: 25, entry_pct: 100, entry_every_days: 1, min_ivr: 0, calls: none, take_profit_pct: 100,
+       decide_dte: 4, decide_itm: close, caps: {total: 100, per_name: 100, Index: 100}}
