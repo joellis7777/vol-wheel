@@ -26,7 +26,7 @@
    "seen": "2026-10-22"
   },
   "GLD": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -62,15 +62,15 @@
    "seen": "2026-10-22"
   },
   "HOOD": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-16",
-     "em": 21.6826,
-     "price": 102.34,
+     "active": true,
+     "date": "2026-10-22",
+     "em": 21.2632,
+     "price": 96.385,
      "rung": 1,
-     "strike": 80.0
+     "strike": 96.385
     }
    },
    "seen": "2026-10-22"
