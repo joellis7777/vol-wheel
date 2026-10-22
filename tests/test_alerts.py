@@ -39,7 +39,7 @@ def test_message_format(rules):
     assert m["click"] == "https://joellis7777.github.io/vol-wheel/"
     body = m["body"]
     assert "$234.22 (-4.0%) · Mid regime · IVR 72 (proxy)" in body
-    assert "Put $215 · Nov 20 2026 (48 DTE) · 23Δ · mid $4.45 · 16% ann" in body
+    assert "Put $215 · Nov 20 2026 (48 DTE) · 23Δ · mid $4.45 · 2.1% of strike · 16% ann" in body
     assert "1.5% under 50-day avg" in body
     assert "CSP ok at $500k: $21,500 of the $25,000 entry" in body
 

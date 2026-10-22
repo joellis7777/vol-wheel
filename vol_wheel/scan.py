@@ -390,6 +390,16 @@ def _add_caveat(s: dict, t: dict) -> None:
                        "check the chain's IV yourself before acting")
 
 
+def premium_yield(c: dict, kind: str, price: float | None) -> dict:
+    """Premium as % of the capital behind the trade: the strike for a put (cash-secured), the share price for
+    a call (the shares it's written against). Also the option's own IV."""
+    base = c["strike"] if kind == "put" else (price or c["strike"])
+    out = {"yield_pct": round(100 * c["mid"] / base, 2) if base else None}
+    if c.get("iv") is not None:
+        out["opt_iv"] = round(float(c["iv"]), 4)
+    return out
+
+
 def build_suggestion(t: dict, rules: dict) -> dict | None:
     """The one trade a card recommends, in plain words, or None (WATCH/WAIT/NO NEW SHORTS).
 
@@ -437,6 +447,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "valid_while": (f"IVR ≥ {th['ivr_sell']}, a {th['spike_sigma']}σ {'down' if is_put else 'up'}-spike "
                              f"in the last {th['spike_max_days']} days and IV/HV ≥ {th['min_iv_hv_ratio']}"),
              "manage": manage(bool(pre))}
+        s.update(premium_yield(c, kind, t.get("price")))
         if is_put:
             s["collateral"] = c["strike"] * 100
         if t.get("both_sides") and opt("pair_call"):
@@ -469,6 +480,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "valid_while": f"earnings {e.get('date')} 1–21 days out, the 5-day move ≥ 1σ and the strike "
                             f"stays outside {ep.get('mult', 1.5)}× the implied move",
              "manage": manage(False) + "; it sells through the report"}
+        s.update(premium_yield(c, kind, t.get("price")))
         if is_put:
             s["collateral"] = c["strike"] * 100
         _add_caveat(s, t)

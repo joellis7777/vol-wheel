@@ -112,10 +112,13 @@ def header_line(t: dict) -> str:
     return f"{_money(t.get('price'))}{chs} · {t.get('regime', '–')} regime · {ivr_s}"
 
 
-def option_line(c: dict, kind: str) -> list[str]:
+def option_line(c: dict, kind: str, price: float | None = None) -> list[str]:
+    base = c["strike"] if kind.lower().startswith("put") else (price or c["strike"])
+    yld = f" · {100 * c['mid'] / base:.1f}% of {'strike' if kind.lower().startswith('put') else 'price'}" if base else ""
+    iv = f" · IV {100 * c['iv']:.0f}%" if c.get("iv") is not None else ""
     return [
         f"{kind} {_strike(c['strike'])} · {_expiry(c.get('expiry'), c.get('dte'))} · "
-        f"{abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])} · {c['annualized'] * 100:.0f}% ann",
+        f"{abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])}{yld} · {c['annualized'] * 100:.0f}% ann{iv}",
         c.get("reason", ""),
     ]
 
@@ -172,7 +175,7 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         if trigger == "PAIR_CALL":
             lines.append("Mid regime + IVR ≥ 70: a 10Δ covered call may sit alongside the put")
         if c:
-            lines += option_line(c, "Call")
+            lines += option_line(c, "Call", t.get("price"))
         else:
             lines.append("No call passes the filters today; see the dashboard")
         cover = "Covered only: against 100 shares or a LEAP"
@@ -202,7 +205,7 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         if play.get("ret") is not None:
             lines.append(f"5-day {play['ret'] * 100:+.1f}% ({play['z']:+.1f}σ) → sell a {side_word}")
         if c:
-            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put")
+            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put", t.get("price"))
             lines.append(f"Outside {ep.get('mult', 1.5)}× the implied move · "
                          f"{ep.get('band', [10, 15])[0]}–{ep.get('band', [10, 15])[1]}Δ")
             half = es * ep.get("size_frac", 0.5)

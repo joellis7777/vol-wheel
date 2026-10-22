@@ -45,7 +45,11 @@ changes, update this list in the same change.
   day: over a full day of 15-minute scans no strike in its delta bands had a spread under 40% of
   mid. Liquidity test for a name: if nothing passes even the 40% fallback for days, drop it; FNV
   (puts ~12%, calls ~22%) and CEG (11–30%) are wide but workable with limit orders.
-  `data/iv_history/RGLD.csv` is kept in case it's re-added.
+  `data/iv_history/RGLD.csv` is kept in case it's re-added. SPCX added 2026-10-22 (Jordan) as an
+  opportunistic name in a new Space bucket (cap 5%) and on the picks watchlist: listed 2026-06-12, liquid
+  options (10–35Δ puts ~3% spreads, OI ~830, M/W/F expiries), IV ~53%. Short history: IVR is a proxy, regime
+  defaults to Mid, picks status waits for ~260 days; no earnings date found yet, so earnings mode can't
+  protect it until one appears.
 - **Thin option markets** (decided 2026-10-09): keep the 10%-of-mid spread rule, but when nothing
   in the band passes it, show the best strikes with spreads up to 40% of mid, flagged "wide market:
   limit order near the mid" (`strikes.wide_spread_fallback`). CEG, FNV and RGLD hit this routinely.
@@ -607,7 +611,9 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   `text` ("Sell TSLA Nov 20 $445 call @ ~$3.80 · half size"), `requires` (covered calls: shares or
   a LEAP), `collateral`/`cost` + `entry_frac` (the dashboard sizes contracts for the selected
   account), `manage` (from `management:` or the pre-earnings rule) and `valid_while`. None for
-  WATCH/WAIT/NO NEW SHORTS. The card shows it as a box above the fold and everything else as
+  WATCH/WAIT/NO NEW SHORTS. Short options also carry `yield_pct` (premium as % of the strike for puts, of
+  the share price for calls) and `opt_iv` (that strike's IV), shown in the box and in alerts ("2.1% of
+  strike · … · IV 42%"). The card shows it as a box above the fold and everything else as
   "reference"; alerts open with "→ <text>", "⚠ <requires>", "Manage: …".
 
 ## Earnings mode (`earnings.py`, config `earnings:`)
@@ -651,7 +657,9 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 ## Strike selection (`strikes.py`)
 
 - Expiry: monthly (third Friday, or Thursday when that Friday is missing) in 35–50 DTE closest to
-  45; else any expiry in the window; else closest to 45 (noted).
+  45; else the monthly in `monthly_fallback_window` (28–60 DTE) closest to 45 (added 2026-10-22: in late
+  October the scanner had picked a freshly listed Dec 4 weekly where QQQ had no strikes near the money and
+  SPCX had OI 0); else the in-window weekly with the most open interest; else closest to 45 (noted).
 - Target delta by regime (puts/calls): Low 30/10, Mid 20/20, High 10/30. Band ±7Δ, OTM only.
 - Filters: spread ≤ 10% of mid or ≤ $0.10; OI ≥ 100; puts ≥ 20Δ need mid ≥ 1% of strike, else 0.3%.
   If nothing passes only because of the spread, the band is re-filtered at ≤ 40% of mid and the
@@ -688,7 +696,8 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 - Reads `data/latest.json` (relative path, works on Pages and `python -m http.server` in docs/).
 - Account selector ($25k…$1M, default $500k, remembered in localStorage): entry = 5% of account;
   a put/rung is "CSP ok" when strike × 100 ≤ entry, else "spread / PMCC". Computed client-side.
-- Cards sorted by action priority, then spike size, then IVR. Tap to expand.
+- Cards sorted by action priority, then spike size, then IVR. Tap to expand. The "IV · IV/HV" cell
+  shows iv30 and the ratio.
 - Theme follows the OS; the toggle overrides via `data-theme` on <html>.
 
 ## Backtest (`backtest.py`, config `backtest:`)

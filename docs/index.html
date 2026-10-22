@@ -443,7 +443,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         '<div class="metrics">' +
           m("Price", t.price != null ? money(t.price, 2) + chHtml : "–") +
           m("IV rank", t.ivr != null ? num(t.ivr) + srcBadge(t) : "–") +
-          m("IV / HV", ivhv) +
+          m("IV · IV/HV", (t.iv30 != null ? pct(t.iv30, 0) + " · " : "") + ivhv) +
           m("Regime", t.regime ? esc(t.regime) + (t.extension_pct != null ? " <small>" + num(t.extension_pct) + "p</small>" : "") : "–") +
           m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "") + (sp.earnings_gap ? " <small>gap</small>" : "")) +
           m("Earnings", t.earnings == null ? '<small>ETF</small>' : et ? (t.earnings.spans_trade ? '<span class="bad">' + et.short + "</span>" : et.short) : "–") +
@@ -477,6 +477,9 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       (s.variants && s.variants.length > 1 ? '<div class="meta2">' + esc(s.variants.slice(1).join(" · ")) + "</div>" : "") +
       (s.requires ? '<div class="req">' + esc(s.requires) + "</div>" : "") +
       (s.caveat ? '<div class="meta2">ℹ ' + esc(s.caveat) + "</div>" : "") +
+      (s.yield_pct != null ? '<div class="meta2">Premium ' + num(s.yield_pct, 2) + "% of the " + (s.kind === "put" ? "strike (cash secured)" : "share price") +
+        (s.dte ? " in " + s.dte + " days" : "") + (s.annualized != null ? " · ≈" + num(s.annualized * 100, 0) + "% annualized" : "") +
+        (s.opt_iv != null ? " · option IV " + pct(s.opt_iv, 0) : "") + "</div>" : "") +
       (size ? '<div class="size">' + esc(size) + "</div>" : "") +
       '<div class="meta2">Manage: ' + esc(s.manage) + "</div>" +
       '<div class="meta2">Still valid while ' + esc(s.valid_while) + ". Quotes are delayed; confirm the price first.</div></div>";

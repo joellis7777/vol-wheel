@@ -58,6 +58,7 @@ picks:
     - {symbol: TSLA,  theme: humanoids,       source: Jordi Visser, added: 2026-10-11, thesis: "robotics optionality; in the scanner universe"}
     - {symbol: COIN,  theme: crypto rails,    source: Jordi Visser, added: 2026-10-11, thesis: "crypto volume cycle"}
     - {symbol: ETHA,  theme: crypto,          source: Jordi Visser, added: 2026-10-11, thesis: "Visser prefers ETH beta over BTC for upside"}
+    - {symbol: SPCX,  theme: space,           source: Jordan / Soliel, added: 2026-10-22, thesis: "listed 2026-06-12; status needs ~260 days of history (≈ mid-2027)"}
     - {symbol: SLV,   theme: debasement,      source: Jordi Visser, added: 2026-10-11, thesis: "silver among Visser's largest positions; overlaps GLD (corr 0.77)"}
 
 universe:
@@ -69,6 +70,7 @@ universe:
   High-beta:  {cap: 15, core: [TSLA],    opportunistic: [HOOD, SOFI]}
   Power:      {cap: 10, core: [CEG],     opportunistic: []}
   Hard asset: {cap: 10, core: [GLD],     opportunistic: [FNV]}   # gold royalty, added 2026-10-09 (RGLD removed same day: illiquid)
+  Space:      {cap: 5,  core: [],        opportunistic: [SPCX]}  # added 2026-10-22 (listed 2026-06-12; liquid options, IV ~53%)
 
 total_deployed_cap: 80       # % of account across all buckets
 # VIX-scaled total cap (tastytrade: deploy more when volatility is high). [VIX at/above, cap % of
@@ -152,6 +154,10 @@ strikes:
   dte_max: 50
   dte_target: 45
   prefer_monthly: true
+  # No monthly in 35-50 DTE (e.g. late October: Nov 29 DTE, Dec 57): use the monthly in this window closest to 45
+  # before a freshly listed weekly with no open interest (2026-10-22: QQQ's new Dec 4 weekly had no strikes near the
+  # money, SPCX's had OI 0). Weeklies, when used, are chosen by open interest.
+  monthly_fallback_window: [28, 60]
   # target deltas (whole delta points) by regime
   put_delta:  {Low: 30, Mid: 20, High: 10}
   call_delta: {Low: 10, Mid: 20, High: 30}
