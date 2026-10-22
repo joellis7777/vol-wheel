@@ -26,7 +26,7 @@
    "seen": "2026-10-22"
   },
   "GLD": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
