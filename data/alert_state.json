@@ -95,10 +95,10 @@
    "seen": "2026-10-23"
   },
   "MSTR": {
-   "action": "NEUTRAL",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
+     "active": true,
      "date": "2026-10-23",
      "em": 38.1671,
      "price": 151.26,
