@@ -21,7 +21,7 @@
    "seen": "2026-10-22"
   },
   "FNV": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {},
    "seen": "2026-10-22"
   },
@@ -81,8 +81,17 @@
    "seen": "2026-10-22"
   },
   "MRVL": {
-   "action": "NEUTRAL",
-   "alerts": {},
+   "action": "SELL_PUT",
+   "alerts": {
+    "SELL_PUT": {
+     "active": true,
+     "date": "2026-10-22",
+     "em": 51.0233,
+     "price": 220.0,
+     "rung": 1,
+     "strike": 200.0
+    }
+   },
    "seen": "2026-10-22"
   },
   "MSTR": {
@@ -105,7 +114,7 @@
    "seen": "2026-10-22"
   },
   "QQQ": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "SELL_CALL": {
      "active": false,
@@ -116,12 +125,12 @@
      "strike": 763.0
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-10-16",
-     "em": 55.1063,
-     "price": 707.81,
+     "active": true,
+     "date": "2026-10-22",
+     "em": 61.5679,
+     "price": 702.45,
      "rung": 1,
-     "strike": 696.0
+     "strike": 702.45
     }
    },
    "seen": "2026-10-22"
