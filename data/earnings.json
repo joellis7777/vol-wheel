@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.08733239289813984,
+  "fetched": "2026-10-23",
+  "implied_move": 0.0821879903235543,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,8 +10,8 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.09081307853429871,
+  "fetched": "2026-10-23",
+  "implied_move": 0.08195157139917757,
   "next": {
    "date": "2026-11-06",
    "estimated": true,
@@ -20,7 +20,7 @@
   }
  },
  "FNV": {
-  "fetched": "2026-10-22",
+  "fetched": "2026-10-23",
   "implied_move": 0.033610525100106606,
   "next": {
    "date": "2026-11-11",
@@ -30,8 +30,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.058154889007373124,
+  "fetched": "2026-10-23",
+  "implied_move": 0.06220127239591833,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -40,8 +40,8 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.09452899843957016,
+  "fetched": "2026-10-23",
+  "implied_move": 0.09050936703208096,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -50,8 +50,8 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.12313729140372758,
+  "fetched": "2026-10-23",
+  "implied_move": 0.12027863746375336,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -60,8 +60,8 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.047372881092600905,
+  "fetched": "2026-10-23",
+  "implied_move": 0.04058689561780273,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -70,8 +70,8 @@
   }
  },
  "NVDA": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.07082777159393625,
+  "fetched": "2026-10-23",
+  "implied_move": 0.0736532453320639,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -90,8 +90,8 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-22",
-  "implied_move": 0.09952668121650898,
+  "fetched": "2026-10-23",
+  "implied_move": 0.09531103516727499,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
