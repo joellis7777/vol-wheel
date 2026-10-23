@@ -112,10 +112,13 @@ def header_line(t: dict) -> str:
     return f"{_money(t.get('price'))}{chs} · {t.get('regime', '–')} regime · {ivr_s}"
 
 
-def option_line(c: dict, kind: str) -> list[str]:
+def option_line(c: dict, kind: str, price: float | None = None) -> list[str]:
+    base = c["strike"] if kind.lower().startswith("put") else (price or c["strike"])
+    yld = f" · {100 * c['mid'] / base:.1f}% of {'strike' if kind.lower().startswith('put') else 'price'}" if base else ""
+    iv = f" · IV {100 * c['iv']:.0f}%" if c.get("iv") is not None else ""
     return [
         f"{kind} {_strike(c['strike'])} · {_expiry(c.get('expiry'), c.get('dte'))} · "
-        f"{abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])} · {c['annualized'] * 100:.0f}% ann",
+        f"{abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])}{yld} · {c['annualized'] * 100:.0f}% ann{iv}",
         c.get("reason", ""),
     ]
 
@@ -172,7 +175,7 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         if trigger == "PAIR_CALL":
             lines.append("Mid regime + IVR ≥ 70: a 10Δ covered call may sit alongside the put")
         if c:
-            lines += option_line(c, "Call")
+            lines += option_line(c, "Call", t.get("price"))
         else:
             lines.append("No call passes the filters today; see the dashboard")
         cover = "Covered only: against 100 shares or a LEAP"
@@ -202,7 +205,7 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         if play.get("ret") is not None:
             lines.append(f"5-day {play['ret'] * 100:+.1f}% ({play['z']:+.1f}σ) → sell a {side_word}")
         if c:
-            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put")
+            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put", t.get("price"))
             lines.append(f"Outside {ep.get('mult', 1.5)}× the implied move · "
                          f"{ep.get('band', [10, 15])[0]}–{ep.get('band', [10, 15])[1]}Δ")
             half = es * ep.get("size_frac", 0.5)
@@ -338,6 +341,97 @@ def evaluate(result: dict, state: dict, today: str, rules: dict) -> tuple[list[d
     return out, state
 
 
+# ---------------------------------------------------------------- portfolio layer
+
+PORT_TRIGGERS = ("CORE_ADD", "CORE_TRIM", "PICK_ENTRY", "PICK_EXIT", "BTC_WARNING")
+
+
+def _pmsg(rules: dict, trig: str, title: str, body: str, priority: str, papply: tuple) -> dict:
+    ac = rules["alerts"]
+    return {"title": title, "body": body, "priority": priority, "tags": [ac.get("tags", {}).get(trig, "bell")],
+            "click": ac.get("dashboard_url", ""), "symbol": papply[1], "trigger": trig, "papply": papply}
+
+
+def evaluate_portfolio(result: dict, state: dict, today: str, rules: dict) -> list[dict]:
+    """Alerts for the portfolio layer (core pyramid steps, pick status changes, bitcoin trend state).
+    The first sighting of a name is recorded silently (state["portfolio"]), so only changes alert.
+    Returns messages carrying `papply` = (section, key, value), written to state after a send."""
+    port = result.get("portfolio") or {}
+    allowed = rules["alerts"].get("triggers", [])
+    ps = state.setdefault("portfolio", {})
+    core_s, pick_s = ps.setdefault("core", {}), ps.setdefault("picks", {})
+    out: list[dict] = []
+    for r in port.get("core") or []:
+        if r.get("error"):
+            continue
+        sym, step, gstep = r["symbol"], r["step"], r.get("gain_step", 0)
+        rec = core_s.get(sym)
+        if rec is None:
+            core_s[sym] = {"step": step, "gstep": gstep, "date": today}
+            continue
+        rec.setdefault("gstep", gstep)
+        nxt = r.get("next")
+        nxt_txt = (f"Next add at {_money(nxt['price'])} (−{nxt['dd_pct']:.0f}%) → {nxt['target_pct']:.0f}% of the sleeve."
+                   if nxt else "Fully invested: the deepest step is reached.")
+        where = (f"{sym} {_money(r['price'])} is {r['dd_pct']:.0f}% below its high ({_money(r['high'])}, "
+                 f"{r['high_date']}" + (f", measured on {r['ref_symbol']}" if r["ref_symbol"] != sym else "") + ").")
+        tgt = (f"Target: {r['target_pct']:.0f}% of the {sym} sleeve = {r['account_pct']:.1f}% of the account "
+               f"(sleeve {r['sleeve_pct']:.1f}%).")
+        if gstep > rec["gstep"] and step <= rec["step"] and "CORE_TRIM" in allowed:
+            nt = r.get("next_trim")
+            out.append(_pmsg(rules, "CORE_TRIM", f"SCALE OUT · {sym} · +{r['gain_pct']:.0f}% off the 3-year low",
+                             "\n".join([where, f"Bull maturity cap now {r['scale_cap_pct']:.0f}% of the sleeve. " + tgt,
+                                         "Trim the excess: sell shares, or covered calls on the excess that you let be "
+                                         "assigned.", (f"Next scale-out at {_money(nt['price'])} (+{nt['gain_pct']:.0f}%) → "
+                                                       f"{nt['cap_pct']:.0f}%." if nt else "")]),
+                             "default", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step > rec["step"] and "CORE_ADD" in allowed:
+            out.append(_pmsg(rules, "CORE_ADD", f"ADD · {sym} · step {step}/{r['steps']}",
+                             "\n".join([where, tgt, "Add with shares, or a 16Δ cash-secured put on a down-spike "
+                                         "(IVR ≥ 50). No trend exit: keep holding.", nxt_txt]),
+                             "high", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step < rec["step"] and "CORE_TRIM" in allowed:
+            out.append(_pmsg(rules, "CORE_TRIM", f"TRIM · {sym} · back to step {step}/{r['steps']}",
+                             "\n".join([where, tgt, "Recovered above a pyramid step: trim the sleeve back toward "
+                                         "this target (or sell a covered call on the excess on an up-spike).", nxt_txt]),
+                             "default", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step != rec["step"] or gstep != rec["gstep"]:
+            core_s[sym] = {"step": step, "gstep": gstep, "date": today}
+    for r in port.get("picks") or []:
+        sym, stt = r["symbol"], r.get("status")
+        if stt in (None, "NO_DATA"):
+            continue
+        prev = pick_s.get(sym)
+        if prev is None:
+            pick_s[sym] = stt
+            continue
+        if stt == prev:
+            continue
+        head = f"{sym} {_money(r.get('price'))} · {r.get('theme') or ''} · source: {r.get('source') or '?'}"
+        if stt == "ENTRY_OK" and "PICK_ENTRY" in allowed:
+            pr = port.get("picks_rules") or {}
+            out.append(_pmsg(rules, "PICK_ENTRY", f"PICK ENTRY · {sym}",
+                             "\n".join([head, f"Eligible: {r.get('why')}.", f"Thesis: {r.get('thesis') or '–'}",
+                                         f"Size {pr.get('per_name_pct', 1.5)}% of the account; enter on a pullback "
+                                         f"(down-spike put or shares). Stop if held: {_money(r.get('stop_price'))}."]),
+                             "default", ("picks", sym, stt)))
+        elif stt == "EXIT_IF_HELD" and "PICK_EXIT" in allowed:
+            out.append(_pmsg(rules, "PICK_EXIT", f"PICK EXIT · {sym}",
+                             "\n".join([head, f"Exit if held: {r.get('why')}."]), "high", ("picks", sym, stt)))
+        else:
+            pick_s[sym] = stt
+    w = port.get("btc_warning")
+    if w and w.get("state") is not None:
+        prev = ps.get("btc")
+        if prev is None:
+            ps["btc"] = w["state"]
+        elif w["state"] != prev and "BTC_WARNING" in allowed:
+            out.append(_pmsg(rules, "BTC_WARNING", f"BTC · {w['label']}",
+                             f"Bitcoin {_money(w['price'])} vs its 200-day {_money(w['sma200'])} (since {w['since']}). "
+                             + w.get("note", ""), "low", ("btc", None, w["state"])))
+    return out
+
+
 def digest(result: dict, state: dict, today: str, rules: dict) -> dict | None:
     """Low-priority post-close list of WATCH names (IVR ≥ 50, no spike), once per day."""
     if not rules["alerts"].get("daily_digest") or state.get("digest_date") == today:
@@ -390,6 +484,7 @@ def process(result: dict, mode: str, rules: dict, state_path: Path | None = None
     today = result.get("scan_date") or date.today().isoformat()
     state = load_state(state_path)
     msgs, state = evaluate(result, state, today, rules)
+    msgs += evaluate_portfolio(result, state, today, rules)
     if mode == "close":
         dg = digest(result, state, today, rules)
         if dg:
@@ -401,6 +496,12 @@ def process(result: dict, mode: str, rules: dict, state_path: Path | None = None
             if m.get("apply"):
                 sym, trig, rec = m["apply"]
                 state["tickers"][sym]["alerts"][trig] = rec
+            if m.get("papply"):
+                sec, key, val = m["papply"]
+                if sec == "btc":
+                    state["portfolio"]["btc"] = val
+                else:
+                    state["portfolio"][sec][key] = val
             if m["trigger"] == "DIGEST":
                 state["digest_date"] = today
         else:

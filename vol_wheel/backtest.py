@@ -278,6 +278,24 @@ class Opt:
     entry_mid: float
     rolls: int = 0
     dte0: int = 45   # DTE at entry; options opened at or inside the decision DTE are held to expiry
+    wing: float | None = None   # long put strike when this is a put credit spread (IRA defined risk)
+    mfrac: float = 1.0          # margin: share of the strike held as buying power (1 = cash-secured)
+
+    @property
+    def collateral(self) -> float:
+        """Buying power at entry: the strike for a cash-secured put (x `mfrac` on margin), the width for a
+        spread. Margin puts are re-priced daily with `margin_req`."""
+        if self.wing is not None:
+            return (self.strike - self.wing) * self.qty
+        return self.strike * self.qty * self.mfrac
+
+    def margin_req(self, S: float) -> float:
+        """Reg-T-style naked-put requirement at price S: max(mfrac x S − OTM amount, mfrac/2 x strike) plus
+        the in-the-money amount. It grows as the stock falls toward and through the strike."""
+        if self.wing is not None or self.mfrac >= 1:
+            return self.collateral
+        otm = max(S - self.strike, 0.0)
+        return (max(self.mfrac * S - otm, 0.5 * self.mfrac * self.strike) + max(self.strike - S, 0.0)) * self.qty
 
 
 class Sim:
@@ -297,6 +315,14 @@ class Sim:
             self.ffclose[s] = frames[s]["close"].ffill().reindex(self.cal).to_numpy()
             valid = frames[s]["close"].dropna()
             self.elig_from[s] = valid.index[min_bars - 1] if len(valid) >= min_bars else None
+        # scale-in sizing: each new put's size x a multiplier set by the name's drawdown from its N-day high
+        sbd = variant.get("size_by_dd")
+        self.size_dd = {}
+        if sbd:
+            look = int(variant.get("size_dd_lookback", 252))
+            for s in self.syms:
+                c = frames[s]["close"].ffill()
+                self.size_dd[s] = (1 - c / c.rolling(look, min_periods=20).max()).reindex(self.cal).fillna(0).to_numpy() * 100
         self.last_atm: dict = {}
         vix = meta.get("vix")
         self.vix = (vix.reindex(vix.index.union(self.cal)).ffill().reindex(self.cal).to_numpy()
@@ -311,9 +337,9 @@ class Sim:
         self.last_put: dict = {}       # sym -> (day index, strike, expected move)
         self.last_call_day: dict = {}
         self.cf = {s: 0.0 for s in self.syms}   # per-name cash flow (P&L attribution)
-        self.stats = {k: 0 for k in ("puts_sold", "calls_sold", "closed_profit", "closed_21dte", "rolled",
+        self.stats = {k: 0 for k in ("puts_sold", "calls_sold", "closed_profit", "closed_21dte", "closed_21dte_itm", "rolled",
                                      "rolled_puts", "rolled_calls",
-                                     "assigned", "called_away", "expired_worthless", "breaker_days")}
+                                     "assigned", "called_away", "expired_worthless", "spread_loss", "margin_calls", "breaker_days")}
         self.premium = 0.0
         self.peak = self.cash
         self.equity, self.deployed, self.short_open, self.in_shares = [], [], [], []
@@ -331,7 +357,10 @@ class Sim:
 
     def _mark(self, o: Opt, S: float, atm: float, d: pd.Timestamp, r: float) -> float:
         T = max((o.expiry - d).days, 0) / 365.0
-        return bs_price(S, o.strike, T, skew_iv(atm, S, o.strike, self._slope(o.sym)), o.cp, r)
+        m = bs_price(S, o.strike, T, skew_iv(atm, S, o.strike, self._slope(o.sym)), o.cp, r)
+        if o.wing is not None:
+            m -= bs_price(S, o.wing, T, skew_iv(atm, S, o.wing, self._slope(o.sym)), o.cp, r)
+        return m
 
     def _row(self, sym: str, i: int) -> dict | None:
         row = self.recs[sym][i]
@@ -357,8 +386,27 @@ class Sim:
         by_sym = {s: self.shares[s] * prices[s] for s in self.syms}
         for o in self.opts:
             if o.cp == "P":
-                by_sym[o.sym] += o.strike * o.qty
+                by_sym[o.sym] += o.margin_req(prices.get(o.sym, o.strike)) if o.mfrac < 1 else o.collateral
         return by_sym, sum(by_sym.values())
+
+    def _margin_call(self, d, prices, atms, r) -> None:
+        """Margin puts: when their requirement exceeds equity, buy back the biggest requirements until it is
+        back under `margin_call_restore` (90%) of equity, as a broker's forced liquidation would."""
+        marg = [o for o in self.opts if o.cp == "P" and o.mfrac < 1]
+        if not marg:
+            return
+        E = self._equity(d, prices, atms, r)
+        req = sum(o.margin_req(prices[o.sym]) for o in marg)
+        if req <= E:
+            return
+        target = E * self.v.get("margin_call_restore", 0.9)
+        for o in sorted(marg, key=lambda o: -o.margin_req(prices[o.sym])):
+            if req <= target:
+                break
+            req -= o.margin_req(prices[o.sym])
+            self._buy_back(o, self._mark(o, prices[o.sym], self.last_atm.get(o.sym, 0.2), d, r))
+            self.opts.remove(o)
+            self.stats["margin_calls"] += 1
 
     def _room(self, sym: str, by_sym: dict, total: float, E: float) -> float:
         bucket = self.meta["bucket"].get(sym)
@@ -372,7 +420,8 @@ class Sim:
             if vc is not None:
                 tcap = vc / 100
         in_bucket = sum(v for s, v in by_sym.items() if self.meta["bucket"].get(s) == bucket)
-        collateral = sum(o.strike * o.qty for o in self.opts if o.cp == "P")
+        collateral = sum((o.margin_req(self.cur_price.get(o.sym, o.strike)) if o.mfrac < 1 else o.collateral)
+                         for o in self.opts if o.cp == "P")
         free_cash = self.cash - collateral
         return min(name_cap * E - by_sym[sym], bcap * E - in_bucket, tcap * E - total, free_cash)
 
@@ -380,7 +429,7 @@ class Sim:
     def run(self) -> "Sim":
         rules, th, bt = self.rules, self.rules["thresholds"], self.bt
         mgmt = rules["management"]
-        tp = mgmt["take_profit_pct"] / 100
+        tp = self.v.get("take_profit_pct", mgmt["take_profit_pct"]) / 100
         decide_dte = self.v.get("decide_dte", mgmt["decide_dte"])
         dte = bt.get("dte", rules["strikes"]["dte_target"])
         mode = self.v["mode"]
@@ -402,6 +451,7 @@ class Sim:
 
             self.cur_price = prices
             self._manage(d, i, prices, atms, r, tp, decide_dte, dte)
+            self._margin_call(d, prices, atms, r)
             E = self._equity(d, prices, atms, r)
             self.peak = max(self.peak, E)
             dd = 1 - E / self.peak if self.peak > 0 else 0.0
@@ -446,7 +496,12 @@ class Sim:
             left = (o.expiry - d).days
             itm = S < o.strike if o.cp == "P" else S > o.strike
             if left <= 0:
-                if itm and o.cp == "P":
+                if o.wing is not None:                 # spread: cash-settled at the width it lost
+                    loss = (max(o.strike - S, 0.0) - max(o.wing - S, 0.0)) * o.qty
+                    self.cash -= loss
+                    self.cf[o.sym] -= loss
+                    self.stats["spread_loss" if loss > 0 else "expired_worthless"] += 1
+                elif itm and o.cp == "P":
                     self._assign(o, S)
                 elif itm:
                     self.shares[o.sym] -= o.qty
@@ -470,7 +525,11 @@ class Sim:
             elif decide and not itm:
                 self._buy_back(o, mark)
                 self.stats["closed_21dte"] += 1
-            elif decide and self.bt.get("decide_itm") == "roll" and o.rolls < self.bt.get("max_rolls", 1):
+            elif decide and self.v.get("decide_itm", self.bt.get("decide_itm")) == "close":
+                self._buy_back(o, mark)            # tastytrade: close every trade at 21 DTE, never take assignment
+                self.stats["closed_21dte_itm"] += 1
+            elif decide and self.v.get("decide_itm", self.bt.get("decide_itm")) == "roll" \
+                    and o.wing is None and o.rolls < self.bt.get("max_rolls", 1):
                 self._buy_back(o, mark)
                 self.stats["rolled"] += 1
                 reopen.append((o, atm))
@@ -485,7 +544,7 @@ class Sim:
     def _roll_itm_ok(self, o: Opt, i: int) -> bool:
         """'Roll until you're right': variant roll_itm = {puts, calls, max_rolls, call_regimes}."""
         ri = self.v.get("roll_itm")
-        if not ri or o.rolls >= ri.get("max_rolls", 6):
+        if not ri or o.wing is not None or o.rolls >= ri.get("max_rolls", 6):
             return False
         if o.cp == "P":
             return bool(ri.get("puts"))
@@ -532,20 +591,26 @@ class Sim:
         self.stats["assigned"] += 1
 
     def _buy_back(self, o: Opt, mark: float):
-        px = mark + max(mark * self._slip(o.sym), 0.01 if mark > 0.01 else 0.0) + self._comm()
+        legs = 2 if o.wing is not None else 1
+        px = mark + legs * (max(mark * self._slip(o.sym), 0.01 if mark > 0.01 else 0.0) + self._comm())
         self.cash -= px * o.qty
         self.cf[o.sym] -= px * o.qty
 
-    def _sell(self, sym, cp, K, qty, d, atm, r, dte, count=True) -> Opt | None:
+    def _sell(self, sym, cp, K, qty, d, atm, r, dte, count=True, wing=None) -> Opt | None:
         S = self.cur_price[sym]
         T = dte / 365.0
         mid = bs_price(S, K, T, skew_iv(atm, S, K, self._slope(sym)), cp, r)
         if mid <= 0.0005 * S:
             return None
         px = mid - max(mid * self._slip(sym), 0.01) - self._comm()
+        if wing is not None:
+            wmid = bs_price(S, wing, T, skew_iv(atm, S, wing, self._slope(sym)), cp, r)
+            mid -= wmid
+            px -= wmid + max(wmid * self._slip(sym), 0.01) + self._comm()
         if px <= 0:
             return None
-        o = Opt(sym, cp, K, qty, d, d + pd.Timedelta(days=dte), mid, dte0=dte)
+        o = Opt(sym, cp, K, qty, d, d + pd.Timedelta(days=dte), mid, dte0=dte, wing=wing,
+                mfrac=float(self.v.get("margin_frac", 1.0)) if cp == "P" and wing is None else 1.0)
         self.opts.append(o)
         self.cash += px * qty
         self.cf[sym] += px * qty
@@ -553,6 +618,18 @@ class Sim:
         if count:
             self.stats["puts_sold" if cp == "P" else "calls_sold"] += 1
         return o
+
+    def _dd_mult(self, s: str, i: int) -> float:
+        """`size_by_dd` [[drawdown %, multiplier], ...]: start small, size up as the name falls (step function)."""
+        bands = self.v.get("size_by_dd")
+        if not bands or s not in self.size_dd:
+            return 1.0
+        dd = float(self.size_dd[s][i])
+        m = bands[0][1]
+        for lvl, mult in bands:
+            if dd >= lvl:
+                m = mult
+        return float(m)
 
     def _dte(self, regime: str, default: int) -> int:
         d = self.v.get("dte")
@@ -610,13 +687,19 @@ class Sim:
         atm = float(row["iv"])
         T = dte / 365.0
         K = strike_for_delta(S, T, atm, self._put_delta(regime), "P", self._slope(s), r)
-        want = self._entry_frac(s) * E * size_mult
+        wing = None
+        if self.v.get("put_wing_delta"):
+            wing = strike_for_delta(S, T, atm, self.v["put_wing_delta"] / 100, "P", self._slope(s), r)
+            if not 0 < wing < K:
+                return
+        want = self._entry_frac(s) * E * size_mult * self._dd_mult(s, i)   # spreads: entry_pct = max loss per trade
+        mf = float(self.v.get("margin_frac", 1.0))      # margin (naked puts): entry_pct = buying power per put
         by_sym, total = self._exposure(prices)
         room = self._room(s, by_sym, total, E)
         notional = min(want, room)
         if notional < 0.5 * want or notional <= 0:
             return
-        o = self._sell(s, "P", K, notional / K, d, atm, r, dte)
+        o = self._sell(s, "P", K, notional / (K - wing if wing else K * mf), d, atm, r, dte, wing=wing)
         if o:
             em_iv = max(atm, float(row["hv20"])) if s in self.rules.get("weekend_gap_names", []) else atm
             self.last_put[s] = (i, K, S * em_iv * math.sqrt(self.rules["sizing"]["ladder_dte"] / 365))
@@ -637,6 +720,10 @@ class Sim:
             return
         ivr, regime = float(row["ivr"]) if np.isfinite(row["ivr"]) else float("nan"), row["regime"]
         calls_mode = self.v.get("calls", "spike" if mode == "spike" else "always")
+        if calls_mode not in ("spike", "always", "none"):
+            raise ValueError(f"calls: {calls_mode!r} (expected spike, always or none)")
+        if calls_mode == "none":          # puts only: assigned shares are held, never written against
+            return
         if calls_mode == "spike":
             if not (np.isfinite(ivr) and ivr >= th["ivr_sell"] and row["up"] >= th["spike_sigma"] and self._iv_hv_ok(row)):
                 return
@@ -671,7 +758,16 @@ class Sim:
         for o in self.opts:
             pnl[o.sym] -= o.qty * self._mark(o, self.final_prices[o.sym], atms[o.sym], last_d, float(self.rates.loc[last_d]))
         out["pnl_by_symbol"] = {s: round(v) for s, v in sorted(pnl.items(), key=lambda kv: kv[1]) if abs(v) >= 1}
+        # where the book stands on the last day: shares and put collateral per name, % of equity
+        E_last = float(eq.iloc[-1]) if len(eq) else 0.0
+        if E_last > 0:
+            fp = self.final_prices
+            out["final_pct"] = {s: {"shares": round(100 * self.shares[s] * fp[s] / E_last, 1),
+                                    "puts": round(100 * sum(o.collateral for o in self.opts
+                                                            if o.sym == s and o.cp == "P") / E_last, 1)}
+                                for s in self.syms}
         out["equity_weekly"] = weekly(eq)
+        out["_eq"] = eq
         return out
 
 
@@ -697,14 +793,16 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
     Defensive exit, checked at each monthly rebalance:
       `trend_sma`     a name closing below its N-day average gets its weight in T-bills (or `trend_to`)
                       until it closes back above
-      `trend_falling` exit only while that average is also lower than 20 days earlier
+      `trend_falling` exit only while that average is also lower than 20 days earlier (true = every
+                      name; a list = only those names, the rest use the plain exit)
       `trend_arm`     {symbols, high_within_days}: for those names an exit also needs the High regime
                       within the last N days (the market was stretched before it broke)
       `trend_to`      {symbols, lookback, top}: the exited weight goes to the defensive name(s) with the
                       best trailing `lookback`-day return, if beating T-bills; else T-bills
     `collar` {put_otm_pct, dte, roll_days, call, call_otm_pct, regimes}: a put `put_otm_pct` below on each
     holding, financed by a call (zero-cost strike unless `call_otm_pct`; `call: false` = puts only),
-    re-struck every `roll_days`; new collars only while the name's regime is in `regimes` when given."""
+    re-struck every `roll_days`; new collars only while the name's regime is in `regimes` when given, and
+    only on `symbols` when given."""
     bt = rules["backtest"]
     cal = rates.index[(rates.index >= start) & (rates.index <= end)]
     syms = [s for s in variant["symbols"] if s in frames]
@@ -722,6 +820,8 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
     arm = variant.get("trend_arm") or {}
     arm_syms = set(arm.get("symbols") or syms)
     arm_days = arm.get("high_within_days")
+    tfall = variant.get("trend_falling")
+    fall_syms = set(syms) if tfall is True else set(tfall or [])
     regs = pd.DataFrame({s: frames[s]["regime"] if "regime" in frames[s] else "Mid" for s in syms})
     col = variant.get("collar")
     if col:
@@ -802,7 +902,7 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
                     if len(p) < tsma or p.iloc[-1] >= p.iloc[-tsma:].mean():
                         continue
                     if s not in off_now:   # entering an exit; staying out needs only the close below
-                        if variant.get("trend_falling") and len(p) >= tsma + 20 \
+                        if s in fall_syms and len(p) >= tsma + 20 \
                                 and p.iloc[-tsma:].mean() >= p.iloc[-tsma - 20:-20].mean():
                             continue
                         if arm_days and s in arm_syms and not (regs[s].loc[:d].iloc[-arm_days:] == "High").any():
@@ -880,9 +980,10 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
         if col:
             covered = {o["s"] for o in legs}
             regimes = col.get("regimes")
+            col_syms = col.get("symbols") or syms
             for s in syms:
                 S, iv = px_ok.get(s), ivs.at[d, s]
-                if not held[s] or s in covered or S is None or not np.isfinite(iv) or iv <= 0:
+                if s not in col_syms or not held[s] or s in covered or S is None or not np.isfinite(iv) or iv <= 0:
                     continue
                 if regimes and regs_cal.at[d, s] not in regimes:
                     continue
@@ -924,6 +1025,7 @@ def run_hold(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: d
         out["collar_pnl_per_year_pct"] = round((collar_flow + open_val) / yrs / float(eqs.mean()) * 100, 2)
         out["collared_days_pct"] = round(100 * collar_days / max(len(eqs), 1))
     out["equity_weekly"] = weekly(eqs)
+    out["_eq"] = eqs
     return out
 
 
@@ -981,6 +1083,199 @@ def resolve_symbols(spec, rules: dict) -> list[str]:
     return list(spec)
 
 
+def trend_states(close: pd.Series, sma_n: int = 200, slope_days: int = 20, neutral: float = 0.5) -> pd.Series:
+    """KISS-style three-state trend signal per day: 1 above a rising N-day average, `neutral` when only
+    one of (above, rising) holds, 0 below a falling one. NaN until the average exists."""
+    sma = close.rolling(sma_n).mean()
+    above = close > sma
+    rising = sma > sma.shift(slope_days)
+    out = np.where(above & rising, 1.0, np.where(above | rising, neutral, 0.0))
+    return pd.Series(out, index=close.index).where(sma.shift(slope_days).notna())
+
+
+def run_states(variant: dict, frames: dict, meta: dict, rates: pd.Series, rules: dict, start, end) -> dict:
+    """Signal-scaled fixed weights, checked daily (42 Macro's KISS shape). Each name's exposure = weight x
+    its trend state (`states`: {sma, slope_days, neutral}) x the regime multiplier; the rest earns T-bills.
+    Signals use yesterday's close and trade at today's close (`lag_days`). A name is re-traded whenever its
+    multiplier changes; everything is rebalanced to target monthly. `regime_vote` {symbols, halve, mult}:
+    risk-off (a majority of `symbols` at state 0) scales the `halve` names by `mult` (default 0.5).
+    Stock trades cost `stock_cost_bps` of notional."""
+    bt = rules["backtest"]
+    cal = rates.index[(rates.index >= start) & (rates.index <= end)]
+    syms = [s for s in variant["symbols"] if s in frames]
+    cfg = variant.get("states") or {}
+    lag = cfg.get("lag_days", 1)
+    cost = variant.get("stock_cost_bps", 5) / 1e4
+    wts = variant.get("weights") or {s: 1 for s in syms}
+    tot = sum(wts.get(s, 0) for s in syms) or 1.0
+    w = {s: wts.get(s, 0) / tot * variant.get("weight", 100) / 100 for s in syms}
+    closes = pd.DataFrame({s: frames[s]["close"] for s in syms}).ffill()
+
+    def st(c):
+        return trend_states(c.dropna(), cfg.get("sma", 200), cfg.get("slope_days", 20),
+                            cfg.get("neutral", 0.5)).reindex(closes.index).ffill()
+    states = pd.DataFrame({s: st(closes[s]) for s in syms}).shift(lag)
+    rv = variant.get("regime_vote") or {}
+    if rv:
+        vote = pd.DataFrame({s: st(frames[s]["close"].reindex(closes.index).ffill()) for s in rv["symbols"]
+                             if s in frames}).shift(lag)
+        risk_off = (vote == 0).sum(axis=1) > vote.notna().sum(axis=1) / 2
+    closes, states = closes.reindex(cal), states.reindex(cal)
+    held = {s: 0.0 for s in syms}
+    cur = {s: None for s in syms}
+    cash = float(bt["account"])
+    eq, prev_d, last_month = [], None, None
+    invested: list = []
+    trades = 0
+    state_days = {s: {"full": 0, "half": 0, "out": 0} for s in syms}
+    for d in cal:
+        r = float(rates.loc[d])
+        if prev_d is not None:
+            cash *= 1 + r * (d - prev_d).days / 365.0
+        prev_d = d
+        px = {s: closes.at[d, s] for s in syms}
+        ok = {s: p for s, p in px.items() if np.isfinite(p) and p > 0}
+        E = cash + sum(held[s] * ok.get(s, 0.0) for s in syms)
+        mult = {}
+        for s in syms:
+            m = states.at[d, s]
+            m = 0.0 if not np.isfinite(m) else float(m)
+            if rv and s in rv.get("halve", []) and bool(risk_off.get(d, False)):
+                m *= rv.get("mult", 0.5)
+            mult[s] = m
+            state_days[s]["full" if m >= 0.99 else "out" if m <= 0.01 else "half"] += 1
+        monthly = d.month != last_month
+        last_month = d.month
+        for s in syms:
+            if s not in ok or not (monthly or mult[s] != cur[s]):
+                continue
+            tgt = E * w[s] * mult[s] / ok[s]
+            dq = tgt - held[s]
+            if abs(dq) * ok[s] > 1e-6 * E:
+                cash -= dq * ok[s] + abs(dq) * ok[s] * cost
+                held[s] = tgt
+                trades += 1
+            cur[s] = mult[s]
+        inv = sum(held[s] * ok.get(s, 0.0) for s in syms)
+        eq.append(cash + inv)
+        invested.append(inv / eq[-1] if eq[-1] > 0 else 0.0)
+    eqs = pd.Series(eq, index=cal)
+    out = metrics(eqs, rates.reindex(cal), bt)
+    n = max(len(cal), 1)
+    out["avg_deployed_pct"] = round(100 * float(np.mean(invested)), 1)
+    out["state_days_pct"] = {s: {k: round(100 * v / n) for k, v in sd.items()} for s, sd in state_days.items()}
+    out["trades_per_year"] = round(trades / max(len(cal) / TD, 1e-9), 1)
+    out["equity_weekly"] = weekly(eqs)
+    out["_eq"] = eqs
+    return out
+
+
+def run_blend(v: dict, parts: dict, rates: pd.Series, bt: dict, start, end, dds: dict | None = None) -> dict:
+    """Fixed-weight mix of other variants' daily equity curves (plus "tbills" at the cash yield),
+    rebalanced to `weights` every `rebalance` ("M" monthly, "Q" quarterly, "Y" yearly; default M).
+    Rebalancing is free: the parts are separate sleeves of one account, so moving cash between them
+    costs nothing beyond what each sleeve already pays.
+    `tilt` {k, max_mult}: rotate toward the laggards. At each rebalance a part's weight is scaled by
+    (1 + k x its underlying's drawdown from the all-time high, as a fraction), capped at max_mult, then all
+    weights renormalized; `dds` = {part: drawdown % series} supplied by the caller."""
+    cal = rates.index[(rates.index >= start) & (rates.index <= end)]
+    w = {k: float(x) for k, x in v["weights"].items()}
+    tot = sum(w.values())
+    w = {k: x / tot for k, x in w.items()}
+    rets = {}
+    for k in w:
+        if k == "tbills":
+            d = pd.Series(cal, index=cal).diff().dt.days.fillna(0)
+            rets[k] = rates.reindex(cal).fillna(0) * d / 365.0
+        else:
+            rets[k] = parts[k].reindex(cal).ffill().pct_change().fillna(0.0)
+    R = pd.DataFrame(rets).fillna(0.0)
+    period = {"M": cal.to_period("M"), "Q": cal.to_period("Q"), "Y": cal.to_period("Y")}[v.get("rebalance", "M")]
+    E = float(bt["account"])
+    hold = {k: E * w[k] for k in w}
+    eq = []
+    prev = None
+    tilt = v.get("tilt") or {}
+    ddm = {k: dds[k].reindex(cal).ffill().fillna(0).to_numpy() for k in (dds or {}) if k in w}
+    tilt_sum, tilt_n = {k: 0.0 for k in w}, 0
+
+    def weights_at(i):
+        if not tilt or not ddm:
+            return w
+        raw = {k: w[k] * min(1 + tilt.get("k", 1.0) * (ddm[k][i] / 100 if k in ddm else 0.0), tilt.get("max_mult", 3.0))
+               for k in w}
+        t = sum(raw.values()) or 1.0
+        return {k: x / t for k, x in raw.items()}
+    for i, d in enumerate(cal):
+        if prev is not None and period[i] != prev:
+            E = sum(hold.values())
+            wt = weights_at(i - 1)              # yesterday's drawdowns: no look-ahead
+            hold = {k: E * wt[k] for k in w}
+            for k in w:
+                tilt_sum[k] += wt[k]
+            tilt_n += 1
+        prev = period[i]
+        if i:
+            for k in hold:
+                hold[k] *= 1 + float(R.iat[i, R.columns.get_loc(k)])
+        eq.append(sum(hold.values()))
+    eqs = pd.Series(eq, index=cal)
+    out = metrics(eqs, rates.reindex(cal), bt)
+    out["avg_deployed_pct"] = round(100 * (1 - w.get("tbills", 0.0)), 1)
+    out["blend_weights_pct"] = {k: round(x * 100, 1) for k, x in w.items()}
+    if tilt and tilt_n:
+        out["avg_tilted_weights_pct"] = {k: round(100 * tilt_sum[k] / tilt_n, 1) for k in w}
+    out["equity_weekly"] = weekly(eqs)
+    out["_eq"] = eqs
+    return out
+
+
+def run_rolling(cfg: dict, names: list, run_named, cal: pd.DatetimeIndex) -> dict:
+    """Start-date robustness: every variant re-run from each January (`first_year` on) for each window
+    length in `years`; reports the median / worst / best CAGR, the worst max drawdown and how often the
+    variant beat `benchmark` over the same window. Path-dependent strategies (a put wheel that keeps its
+    assigned shares) can look very different depending on where a single backtest starts."""
+    out = {"years": cfg.get("years", [3, 5]), "benchmark": cfg.get("benchmark"), "variants": {}}
+    last = cal[-1]
+    for n_years in out["years"]:
+        starts = []
+        y = int(cfg.get("first_year", cal[0].year))
+        while True:
+            jan = cal[cal >= pd.Timestamp(f"{y}-01-01")]
+            if not len(jan):
+                break
+            s0 = jan[0]
+            e0 = s0 + pd.DateOffset(years=n_years)
+            if e0 > last:
+                break
+            starts.append((s0, cal[cal <= e0][-1]))
+            y += 1
+        for s0, e0 in starts:
+            memo: dict = {}
+            bench = cfg.get("benchmark")
+            b = run_named(bench, s0, e0, memo)["cagr_pct"] if bench else None
+            for n in names:
+                r = run_named(n, s0, e0, memo)
+                if r["start"] > (s0 + pd.Timedelta(days=10)).strftime("%Y-%m-%d"):
+                    continue                  # the variant starts later (e.g. bitcoin from 2015)
+                rec = out["variants"].setdefault(n, {}).setdefault(str(n_years), [])
+                rec.append({"start": r["start"], "cagr": r["cagr_pct"], "max_dd": r["max_dd_pct"], "bench": b})
+            print(f"rolling {n_years}y from {s0.date()}: done", flush=True)
+    summary = {}
+    for n, by_len in out["variants"].items():
+        summary[n] = {}
+        for k, rows in by_len.items():
+            c = np.array([x["cagr"] for x in rows])
+            beat = [x["cagr"] > x["bench"] for x in rows if x["bench"] is not None]
+            summary[n][k] = {"windows": len(rows), "median": round(float(np.median(c)), 1),
+                             "worst": round(float(c.min()), 1), "best": round(float(c.max()), 1),
+                             "worst_dd": round(min(x["max_dd"] for x in rows), 1),
+                             "beat_bench_pct": round(100 * sum(beat) / len(beat)) if beat else None,
+                             "worst_start": rows[int(c.argmin())]["start"]}
+    out["summary"] = summary
+    return out
+
+
 def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> dict:
     bt = rules["backtest"]
     uni = universe(rules)
@@ -989,8 +1284,9 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
         rules["universe"].get("Index", {}).get("opportunistic", []) or [])
     vol_map = dict(bt.get("vol_index", {}))
     variants = bt["variants"]
-    syms = sorted({s for v in variants for s in resolve_symbols(v["symbols"], rules)}
+    syms = sorted({s for v in variants for s in resolve_symbols(v.get("symbols", []), rules)}
                   | {s for v in variants for s in (v.get("trend_to") or {}).get("symbols", [])}
+                  | {s for v in variants for s in (v.get("regime_vote") or {}).get("symbols", [])}
                   | set(bt.get("correlation_symbols") or []))
     hists, info = {}, {}
     for s in syms + sorted(set(vol_map.values())):
@@ -1055,39 +1351,83 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
 
     results = {"generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "data": info, "correlations": corr,
                "cash_yield": rate_src, "stock_iv_mult": base_mult, "windows": {}}
+    by_name = {v["name"]: v for v in variants}
+
+    def run_one(v: dict, m: float, vs, end_) -> dict:
+        """One (non-blend) variant at one stock-IV multiple over [vs, end_]."""
+        fr = frames_by_mult[m]
+        if v["mode"] == "hold" and v.get("states") is not None:
+            return run_states(v, fr, meta, rates, rules, vs, end_)
+        if v["mode"] == "hold":
+            return run_hold(v, fr, meta, rates, rules, vs, end_)
+        if v["mode"] == "target":
+            from .target import Target
+            sym = v["symbols"][0]
+            slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
+            return Target({**v, "index": sym in meta["index_syms"]}, fr[sym], rates, rules, vs, end_, slope).run().result()
+        if v["mode"] == "multi":
+            from .multi import Multi
+            slopes = {s: bt["skew_slope"]["index" if s in meta["vol_index_syms"] else "stock"] for s in v["symbols"]}
+            liquid = set(bt.get("liquid_option_syms") or []) | meta["index_syms"]
+            return Multi(v, fr, rates, rules, vs, end_, slopes, liquid).run().result()
+        if v["mode"] == "sleeve":
+            from .sleeve import Sleeve
+            sym = v["symbols"][0]
+            slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
+            return Sleeve(v, fr[sym], rates, rules, vs, end_, slope).run().result()
+        if v["mode"] == "pmcc":
+            from .pmcc import PMCC
+            sym = v["symbols"][0]
+            slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
+            return PMCC(v, fr[sym], rates, rules, vs, end_, slope).run().result()
+        return Sim(v, fr, meta, rates, rules, vs, end_).run().result()
+
+    def run_named(name: str, start_, end_, cache_: dict) -> dict:
+        """Base-multiple result for a variant (blends included), memoised per window."""
+        if name in cache_:
+            return cache_[name]
+        v = by_name[name]
+        vs = max(start_, pd.Timestamp(v["start"])) if v.get("start") else start_
+        if vs >= end_ - pd.Timedelta(days=60):          # the variant's history begins after this window
+            cache_[name] = {"start": "9999-12-31", "cagr_pct": float("nan"), "max_dd_pct": float("nan")}
+            return cache_[name]
+        if v["mode"] == "blend":
+            parts = {c: (None if c == "tbills" else run_named(c, start_, end_, cache_)["_eq"]) for c in v["weights"]}
+            dds = None
+            if v.get("tilt"):
+                dds = {}
+                for c in v["weights"]:
+                    if c == "tbills":
+                        continue
+                    sym = resolve_symbols(by_name[c]["symbols"], rules)[0]
+                    cl = frames_by_mult[base_mult][sym]["close"].dropna()
+                    dds[c] = (1 - cl / cl.cummax()) * 100
+            res = run_blend(v, parts, rates, bt, vs, end_, dds)
+        else:
+            v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
+            res = run_one(v, base_mult, vs, end_)
+        cache_[name] = res
+        return res
+
     for wname, w in bt["windows"].items():
         start = pd.Timestamp(w["start"])
         end = pd.Timestamp(w.get("end") or cal[-1])
         wres = {"start": str(start.date()), "end": str(end.date()), "label": w.get("label", wname), "variants": {}}
+        memo: dict = {}
         for v in variants:
-            v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
-            uses_stock_iv = any(s not in meta["vol_index_syms"] for s in v["symbols"])
-            no_options = v["mode"] == "hold" or (v["mode"] in ("target", "multi") and v.get("exec") == "stock")
-            run_mults = (mults if (uses_stock_iv and not no_options) else [base_mult])
+            if v["mode"] == "blend":
+                run_mults = [base_mult]
+                uses_stock_iv = False
+            else:
+                v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
+                uses_stock_iv = any(s not in meta["vol_index_syms"] for s in v["symbols"])
+                no_options = v["mode"] == "hold" or (v["mode"] in ("target", "multi") and v.get("exec") == "stock")
+                run_mults = (mults if (uses_stock_iv and not no_options) else [base_mult])
             for m in run_mults:
                 key = v["name"] if m == base_mult else f"{v['name']}@{m:g}"
-                fr = frames_by_mult[m]
                 vs = max(start, pd.Timestamp(v["start"])) if v.get("start") else start
-                if v["mode"] == "hold":
-                    res = run_hold(v, fr, meta, rates, rules, vs, end)
-                elif v["mode"] == "target":
-                    from .target import Target
-                    sym = v["symbols"][0]
-                    slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
-                    res = Target({**v, "index": sym in meta["index_syms"]}, fr[sym], rates, rules, vs, end,
-                                 slope).run().result()
-                elif v["mode"] == "multi":
-                    from .multi import Multi
-                    slopes = {s: bt["skew_slope"]["index" if s in meta["vol_index_syms"] else "stock"]
-                              for s in v["symbols"]}
-                    liquid = set(bt.get("liquid_option_syms") or []) | meta["index_syms"]
-                    res = Multi(v, fr, rates, rules, vs, end, slopes, liquid).run().result()
-                elif v["mode"] == "pmcc":
-                    from .pmcc import PMCC
-                    sym = v["symbols"][0]
-                    res = PMCC(v, fr[sym], rates, rules, vs, end, bt["skew_slope"]["index"]).run().result()
-                else:
-                    res = Sim(v, fr, meta, rates, rules, vs, end).run().result()
+                res = dict(run_named(v["name"], start, end, memo) if m == base_mult else run_one(v, m, vs, end))
+                res.pop("_eq", None)
                 res["label"] = v.get("label", v["name"]) + ("" if m == base_mult else f" (stock IV {m:g}x HV)")
                 res["stock_iv_mult"] = m if uses_stock_iv else None
                 if m != base_mult:
@@ -1098,9 +1438,13 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
                     path = " ".join(f"{k[2:]}:{sm[k]}" for k in sm if "2021-01" <= k <= "2023-06")
                     print(f"{wname:7s} {key:22s} shares% by month 2021-01..2023-06: {path}", flush=True)
                 print(f"{wname:7s} {key:22s} CAGR {res['cagr_pct']:6.2f}%  maxDD {res['max_dd_pct']:6.1f}%  "
-                      f"Sharpe {res['sharpe']:5.2f}  deployed {res['avg_deployed_pct']:5.1f}%"
+                      f"Sharpe {res['sharpe']:5.2f}  deployed {res.get('avg_deployed_pct', 0):5.1f}%"
                       + (f"  puts/yr {res['puts_per_year']}" if "puts_per_year" in res else ""), flush=True)
         results["windows"][wname] = wres
+
+    roll = bt.get("rolling") or {}
+    if roll.get("variants"):
+        results["rolling"] = run_rolling(roll, [n for n in roll["variants"] if n in by_name], run_named, cal)
     if out_dir:
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "results.json").write_text(json.dumps(results, separators=(",", ":")))
@@ -1176,6 +1520,20 @@ def report(res: dict, rules: dict) -> str:
                 lines.append(f"- {v['label']}: in shares {b}; positive months {v['positive_months_pct']:.0f}%, "
                              f"worst 12 months {v['worst_12m_pct']:+.1f}%; {extra}")
             lines.append("")
+        sl = [(k, v) for k, v in w["variants"].items() if "sleeve" in v]
+        if sl:
+            lines += ["Long-call sleeve variants (Deployed = average sleeve value as % of the account; payoff = "
+                      "everything sold / everything paid; multiples per position):", ""]
+            for k, v in sl:
+                s_ = v["sleeve"]
+                ex = ", ".join(f"{n} {c}" for n, c in s_["exits"].items())
+                top = "; ".join(f"{t['opened']}→{t['closed']} {t['multiple']:.1f}x (stock {t['move_pct']:+.0f}%)"
+                                for t in s_["top"])
+                lines.append(f"- {v['label']}: {s_['trades']} positions, {s_['wins']} winners, payoff "
+                             f"{s_['payoff_multiple']}x, median {s_['median_multiple']}x, best {s_['best_multiple']}x, "
+                             f"net {s_['net_pnl']:+,}, avg {s_['avg_days']} days, in the market "
+                             f"{v['in_market_pct']:.0f}% of days; exits: {ex}; best: {top}")
+            lines.append("")
         pm = [(k, v) for k, v in w["variants"].items() if "call_pnl_per_year_pct" in v]
         if pm:
             lines += ["LEAP / poor man's covered call variants (Deployed = notional exposure; call P&L = premium "
@@ -1191,7 +1549,28 @@ def report(res: dict, rules: dict) -> str:
             if v.get("pnl_by_symbol") and "@" not in key and len(v["pnl_by_symbol"]) > 1:
                 parts = ", ".join(f"{s} {p / 1000:+,.0f}k" for s, p in v["pnl_by_symbol"].items())
                 lines.append(f"- **{v['label']}** P&L by name (excl. interest): {parts}")
+        bl = [(k, v) for k, v in w["variants"].items() if "blend_weights_pct" in v]
+        if bl:
+            lines += ["Blends (fixed weights of other variants, rebalanced monthly):", ""]
+            lines += [f"- {v['label']}: " + " · ".join(f"{n} {x:.0f}%" for n, x in v["blend_weights_pct"].items())
+                      for k, v in bl] + [""]
         lines.append("")
+    ro = res.get("rolling") or {}
+    if ro.get("summary"):
+        labels = {k: v["label"] for w in res["windows"].values() for k, v in w["variants"].items()}
+        lines += ["## Start-date robustness (re-run from every January)", "",
+                  f"Each variant re-run from each January for {' and '.join(str(y) for y in ro['years'])} years. "
+                  f"Beat = share of windows with a higher CAGR than {labels.get(ro.get('benchmark'), ro.get('benchmark'))}.", ""]
+        for y in ro["years"]:
+            lines += [f"### {y}-year windows", "", "| Variant | Windows | Median CAGR | Worst | Best | Worst max DD | Beat | Worst start |",
+                      "|---|---|---|---|---|---|---|---|"]
+            for n, by_len in ro["summary"].items():
+                r = by_len.get(str(y))
+                if r:
+                    beat = "–" if r["beat_bench_pct"] is None else f"{r['beat_bench_pct']}%"
+                    lines.append(f"| {labels.get(n, n)} | {r['windows']} | {r['median']:.1f}% | {r['worst']:.1f}% | "
+                                 f"{r['best']:.1f}% | {r['worst_dd']:.1f}% | {beat} | {r['worst_start']} |")
+            lines.append("")
     cr = res.get("correlations") or {}
     if cr.get("symbols"):
         ss = cr["symbols"]
@@ -1221,9 +1600,32 @@ def main(argv=None) -> int:
     ap.add_argument("--cache", type=Path, help="directory to cache downloaded histories")
     ap.add_argument("--out", type=Path, default=ROOT / "docs" / "backtest")
     ap.add_argument("--rules", type=Path)
+    ap.add_argument("--only", help="comma-separated variant names to run (local iteration; pair with --out)")
+    ap.add_argument("--no-rolling", action="store_true", help="skip the start-date robustness runs")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     rules = load_rules(args.rules)
+    if args.no_rolling:
+        rules["backtest"].pop("rolling", None)
+    if args.only:
+        names = set(args.only.split(","))
+        allv = {v["name"]: v for v in rules["backtest"]["variants"]}
+        todo = list(names)
+        while todo:                                   # blends need their components
+            v = allv.get(todo.pop())
+            for c in (v or {}).get("weights", {}) if (v or {}).get("mode") == "blend" else []:
+                if c != "tbills" and c not in names:
+                    names.add(c)
+                    todo.append(c)
+        ro = rules["backtest"].get("rolling") or {}
+        if ro.get("variants"):
+            ro["variants"] = [n for n in ro["variants"] if n in names]
+            if ro.get("benchmark"):
+                names.add(ro["benchmark"])
+        rules["backtest"]["variants"] = [v for v in rules["backtest"]["variants"] if v["name"] in names]
+        missing = names - {v["name"] for v in rules["backtest"]["variants"]}
+        if missing:
+            ap.error(f"unknown variants: {', '.join(sorted(missing))}")
     res = run(rules, args.cache, args.out)
     print(report(res, rules))
     return 0

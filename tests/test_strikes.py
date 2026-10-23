@@ -218,3 +218,18 @@ def test_normal_spreads_not_flagged(rules):
     o = data.parse_chain(make_chain_payload(price=100.0))["options"]
     res = strikes.select_strikes(o, "P", 20, _wide_ctx(o, sc), sc)
     assert res["candidates"] and not any(c["wide_spread"] for c in res["candidates"])
+
+
+def test_choose_expiry_prefers_nearby_monthly_over_fresh_weekly():
+    import pandas as pd
+    from datetime import date
+    from vol_wheel import strikes as ST
+    # Nov 20 2026 (29 DTE) and Dec 18 2026 (57 DTE) are monthlies; Dec 4 (43 DTE) a fresh weekly
+    rows = [(date(2026, 11, 20), 29, 5000), (date(2026, 12, 4), 43, 0), (date(2026, 12, 18), 57, 3000),
+            (date(2026, 11, 27), 36, 10)]
+    opts = pd.DataFrame([{"expiry": e, "dte": d, "oi": oi, "type": "P", "strike": 100.0} for e, d, oi in rows])
+    cfg = {"dte_min": 35, "dte_max": 50, "dte_target": 45, "prefer_monthly": True}
+    e, d, why = ST.choose_expiry(opts, cfg)
+    assert e == date(2026, 11, 27) and "weekly" in why            # old behaviour: a weekly, by open interest
+    e, d, why = ST.choose_expiry(opts, {**cfg, "monthly_fallback_window": [28, 60]})
+    assert e == date(2026, 12, 18) and d == 57 and "monthly" in why

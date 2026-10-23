@@ -167,6 +167,17 @@ td.n, th.n { text-align: right; }
 .checks .y { color: var(--ok); } .checks .n { color: var(--bad); }
 section.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-top: 18px; }
 section.panel h2 { font-size: 15px; margin: 0 0 8px; }
+section.port { margin: 0 0 12px; }
+section.port h3 { font-size: 13px; margin: 12px 0 4px; color: var(--muted); font-weight: 600; }
+.port .tbl { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.port td .sub2 { display: block; font-size: 11px; color: var(--faint); }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--put-bg); color: var(--put); }
+.pill.wait { background: var(--neutral-bg); color: var(--neutral); }
+.pill.exit { background: var(--stop-bg); color: var(--stop); }
+.pill.warn { background: var(--earn-bg); color: var(--earn); }
+.bar { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 3px; min-width: 60px; }
+.bar b { display: block; height: 100%; background: var(--accent); }
 footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 24px; }
 .err { background: var(--stop-bg); color: var(--stop); padding: 12px; border-radius: 12px; }
 @media (max-width: 420px) {
@@ -185,6 +196,9 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         <label class="acct">Account
           <select id="acct" aria-label="Account size"></select>
         </label>
+        <label class="acct" id="riskWrap" hidden>Risk
+          <select id="risk" aria-label="Risk profile (core weights)"></select>
+        </label>
         <button class="theme-btn" id="theme" type="button" aria-label="Toggle light/dark theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="display:block"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
       </div>
     </div>
@@ -194,6 +208,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   <details class="notes" id="notes" hidden><summary>Data quality</summary><ul></ul></details>
   <div class="summary" id="summary"></div>
   <div class="filters" id="filters" role="toolbar" aria-label="Filter by action"></div>
+  <section class="panel port" id="portfolio" hidden></section>
   <section class="hedge" id="hedge" hidden></section>
   <main class="cards" id="cards"></main>
   <section class="panel" id="caps"></section>
@@ -202,7 +217,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
 <script>
 (function () {
   "use strict";
-  var state = { data: null, acct: 500000, filter: "all", open: {} };
+  var state = { data: null, acct: 500000, risk: null, filter: "all", open: {} };
   var $ = function (id) { return document.getElementById(id); };
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -237,6 +252,17 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     state.acct = s.tiers.indexOf(saved) >= 0 ? saved : s.default_tier;
     $("acct").innerHTML = s.tiers.map(function (t) { return '<option value="' + t + '"' + (t === state.acct ? " selected" : "") + ">" + kmoney(t) + "</option>"; }).join("");
     $("acct").addEventListener("change", function (e) { state.acct = parseInt(e.target.value, 10); store("vw-acct", state.acct); render(); });
+    var p = d.portfolio;
+    if (p && p.profiles) {
+      var names = Object.keys(p.profiles), savedRisk = store("vw-risk");
+      state.risk = names.indexOf(savedRisk) >= 0 ? savedRisk : "auto";
+      $("risk").innerHTML = '<option value="auto">by size</option>' + names.map(function (n) {
+        return '<option value="' + n + '"' + (n === state.risk ? " selected" : "") + ">" + esc(p.profiles[n].label || n) + "</option>";
+      }).join("");
+      if (state.risk === "auto") $("risk").value = "auto";
+      $("risk").addEventListener("change", function (e) { state.risk = e.target.value; store("vw-risk", state.risk); render(); });
+      $("riskWrap").hidden = false;
+    }
     renderHeader();
     render();
   }
@@ -296,6 +322,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         b.setAttribute("aria-expanded", state.open[sym]);
       });
     });
+    renderPortfolio();
     renderHedge();
     renderCaps();
   }
@@ -317,6 +344,70 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     var dayWord = e.days_to === 0 ? "today" : e.days_to === 1 ? "tomorrow" : "in " + e.days_to + " days";
     var pre = e.pre_expiry ? " · trading the " + new Date(e.pre_expiry.expiry + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " expiry (ends before)" : "";
     return { short: e.days_to === 0 ? "today" : e.days_to + "d", line: "Earnings " + dayWord + " · " + when + (e.implied_move ? " · implied ±" + pct(e.implied_move, 1) : "") + pre };
+  }
+
+  function renderPortfolio() {
+    var p = state.data.portfolio, el = $("portfolio"), a = state.acct;
+    if (!p || !p.core || !p.core.length) { el.hidden = true; return; }
+    // risk profile: the one chosen in the header, else the default for the selected account size
+    var prof = null, key = state.risk;
+    if (!key || key === "auto") {
+      var tiers = Object.keys(p.profile_by_size || {}).map(Number).sort(function (x, y) { return x - y; });
+      tiers.forEach(function (t) { if (t <= a) key = p.profile_by_size[String(t)]; });
+      if ((!key || key === "auto") && tiers.length) key = p.profile_by_size[String(tiers[0])];
+    }
+    if (p.profiles && p.profiles[key]) prof = p.profiles[key];
+    var sleeveFrac = p.put_max_sleeve_frac || 0.5;
+    var used = 0;
+    p.core.forEach(function (r) {
+      if (r.error) return;
+      if (prof && prof[r.symbol] != null) {
+        r.weight = prof[r.symbol];
+        r.sleeve_pct = p.budget_pct * r.weight / 100;
+        r.account_pct = r.sleeve_pct * r.target_pct / 100;
+      }
+      used += r.account_pct;
+    });
+    p.reserve_pct = p.budget_pct - used;
+    var trend = { 1: ["ok", "uptrend"], 0.5: ["warn", "mixed"], 0: ["exit", "downtrend"] };
+    var core = p.core.map(function (r) {
+      if (r.error) return "<tr><td><b>" + esc(r.symbol) + '</b></td><td colspan="4" class="legend">' + esc(r.error) + "</td></tr>";
+      var tr = trend[r.trend_state] || ["wait", "–"];
+      var nx = r.next ? money(r.next.price) + '<span class="sub2">−' + num(r.next.dd_pct) + "% → " + num(r.next.target_pct) + "% · +" +
+        money(a * r.sleeve_pct / 100 * (r.next.target_pct - r.target_pct) / 100) + "</span>" : '<span class="sub2">fully invested</span>';
+      var putsOk = r.price * 100 <= sleeveFrac * a * r.sleeve_pct / 100;
+      var how = putsOk ? '<span class="pill ok">puts ok</span>' :
+        '<span class="pill wait">shares only' + (r.symbol === "GLD" && p.gold_put_alt ? " · puts via " + esc(p.gold_put_alt) : "") + "</span>";
+      return "<tr><td><b>" + esc(r.symbol) + '</b><span class="sub2">' + r.weight + "% of core · " + '<span class="pill ' + tr[0] + '">' + tr[1] + "</span> " + how + "</span></td>" +
+        '<td class="n">' + money(r.price) + '<span class="sub2">−' + num(r.dd_pct, 1) + "% from " + money(r.high) + "</span></td>" +
+        '<td class="n">' + num(r.target_pct) + '%<div class="bar"><b style="width:' + num(r.target_pct) + '%"></b></div><span class="sub2">step ' + r.step + "/" + r.steps +
+          (r.scale_cap_pct != null ? " · cap " + num(r.scale_cap_pct) + "% (+" + num(r.gain_pct) + "% off 3y low)" : "") + "</span></td>" +
+        '<td class="n">' + money(a * r.account_pct / 100) + '<span class="sub2">' + num(r.account_pct, 1) + "% of acct</span></td>" +
+        '<td class="n">' + nx + "</td></tr>";
+    }).join("");
+    var h = "<h2>Portfolio · " + kmoney(a) + " account" + (prof && prof.label ? " · " + esc(prof.label) : "") + "</h2>" +
+      '<div class="legend">Core held with no trend exit: the reserve pyramids into each name by its own drawdown range (fully invested only near its historical worst), and a cap scales each name out as its bull run matures (gain from the 3-year low). Weights follow the Risk profile (default by account size); targets and $ use the account size. "Shares only" = one cash-secured put would tie up more than ' + Math.round((p.put_max_sleeve_frac || 0.5) * 100) + '% of that name\'s sleeve.</div>' +
+      '<div class="tbl"><table style="margin-top:6px"><thead><tr><th>Core</th><th class="n">Price</th><th class="n">Target</th><th class="n">Hold</th><th class="n">Next add</th></tr></thead><tbody>' + core +
+      '<tr><td><b>Reserve</b><span class="sub2">SGOV, pyramid fund</span></td><td></td><td></td><td class="n">' + money(a * p.reserve_pct / 100) + '<span class="sub2">' + num(p.reserve_pct, 1) + '% of acct</span></td><td></td></tr></tbody></table></div>';
+    var w = p.btc_warning;
+    if (w) h += '<div class="legend" style="margin-top:6px"><span class="pill ' + (w.state === 1 ? "ok" : w.state === 0 ? "exit" : "warn") + '">BTC ' + esc(w.label) + "</span> since " + esc(w.since) + " · " + money(w.price) + " vs 200-day " + money(w.sma200) + ". " + esc(w.note) + "</div>";
+    if (p.picks && p.picks.length && p.min_satellite_account && a < p.min_satellite_account) {
+      h += '<div class="legend" style="margin-top:8px">Stock picks and the LEAP sleeve start at ' + kmoney(p.min_satellite_account) + ": below that a 1.5% position is too small to be worth the trading.</div>";
+    } else if (p.picks && p.picks.length) {
+      var pr = p.picks_rules || {}, cls = { ENTRY_OK: "ok", WAIT: "wait", EXIT_IF_HELD: "exit", NO_DATA: "wait" },
+          lbl = { ENTRY_OK: "entry ok", WAIT: "wait", EXIT_IF_HELD: "exit if held", NO_DATA: "no data" };
+      h += "<h3>Stock picks · " + (pr.per_name_pct || 1.5) + "% each (" + money(a * (pr.per_name_pct || 1.5) / 100) + "), ≤ " + (pr.max_names || 10) + " names, sleeve ≤ " + (pr.sleeve_cap_pct || 10) + "%</h3>" +
+        '<div class="tbl"><table><thead><tr><th>Pick</th><th class="n">Price</th><th class="n">RS</th><th>Status</th></tr></thead><tbody>' +
+        p.picks.map(function (r) {
+          return "<tr><td><b>" + esc(r.symbol) + '</b><span class="sub2">' + esc(r.theme || "") + " · " + esc(r.source || "") + "</span></td>" +
+            '<td class="n">' + money(r.price) + '<span class="sub2">−' + num(r.dd_1y_pct) + "% 1y · stop " + money(r.stop_price) + "</span></td>" +
+            '<td class="n">' + (r.rs == null ? "–" : (r.rs > 0 ? "+" : "") + num(r.rs) + "%") + '<span class="sub2">#' + (r.rs_rank || "–") + "</span></td>" +
+            '<td><span class="pill ' + (cls[r.status] || "wait") + '">' + (lbl[r.status] || esc(r.status)) + '</span><span class="sub2">' + esc(r.why || "") + "</span></td></tr>";
+        }).join("") + "</tbody></table></div>" +
+        '<div class="legend" style="margin-top:4px">Entry: rising 200-day + top-third 6/12-month strength vs QQQ. Exit if held: below a falling 200-day or ' + (pr.trailing_stop_pct || 28) + "% under the 1-year high. Sell half at +" + (pr.half_off_gain_pct || 100) + "%.</div>";
+    }
+    el.innerHTML = h;
+    el.hidden = false;
   }
 
   function renderHedge() {
@@ -352,7 +443,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         '<div class="metrics">' +
           m("Price", t.price != null ? money(t.price, 2) + chHtml : "–") +
           m("IV rank", t.ivr != null ? num(t.ivr) + srcBadge(t) : "–") +
-          m("IV / HV", ivhv) +
+          m("IV · IV/HV", (t.iv30 != null ? pct(t.iv30, 0) + " · " : "") + ivhv) +
           m("Regime", t.regime ? esc(t.regime) + (t.extension_pct != null ? " <small>" + num(t.extension_pct) + "p</small>" : "") : "–") +
           m("Spike", '<span class="' + spikeCls + '">' + spike + "</span>" + (sp.k ? " <small>" + sp.k + "d</small>" : "") + (sp.earnings_gap ? " <small>gap</small>" : "")) +
           m("Earnings", t.earnings == null ? '<small>ETF</small>' : et ? (t.earnings.spans_trade ? '<span class="bad">' + et.short + "</span>" : et.short) : "–") +
@@ -386,6 +477,9 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       (s.variants && s.variants.length > 1 ? '<div class="meta2">' + esc(s.variants.slice(1).join(" · ")) + "</div>" : "") +
       (s.requires ? '<div class="req">' + esc(s.requires) + "</div>" : "") +
       (s.caveat ? '<div class="meta2">ℹ ' + esc(s.caveat) + "</div>" : "") +
+      (s.yield_pct != null ? '<div class="meta2">Premium ' + num(s.yield_pct, 2) + "% of the " + (s.kind === "put" ? "strike (cash secured)" : "share price") +
+        (s.dte ? " in " + s.dte + " days" : "") + (s.annualized != null ? " · ≈" + num(s.annualized * 100, 0) + "% annualized" : "") +
+        (s.opt_iv != null ? " · option IV " + pct(s.opt_iv, 0) : "") + "</div>" : "") +
       (size ? '<div class="size">' + esc(size) + "</div>" : "") +
       '<div class="meta2">Manage: ' + esc(s.manage) + "</div>" +
       '<div class="meta2">Still valid while ' + esc(s.valid_while) + ". Quotes are delayed; confirm the price first.</div></div>";

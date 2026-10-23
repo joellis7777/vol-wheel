@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import alerts, data, earnings, ivhistory, schedule, signals, strikes
+from . import alerts, data, earnings, ivhistory, portfolio, schedule, signals, strikes
 from .config import ROOT, load_rules, universe
 
 log = logging.getLogger("vol_wheel")
@@ -390,6 +390,16 @@ def _add_caveat(s: dict, t: dict) -> None:
                        "check the chain's IV yourself before acting")
 
 
+def premium_yield(c: dict, kind: str, price: float | None) -> dict:
+    """Premium as % of the capital behind the trade: the strike for a put (cash-secured), the share price for
+    a call (the shares it's written against). Also the option's own IV."""
+    base = c["strike"] if kind == "put" else (price or c["strike"])
+    out = {"yield_pct": round(100 * c["mid"] / base, 2) if base else None}
+    if c.get("iv") is not None:
+        out["opt_iv"] = round(float(c["iv"]), 4)
+    return out
+
+
 def build_suggestion(t: dict, rules: dict) -> dict | None:
     """The one trade a card recommends, in plain words, or None (WATCH/WAIT/NO NEW SHORTS).
 
@@ -437,6 +447,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "valid_while": (f"IVR ≥ {th['ivr_sell']}, a {th['spike_sigma']}σ {'down' if is_put else 'up'}-spike "
                              f"in the last {th['spike_max_days']} days and IV/HV ≥ {th['min_iv_hv_ratio']}"),
              "manage": manage(bool(pre))}
+        s.update(premium_yield(c, kind, t.get("price")))
         if is_put:
             s["collateral"] = c["strike"] * 100
         if t.get("both_sides") and opt("pair_call"):
@@ -469,6 +480,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "valid_while": f"earnings {e.get('date')} 1–21 days out, the 5-day move ≥ 1σ and the strike "
                             f"stays outside {ep.get('mult', 1.5)}× the implied move",
              "manage": manage(False) + "; it sells through the report"}
+        s.update(premium_yield(c, kind, t.get("price")))
         if is_put:
             s["collateral"] = c["strike"] * 100
         _add_caveat(s, t)
@@ -650,6 +662,13 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
             earnings.save_cache(earn_cache, ec)
         except OSError as e:
             notes.append(f"earnings cache not written: {e}")
+    try:
+        port = portfolio.build(rules, lambda sym: data.fetch_history(sym, rules["data"])[0])
+        notes += port.pop("notes", [])
+    except Exception as e:  # noqa: BLE001 - the portfolio layer never fails the scan
+        log.error("portfolio failed: %s\n%s", e, traceback.format_exc())
+        port = None
+        notes.append(f"portfolio layer failed: {str(e)[:120]}")
     hedge = hedge_card(rules, results, index_hists, spy_regime)
     for r in results:
         r.pop("hedge_puts", None)
@@ -658,7 +677,7 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
     return clean({
         "generated_at": started.isoformat(timespec="seconds"),
         "scan_mode": mode, "scan_slot": slot, "scan_et": et, "coverage": cov, "session_date": today.isoformat(),
-        "hedge": hedge, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
+        "hedge": hedge, "portfolio": port, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
                                                                   "play_size_frac")},
         "scan_date": today.isoformat(),
         "bull_gate": gate, "spy_regime": spy_regime, "notes": notes,

@@ -70,3 +70,11 @@ def test_high_regime_call_adds_leap_exit_and_drops_cost_floor(rules):
 def test_caveat_only_for_proxy_ivr(rules):
     assert "stand-in" in scan.build_suggestion(ticker(src="proxy"), rules)["caveat"]
     assert "caveat" not in scan.build_suggestion(ticker(src="VIX"), rules)
+
+
+def test_premium_yield_put_vs_call():
+    from vol_wheel import scan as S
+    put = {"strike": 100.0, "mid": 2.5, "iv": 0.42}
+    assert S.premium_yield(put, "put", 110.0) == {"yield_pct": 2.5, "opt_iv": 0.42}
+    call = {"strike": 120.0, "mid": 2.2}
+    assert S.premium_yield(call, "call", 110.0) == {"yield_pct": 2.0}
