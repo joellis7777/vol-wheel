@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.08327307381091334,
+  "fetched": "2026-10-26",
+  "implied_move": 0.08611258129642989,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,18 +10,18 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.07091255042810939,
+  "fetched": "2026-10-26",
+  "implied_move": 0.09040921888336274,
   "next": {
-   "date": "2026-11-06",
+   "date": "2026-11-09",
    "estimated": true,
    "source": "nasdaq",
-   "timing": null
+   "timing": "bmo"
   }
  },
  "FNV": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.033569438155593115,
+  "fetched": "2026-10-26",
+  "implied_move": 0.03085879636524317,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -30,8 +30,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.06321895512954352,
+  "fetched": "2026-10-26",
+  "implied_move": 0.062000192916813704,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -40,8 +40,8 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.09287057012057458,
+  "fetched": "2026-10-26",
+  "implied_move": 0.0985785194108574,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
@@ -50,8 +50,8 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.12520418545238243,
+  "fetched": "2026-10-26",
+  "implied_move": 0.11643958543704769,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -60,8 +60,8 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.028096327454640035,
+  "fetched": "2026-10-26",
+  "implied_move": 0.0603916688892837,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -70,8 +70,8 @@
   }
  },
  "NVDA": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.07935160614165469,
+  "fetched": "2026-10-26",
+  "implied_move": 0.07987981676995487,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -90,8 +90,8 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-23",
-  "implied_move": 0.09506454152203396,
+  "fetched": "2026-10-26",
+  "implied_move": 0.09707921148900424,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
