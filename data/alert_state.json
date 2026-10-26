@@ -169,7 +169,7 @@
    "seen": "2026-10-26"
   },
   "TSLA": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
