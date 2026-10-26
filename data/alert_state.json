@@ -2,10 +2,10 @@
  "digest_date": "2026-10-23",
  "tickers": {
   "AMZN": {
-   "action": "WATCH",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
+     "active": true,
      "date": "2026-10-26",
      "em": 27.6719,
      "price": 247.865,
