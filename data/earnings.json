@@ -1,7 +1,7 @@
 {
  "AMZN": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.08473672047737196,
+  "fetched": "2026-10-27",
+  "implied_move": 0.08184086931607557,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -10,8 +10,8 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.044675508138097786,
+  "fetched": "2026-10-27",
+  "implied_move": 0.06404372607301252,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -20,8 +20,8 @@
   }
  },
  "FNV": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.043926614437817604,
+  "fetched": "2026-10-27",
+  "implied_move": 0.010719951222250853,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -30,8 +30,8 @@
   }
  },
  "GOOG": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.0663786356889741,
+  "fetched": "2026-10-27",
+  "implied_move": 0.06303601151368808,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -40,18 +40,18 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.09999935005659633,
+  "fetched": "2026-10-27",
+  "implied_move": 0.08847604737387463,
   "next": {
    "date": "2026-10-27",
    "estimated": true,
-   "source": "nasdaq",
-   "timing": "amc"
+   "source": "yfinance",
+   "timing": null
   }
  },
  "MRVL": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.1234757005654836,
+  "fetched": "2026-10-27",
+  "implied_move": 0.1262369637686459,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -60,8 +60,8 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.0577376925660971,
+  "fetched": "2026-10-27",
+  "implied_move": 0.05400821447631613,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -70,8 +70,8 @@
   }
  },
  "NVDA": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.07222001609021181,
+  "fetched": "2026-10-27",
+  "implied_move": 0.08172824962455005,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
@@ -90,13 +90,20 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-10-26",
-  "implied_move": 0.09625178443970682,
+  "fetched": "2026-10-27",
+  "implied_move": 0.04515962556113501,
+  "last": {
+   "date": "2026-10-27",
+   "estimated": true,
+   "implied_move": 0.09625178443970682,
+   "source": "nasdaq",
+   "timing": "bmo"
+  },
   "next": {
    "date": "2026-10-27",
    "estimated": true,
-   "source": "nasdaq",
-   "timing": "bmo"
+   "source": "yfinance",
+   "timing": null
   }
  },
  "TSLA": {

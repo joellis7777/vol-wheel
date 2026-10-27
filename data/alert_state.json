@@ -2,10 +2,10 @@
  "digest_date": "2026-10-26",
  "tickers": {
   "AMZN": {
-   "action": "EARNINGS_PLAY",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-26",
      "em": 27.6719,
      "price": 247.865,
@@ -13,17 +13,17 @@
      "strike": 247.865
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "CEG": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "FNV": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "GLD": {
    "action": "LEAP_BUY",
@@ -37,7 +37,7 @@
      "strike": 366.6111
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "GOOG": {
    "action": "EARNINGS_PLAY",
@@ -59,7 +59,7 @@
      "strike": 336.945
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "HOOD": {
    "action": "NO_SHORT",
@@ -73,12 +73,12 @@
      "strike": 96.385
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "IBIT": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "MRVL": {
    "action": "NEUTRAL",
@@ -92,7 +92,7 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "MSTR": {
    "action": "NEUTRAL",
@@ -106,7 +106,7 @@
      "strike": 151.26
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "NVDA": {
    "action": "NO_SHORT",
@@ -120,7 +120,7 @@
      "strike": 214.83
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "QQQ": {
    "action": "WATCH",
@@ -142,7 +142,7 @@
      "strike": 702.45
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -150,7 +150,7 @@
    "seen": "2026-10-09"
   },
   "SOFI": {
-   "action": "NO_SHORT",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -161,12 +161,12 @@
      "strike": 12.0
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "SPY": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   },
   "TSLA": {
    "action": "NO_SHORT",
@@ -180,7 +180,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-10-26"
+   "seen": "2026-10-27"
   }
  }
 }
