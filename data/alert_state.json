@@ -13,17 +13,17 @@
      "strike": 210.0
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "CEG": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "FNV": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "GLD": {
    "action": "LEAP_BUY",
@@ -37,13 +37,13 @@
      "strike": 366.6111
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "GOOG": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-20",
      "em": 36.1734,
      "price": 338.03,
@@ -59,7 +59,7 @@
      "strike": 336.945
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "HOOD": {
    "action": "NO_SHORT",
@@ -73,12 +73,12 @@
      "strike": 96.385
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "IBIT": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "MRVL": {
    "action": "NEUTRAL",
@@ -92,7 +92,7 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "MSTR": {
    "action": "NEUTRAL",
@@ -106,7 +106,7 @@
      "strike": 151.26
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "NVDA": {
    "action": "NO_SHORT",
@@ -120,7 +120,7 @@
      "strike": 214.83
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "QQQ": {
    "action": "NEUTRAL",
@@ -142,7 +142,7 @@
      "strike": 702.45
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -161,12 +161,12 @@
      "strike": 12.0
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "SPY": {
    "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   },
   "TSLA": {
    "action": "NEUTRAL",
@@ -180,7 +180,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-10-27"
+   "seen": "2026-10-28"
   }
  }
 }
