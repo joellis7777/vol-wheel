@@ -64,7 +64,7 @@ picks:
 universe:
   # bucket: {cap: % of account, core: [...], opportunistic: [...]}
   Index:      {cap: 25, core: [QQQ, SPY], opportunistic: []}
-  Crypto:     {cap: 20, core: [IBIT],    opportunistic: [MSTR]}
+  Crypto:     {cap: 20, core: [IBIT],    opportunistic: [MSTR, ASST, BMNR]}  # ASST (bitcoin treasury), BMNR (ether treasury) added 2026-10-26
   AI semis:   {cap: 15, core: [NVDA],    opportunistic: [MRVL]}
   Platform:   {cap: 15, core: [GOOG],    opportunistic: [AMZN]}
   High-beta:  {cap: 15, core: [TSLA],    opportunistic: [HOOD, SOFI]}
@@ -86,11 +86,11 @@ vol_index_proxy:
   SPY: _VIX
   QQQ: _VXN
 
-# Names that trade with bitcoin over the weekend: ladder spacing uses the larger
+# Names that trade with crypto over the weekend: ladder spacing uses the larger
 # of the IV-based and HV-based expected move.
-weekend_gap_names: [IBIT, MSTR]
+weekend_gap_names: [IBIT, MSTR, ASST, BMNR]
 # Momentum names: cover at most this % of shares/LEAPs with short calls.
-momentum_names: [TSLA, MSTR, HOOD, NVDA, IBIT]
+momentum_names: [TSLA, MSTR, HOOD, NVDA, IBIT, ASST, BMNR]
 momentum_max_call_coverage: 50
 
 iv_rank:
@@ -242,21 +242,50 @@ schedule:
   market_open: "09:30"
   market_close: "16:00"
 
+# Level trades (Jordan, 2026-10-28): short-dated puts just above a nearby swing low, as a way to buy at a level you'd
+# put a limit order at anyway (keep the premium if it holds, get assigned if not), and calls to trim just below a
+# nearby swing high or, in price discovery, well above a price stretched far over its EMA. Single stocks only; the
+# core ETFs scale through the portfolio ladder. Alerts to consider, not a tested edge (no backtest of it yet).
+level_trades:
+  enabled: true
+  symbols: single_stocks    # = universe names not in earnings.etfs; or a list of symbols
+  dte: [2, 9]               # shortest expiry in this window: this Friday Mon–Wed, next Friday Thu–Fri
+  em_days: 7                # "near" is measured in one-week expected moves (iv30, ex-earnings)
+  swing_lookback_days: 120
+  swing_order: 10           # a swing low/high = lowest/highest bar of 10 on each side (5 caught minor wiggles:
+                            # 11 of 13 names fired on 2026-10-28, HOOD's "low" was last week's $91.44, not $83.68)
+  delta: [10, 50]           # strikes outside this delta range are dropped (far-OTM pennies, ITM)
+  near_em: 1.5              # the level is within 1.5 weekly moves of the price
+  zone_pct: 5               # puts from the swing low up to 5% above it; calls from 5% below the swing high up to it
+  limit_offset_pct: 0.5     # the limit alternative: buy 0.5% above the swing low / sell 0.5% below the swing high
+  max_spread_pct: 15        # of mid (or max_spread_abs)
+  max_spread_abs: 0.05
+  min_open_interest: 50
+  min_yield_pct: 0.2        # premium >= 0.2% of the strike (calls: of the share price)
+  top_n: 3
+  realert_days: 5           # one alert per level per 5 days (the same swing low can be near for days)
+  discovery:                # calls when no swing high is above the price
+    ema_days: 21
+    stretch_em: 2.0         # price at least 2 weekly moves above the 21-day EMA
+    strike_em: 1.0          # strikes at least 1 expected move (to expiry) above the price
+
 alerts:
   enabled: true
   ntfy_server: https://ntfy.sh  # topic comes from the NTFY_TOPIC repo secret, never from here
   dashboard_url: https://joellis7777.github.io/vol-wheel/
-  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, HEDGE, CORE_ADD, CORE_TRIM, PICK_ENTRY, PICK_EXIT, BTC_WARNING]
+  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, LEVEL_PUT, LEVEL_CALL, HEDGE, CORE_ADD, CORE_TRIM, PICK_ENTRY, PICK_EXIT, BTC_WARNING]
   sizing_tier: 500000           # CSP eligibility in the message is shown for this account size
   max_rungs: 3                  # re-alert when price reaches rung 2 and 3 (1 and 2 expected moves past the last alerted strike)
   daily_digest: true            # one low-priority post-close message listing WATCH names
-  priority: {trigger: high, upgrade_from_watch: default, digest: low, hedge: default}
+  priority: {trigger: high, upgrade_from_watch: default, digest: low, hedge: default, level: default}
   tags:
     SELL_PUT: chart_with_downwards_trend
     SELL_CALL: chart_with_upwards_trend
     PAIR_CALL: chart_with_upwards_trend
     LEAP_BUY: seedling
     EARNINGS_PLAY: date
+    LEVEL_PUT: round_pushpin
+    LEVEL_CALL: round_pushpin
     HEDGE: shield
     DIGEST: eyes
     CORE_ADD: heavy_plus_sign
@@ -355,6 +384,16 @@ backtest:
     dte: 45
     stock_cost_bps: 5       # stock execution: cost per trade (bps of notional)
     high_lookback_days: null   # drawdown measured from the all-time high (or a rolling window)
+  ladder:                   # defaults for mode: ladder variants (vol_wheel/ladder.py)
+    base_pct: 60            # shares held at the high
+    dte: 45
+    put_rungs_ahead: 1      # unfilled buy rungs that carry a put at once
+    rebuy_pct: 25           # a scale-out lot is bought back this far below its sale price
+    gain_lookback_days: 756
+    stock_cost_bps: 5
+    take_profit_pct: null   # null = hold to expiry, never pay a debit (Jordan's rule)
+    dip_rungs: 1
+    dip_near_pct: 5         # dip buys only within 5% of the next rung ("at a support level")
   liquid_option_syms: [QQQ, SPY, GLD, XLE, TLT, IWM]   # index-style slippage in mode: multi (others: stock slippage)
   # Extra symbols loaded only for the report's correlation table (diversifier candidates).
   correlation_symbols: [QQQ, SPY, GLD, BTC-USD, XLE, TLT, XLP, XLU, XLV, FNV, SLV, IEF]
@@ -425,6 +464,20 @@ backtest:
     - {name: qqq_puts_hold, label: "QQQ puts always on · calls only on up-spikes", symbols: [QQQ], mode: always,
        entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
        caps: {total: 80, per_name: 80, Index: 80}}
+    # TQQQ (3x daily QQQ, listed 2010-02-11) vs QQQ on the same window (Jordan 2026-10-25). TQQQ is priced like a
+    # single stock (IV = stock_iv_mult x HV, proxy IVR, no IV/HV gate); a 33% weight ≈ QQQ's dollar exposure.
+    - {name: tqqq_puts_hold, label: "TQQQ puts always on · calls only on up-spikes (2010→)", symbols: [TQQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       caps: {total: 80, per_name: 80}, start: "2010-02-11"}
+    - {name: tqqq_spike, label: "TQQQ only · spikes (2010→)", symbols: [TQQQ], mode: spike, entry_pct: 15,
+       caps: {total: 80, per_name: 80}, start: "2010-02-11"}
+    - {name: qqq_puts_hold_2010, label: "QQQ puts always on · calls only on up-spikes (2010→)", symbols: [QQQ],
+       mode: always, entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, calls: spike,
+       caps: {total: 80, per_name: 80, Index: 80}, start: "2010-02-11"}
+    - {name: tqqq_hold, label: "Buy & hold TQQQ 100% (2010→)", symbols: [TQQQ], mode: hold, weight: 100, start: "2010-02-11"}
+    - {name: tqqq_hold33, label: "TQQQ 33% + T-bills 67%, monthly rebalance (2010→)", symbols: [TQQQ], mode: hold,
+       weight: 33, start: "2010-02-11"}
+    - {name: qqq_hold_2010, label: "Buy & hold QQQ 100% (2010→)", symbols: [QQQ], mode: hold, weight: 100, start: "2010-02-11"}
     - {name: qqq_scale_half, label: "QQQ scale in/out · calls on half the shares", symbols: [QQQ], mode: always,
        entry_pct: 10, entry_every_days: 2, min_ivr: 0, vix_caps: true, call_coverage: 50,
        caps: {total: 80, per_name: 80, Index: 80}}
@@ -481,6 +534,37 @@ backtest:
     - {name: mstr_target_opts, label: "MSTR target 15%→100% shares by drawdown · via options", symbols: [MSTR],
        mode: target, exec: options, alloc: [[0, 15], [25, 40], [50, 70], [70, 100]], high_lookback_days: 1000,
        start: "2020-09-01"}
+    # Jordan 2026-10-25: MSTR wheel held near 60% shares / 40% cash: puts on the shortfall, calls on the excess
+    # (regime deltas: further-OTM puts and closer calls near highs), 45 DTE, 50% / 21 DTE. Compare with the same
+    # 60/40 rebalanced in stock and held at a monthly 60% to separate what the options add.
+    - {name: mstr_6040_opts, label: "MSTR 60% shares / 40% cash · kept there with puts and calls", symbols: [MSTR],
+       mode: target, exec: options, alloc: [[0, 60], [100, 60]], start: "2020-09-01"}
+    - {name: mstr_6040_stock, label: "MSTR 60% shares / 40% cash · rebalanced with stock (5% band)", symbols: [MSTR],
+       mode: target, exec: stock, alloc: [[0, 60], [100, 60]], start: "2020-09-01"}
+    - {name: mstr_hold60, label: "MSTR · 60% held, monthly rebalance, rest T-bills", symbols: [MSTR], mode: hold,
+       weight: 60, start: "2020-09-01"}
+    # Same ladder, limit orders vs options at the same levels (Jordan 2026-10-25). MSTR: 60% base, +5–7.5% per
+    # 10% drop to 100% at −70% (from the 1000-day high), trimmed one rung up; scale-outs at +100/200/400/800% off
+    # the 3-year low, re-bought 25% lower.
+    - {name: mstr_lad_limit, label: "MSTR ladder · limit orders", symbols: [MSTR], mode: ladder, exec: limit,
+       buy_rungs: &mstr_rungs [[10, 5], [20, 5], [30, 5], [40, 5], [50, 5], [60, 7.5], [70, 7.5]],
+       scale_out: &mstr_outs [[100, 10], [200, 10], [400, 10], [800, 10]], high_lookback_days: 1000, start: "2020-09-01"}
+    - {name: mstr_lad_opts, label: "MSTR ladder · puts/calls at the same levels, held to expiry", symbols: [MSTR],
+       mode: ladder, exec: options, buy_rungs: *mstr_rungs, scale_out: *mstr_outs, high_lookback_days: 1000,
+       start: "2020-09-01"}
+    - {name: mstr_lad_opts3, label: "MSTR ladder · options, puts on the next 3 rungs", symbols: [MSTR],
+       mode: ladder, exec: options, put_rungs_ahead: 3, buy_rungs: *mstr_rungs, scale_out: *mstr_outs,
+       high_lookback_days: 1000, start: "2020-09-01"}
+    - {name: mstr_lad_opts_dip, label: "MSTR ladder · options + dip rule (close calls, buy next rung in stock)",
+       symbols: [MSTR], mode: ladder, exec: options, put_rungs_ahead: 3, dip_buy: true, buy_rungs: *mstr_rungs,
+       scale_out: *mstr_outs, high_lookback_days: 1000, start: "2020-09-01"}
+    - {name: qqq_lad_limit, label: "QQQ ladder · limit orders", symbols: [QQQ], mode: ladder, exec: limit,
+       buy_rungs: &qqq_rungs [[5, 5], [10, 5], [15, 5], [20, 5], [30, 10], [40, 10]],
+       scale_out: &qqq_outs [[30, 10], [60, 10], [100, 10]], rebuy_pct: 15}
+    - {name: qqq_lad_opts, label: "QQQ ladder · puts/calls at the same levels, held to expiry", symbols: [QQQ],
+       mode: ladder, exec: options, buy_rungs: *qqq_rungs, scale_out: *qqq_outs, rebuy_pct: 15}
+    - {name: qqq_lad_opts_dip, label: "QQQ ladder · options + dip rule", symbols: [QQQ], mode: ladder, exec: options,
+       put_rungs_ahead: 3, dip_buy: true, buy_rungs: *qqq_rungs, scale_out: *qqq_outs, rebuy_pct: 15}
     - {name: mstr_target_stock, label: "MSTR target 15%→100% shares by drawdown · via stock", symbols: [MSTR],
        mode: target, exec: stock, alloc: [[0, 15], [25, 40], [50, 70], [70, 100]], high_lookback_days: 1000,
        start: "2020-09-01"}
@@ -1112,6 +1196,17 @@ backtest:
     - {name: qqq_putwrite25, label: "QQQ put-write · 25Δ cash-secured, 100% notional, held to expiry", symbols: [QQQ],
        mode: always, put_delta: 25, entry_pct: 100, entry_every_days: 1, min_ivr: 0, calls: none, take_profit_pct: 100,
        decide_dte: 4, decide_itm: close, caps: {total: 100, per_name: 100, Index: 100}}
+    # SPX puts only in taxable (Jordan 2026-10-25), modelled on SPY priced off VIX; never assigned (SPX is cash-settled).
+    - {name: spx_csp16, label: "SPX puts only · cash-secured 16Δ, close 50% / 21 DTE", symbols: [SPY], mode: always,
+       put_delta: 16, entry_pct: 10, entry_every_days: 1, min_ivr: 0, calls: none, decide_itm: close,
+       take_profit_pct: 50, caps: {total: 100, per_name: 100, Index: 100}}
+    - {name: spx_margin16, label: "SPX puts only · naked 16Δ on margin, BP 25→50% by VIX", symbols: [SPY], mode: always,
+       put_delta: 16, margin_frac: 0.2, entry_pct: 5, entry_every_days: 1, min_ivr: 0, calls: none, decide_itm: close,
+       take_profit_pct: 50, vix_caps: [[0, 25], [20, 35], [30, 50]], caps: {total: 50, per_name: 50, Index: 50}}
+    - {name: spx_margin16_cut30, label: "SPX puts only · naked 16Δ on margin, BP 17.5→35% by VIX", symbols: [SPY],
+       mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 3.5, entry_every_days: 1, min_ivr: 0, calls: none,
+       decide_itm: close, take_profit_pct: 50, vix_caps: [[0, 17.5], [20, 24.5], [30, 35]],
+       caps: {total: 35, per_name: 35, Index: 35}}
     - {name: tasty_margin_cut30, label: "tastytrade book on margin · Tom's 30% size cut (BP 17.5→35% by VIX)",
        symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 2.1,
        entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,

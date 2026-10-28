@@ -42,10 +42,13 @@ log = logging.getLogger("vol_wheel.alerts")
 
 STATE_PATH = ROOT / "data" / "alert_state.json"
 TITLES = {"SELL_PUT": "SELL PUT", "SELL_CALL": "SELL COVERED CALL", "LEAP_BUY": "LEAP BUY",
-          "PAIR_CALL": "ADD 10Δ CALL", "EARNINGS_PLAY": "EARNINGS PLAY", "HEDGE": "HEDGE"}
+          "PAIR_CALL": "ADD 10Δ CALL", "EARNINGS_PLAY": "EARNINGS PLAY", "LEVEL_PUT": "LEVEL PUT",
+          "LEVEL_CALL": "LEVEL CALL", "HEDGE": "HEDGE"}
 # Direction a rung moves: puts and LEAP adds step down, calls step up; the add-on call, earnings
-# plays (one per report) and the hedge don't ladder.
-RUNG_DIR = {"SELL_PUT": -1, "SELL_CALL": 1, "LEAP_BUY": -1, "PAIR_CALL": 0, "EARNINGS_PLAY": 0, "HEDGE": 0}
+# plays (one per report), level trades (one per level, see evaluate()) and the hedge don't ladder.
+RUNG_DIR = {"SELL_PUT": -1, "SELL_CALL": 1, "LEAP_BUY": -1, "PAIR_CALL": 0, "EARNINGS_PLAY": 0,
+            "LEVEL_PUT": 0, "LEVEL_CALL": 0, "HEDGE": 0}
+LEVEL_SIDE = {"LEVEL_PUT": "put", "LEVEL_CALL": "call"}
 HEDGE_KEY = "_HEDGE"
 
 
@@ -128,6 +131,9 @@ def top_candidate(t: dict, trigger: str) -> dict | None:
         ep = t.get("earnings_play") or {}
         c = (ep.get("calls" if ep.get("side") == "C" else "puts") or {}).get("candidates") or []
         return c[0] if c else None
+    if trigger in LEVEL_SIDE:
+        c = ((t.get("level_trades") or {}).get(LEVEL_SIDE[trigger]) or {}).get("candidates") or []
+        return c[0] if c else None
     key = {"SELL_PUT": "puts", "SELL_CALL": "calls", "PAIR_CALL": "pair_call"}.get(trigger)
     if not key:
         return None
@@ -140,8 +146,51 @@ def leap_line(lp: dict) -> str:
             f"{lp['delta'] * 100:.0f}Δ · mid {_money(lp['mid'])} · extrinsic {lp['extrinsic_pct']:.1f}%")
 
 
+def level_message(t: dict, trigger: str, rules: dict) -> dict:
+    """LEVEL PUT / LEVEL CALL: a short-dated option at a technical level, with the limit-order alternative."""
+    ac = rules["alerts"]
+    sym = t["symbol"]
+    lt = t.get("level_trades") or {}
+    lv = lt.get(LEVEL_SIDE[trigger]) or {}
+    cands = lv.get("candidates") or []
+    put = trigger == "LEVEL_PUT"
+    lines = []
+    if cands:
+        c = cands[0]
+        alt = (f" · or a limit {'buy' if put else 'sell'} at {_money(lv['limit'])}" if lv.get("limit") else "")
+        lines.append(f"→ Sell {sym} {_expiry(c['expiry'], c['dte'])} {_strike(c['strike'])} {'put' if put else 'call'} "
+                     f"@ ~{_money(c['mid'])} ({abs(c['delta']) * 100:.0f}Δ){alt}")
+    lines.append(header_line(t))
+    em = lt.get("em_week")
+    if lv.get("mode") == "discovery":
+        lines.append(f"Price discovery: {lv['stretch_em']:.1f} weekly moves (±{_money(em)}) above the "
+                     f"{lv['ema_days']}-day EMA ({_money(lv['ema'])}); strikes ≥ {_money(lv['strike_min'])}")
+    else:
+        word = "below" if put else "above"
+        lines.append(f"{lv['kind'].capitalize()} {_money(lv['level'])}: {abs(lv['dist_pct']):.1f}% {word} · "
+                     f"{lv['dist_em']:.1f} weekly moves (±{_money(em)})")
+    for c in cands:
+        base = "strike" if put else "price"
+        lines.append(f"{_strike(c['strike'])} · {abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])} · "
+                     f"{c['yield_pct']:.2f}% of {base} · IV {c['iv'] * 100:.0f}% · {c['spread_pct']:.0f}% spread")
+    if put:
+        lines.append("Aim: get assigned at a level you'd buy; keep the premium if it holds. Single stock: "
+                     "size it inside the bucket cap.")
+    else:
+        cover = "Covered only: trims shares you'd sell at this level"
+        if sym in rules.get("momentum_names", []):
+            cover += f" (cover ≤ {rules.get('momentum_max_call_coverage', 50)}%)"
+        lines.append(cover)
+    lines.append("Technical level, not a premium signal: check that IV isn't cheap (card's IV/HV)")
+    return {"title": f"{TITLES[trigger]} · {sym}", "body": "\n".join(x for x in lines if x),
+            "priority": ac["priority"].get("level", "default"),
+            "tags": [ac["tags"].get(trigger, "round_pushpin")], "click": ac["dashboard_url"]}
+
+
 def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bool = False,
                   rec: dict | None = None) -> dict:
+    if trigger in LEVEL_SIDE:
+        return level_message(t, trigger, rules)
     ac = rules["alerts"]
     sym = t["symbol"]
     title = f"{TITLES[trigger]} · {sym}" + (f" · rung {rung}" if rung > 1 else "")
@@ -266,14 +315,32 @@ def triggers_for(t: dict, rules: dict) -> list[str]:
         out.append(t["action"])
     if t.get("both_sides") and "PAIR_CALL" in allowed:
         out.append("PAIR_CALL")
+    lt = t.get("level_trades") or {}
+    for trig, side in LEVEL_SIDE.items():
+        if trig in allowed and (lt.get(side) or {}).get("active"):
+            out.append(trig)
     return out
 
 
 def trigger_record(t: dict, trigger: str, today: str, rung: int) -> dict:
     c = top_candidate(t, trigger)
     strike = c["strike"] if c else t.get("price")
-    return {"date": today, "strike": strike, "price": t.get("price"), "em": t.get("em45"),
-            "rung": rung, "active": True}
+    rec = {"date": today, "strike": strike, "price": t.get("price"), "em": t.get("em45"),
+           "rung": rung, "active": True}
+    if trigger in LEVEL_SIDE:
+        rec["level"] = ((t.get("level_trades") or {}).get(LEVEL_SIDE[trigger]) or {}).get("level")
+    return rec
+
+
+def level_recent(rec: dict, t: dict, trigger: str, today: str, days: int) -> bool:
+    """Same level alerted within `days` days (swing lows stay near for days; don't repeat)."""
+    lv = ((t.get("level_trades") or {}).get(LEVEL_SIDE[trigger]) or {}).get("level")
+    if lv is None or rec.get("level") is None or abs(rec["level"] - lv) > 1e-6:
+        return False
+    try:
+        return (date.fromisoformat(today) - date.fromisoformat(rec["date"])).days < days
+    except (KeyError, ValueError):
+        return False
 
 
 def rung_reached(rec: dict, price: float | None, trigger: str) -> bool:
@@ -307,6 +374,12 @@ def evaluate(result: dict, state: dict, today: str, rules: dict) -> tuple[list[d
         current = triggers_for(t, rules)
         for trig in current:
             rec = recs.get(trig)
+            if trig in LEVEL_SIDE and rec is not None and level_recent(
+                    rec, t, trig, today, rules.get("level_trades", {}).get("realert_days", 5)):
+                rec["active"] = True
+                continue
+            if trig in LEVEL_SIDE and rec is not None and rec.get("active") and rec.get("date") != today:
+                rec["active"] = False  # a new level (or the window passed) alerts again
             if rec is None or (not rec.get("active") and rec.get("date") != today):
                 upgrade = prev_action == "WATCH" and trig != "PAIR_CALL"
                 msg = build_message(t, trig, rules, 1, upgrade)

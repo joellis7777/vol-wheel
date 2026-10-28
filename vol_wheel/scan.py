@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import alerts, data, earnings, ivhistory, portfolio, schedule, signals, strikes
+from . import alerts, data, earnings, ivhistory, levels, portfolio, schedule, signals, strikes
 from .config import ROOT, load_rules, universe
 
 log = logging.getLogger("vol_wheel")
@@ -347,6 +347,9 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
                                            sc, rules["sizing"]["ladder_rungs"], rules["sizing"]["ladder_dte"])
         if sym in rules.get("momentum_names", []):
             out["notes"].append(f"Momentum name: cover at most {rules['momentum_max_call_coverage']}% with calls")
+    if levels.in_scope(sym, rules) and np.isfinite(iv_eff):
+        out["level_trades"] = levels.level_trades(opts, hist, price, iv_eff, rules["level_trades"],
+                                                  nxt.get("date"), nxt.get("timing"))
     lp = rules["leap"]
     variants = lp.get("variants") or {"ira": {"min_dte": lp["min_dte"], "max_dte": lp["max_dte"], "label": "LEAP"}}
     out["leaps"] = {}

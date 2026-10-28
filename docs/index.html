@@ -451,6 +451,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
         suggestBox(t) +
         (et && t.earnings.in_window ? '<div class="earn-line">' + esc(et.line) + "</div>" : "") +
         '<div class="reason">' + esc((t.reasons || []).join(" · ")) + "</div>" +
+        levelLine(t) +
       "</button>" +
       '<div class="body">' + body(t) + "</div>" +
     "</article>";
@@ -483,6 +484,46 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       (size ? '<div class="size">' + esc(size) + "</div>" : "") +
       '<div class="meta2">Manage: ' + esc(s.manage) + "</div>" +
       '<div class="meta2">Still valid while ' + esc(s.valid_while) + ". Quotes are delayed; confirm the price first.</div></div>";
+  }
+
+  function levelLine(t) {
+    var lt = t.level_trades || {}, out = [];
+    [["put", "Level put"], ["call", "Level call"]].forEach(function (x) {
+      var lv = lt[x[0]];
+      if (!lv || !lv.active) return;
+      var c = lv.candidates[0];
+      out.push(x[1] + ": " + money(c.strike, c.strike % 1 ? 2 : 0) + " " + x[0] + " " + esc(c.expiry.slice(5)) + " @ " + money(c.mid, 2) +
+        (lv.mode === "discovery" ? " (price discovery)" : " near the " + esc(lv.kind) + " " + money(lv.level, 2)));
+    });
+    return out.length ? '<div class="earn-line">📍 ' + out.join(" · ") + "</div>" : "";
+  }
+
+  function levelSection(t) {
+    var lt = t.level_trades;
+    if (!lt) return "";
+    var h = '<h3>Level trades <span class="hint">· ' + (lt.expiry ? esc(lt.expiry) + " (" + lt.dte + " DTE)" : "no short expiry") +
+      (lt.em_week ? " · weekly move ±" + money(lt.em_week, 2) : "") + "</span></h3>";
+    if (lt.note) return h + '<div class="empty">' + esc(lt.note) + "</div>";
+    [["put", "P"], ["call", "C"]].forEach(function (x) {
+      var lv = lt[x[0]];
+      if (!lv) return;
+      var head;
+      if (lv.mode === "discovery") {
+        head = "Calls · price discovery: " + num(lv.stretch_em, 1) + " weekly moves above the " + lv.ema_days + "-day EMA (" + money(lv.ema, 2) + ")" +
+          (lv.near ? "; strikes ≥ " + money(lv.strike_min, 2) : "; alerts at ≥ " + num(lv.stretch_min, 1));
+      } else {
+        head = (x[0] === "put" ? "Puts" : "Calls (covered only)") + " · " + esc(lv.kind) + " " + money(lv.level, 2) + ": " + num(Math.abs(lv.dist_pct), 1) + "% away, " +
+          num(lv.dist_em, 1) + " weekly moves" + (lv.near ? " · zone " + money(lv.zone[0], 2) + "–" + money(lv.zone[1], 2) + " · limit alternative " + money(lv.limit, 2) : " · not near yet");
+      }
+      h += '<div class="legend">' + head + "</div>";
+      (lv.candidates || []).forEach(function (c) {
+        h += '<div class="strike"><div class="top"><span class="k">' + money(c.strike, c.strike % 1 ? 2 : 0) + " " + x[0] + "</span>" +
+          '<span class="meta">' + num(Math.abs(c.delta) * 100) + "Δ · mid " + money(c.mid, 2) + " · " + num(c.yield_pct, 2) + "% of " + (x[0] === "put" ? "strike" : "price") +
+          " · IV " + pct(c.iv, 0) + " · " + num(c.spread_pct, 0) + "% spread · OI " + Number(c.oi).toLocaleString() + "</span></div></div>";
+      });
+      if (lv.near && !(lv.candidates || []).length) h += '<div class="empty">No strike in the zone passes the spread / open-interest / premium filters.</div>';
+    });
+    return h + '<div class="legend">Technical-level trades to consider, not a tested edge. Aim to be assigned at a level you would buy (or called away where you would trim).</div>';
   }
 
   function m(k, v) { return '<div class="m"><div class="k">' + k + '</div><div class="v">' + v + "</div></div>"; }
@@ -538,6 +579,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
       if (!ep.side || ep.side === "P") h += side(t, "puts", "Earnings puts", "P", ep, lim, ep.size_frac);
       if (!ep.side || ep.side === "C") h += side(t, "calls", "Earnings calls (covered only)", "C", ep, lim, ep.size_frac);
     }
+    h += levelSection(t);
     h += side(t, "puts", "Puts", "P");
     if (t.pair_call && t.pair_call.candidates && t.pair_call.candidates.length) h += side(t, "pair_call", "Alongside: 10Δ covered call", "C");
     h += side(t, "calls", "Calls (covered only)", "C");

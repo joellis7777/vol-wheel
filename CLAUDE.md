@@ -49,7 +49,14 @@ changes, update this list in the same change.
   opportunistic name in a new Space bucket (cap 5%) and on the picks watchlist: listed 2026-06-12, liquid
   options (10–35Δ puts ~3% spreads, OI ~830, M/W/F expiries), IV ~53%. Short history: IVR is a proxy, regime
   defaults to Mid, picks status waits for ~260 days; no earnings date found yet, so earnings mode can't
-  protect it until one appears.
+  protect it until one appears. ASST (bitcoin treasury) and BMNR (ether treasury) added 2026-10-26 (Jordan) as
+  opportunistic names in the Crypto bucket beside MSTR (shared 20% cap), also in `weekend_gap_names` and
+  `momentum_names`. CBOE 2026-10-26: BMNR liquid (3–10% spreads, OI in the thousands, iv30 ~75%, HV20 60%);
+  ASST thinner (Dec 20Δ puts 7–13%, OI 80–3,000; far-OTM calls 30–60%; iv30 ~94%, HV20 84%). Both report in
+  November (ASST ~Nov 9, BMNR ~Nov 20, estimated), so earnings mode pauses them until then. IVR is a proxy until ~60
+  days of IV history (≈ late Jan 2027). Together with MSTR and IBIT this makes the Crypto bucket four
+  highly correlated names under one cap (daily correlation since 2025-10: BMNR–IBIT 0.84, BMNR–ETHA 0.88,
+  ASST–IBIT 0.68; annualized vol ASST 121%, BMNR 90%, MSTR 80%, IBIT 45%; max drawdown ASST −87%, BMNR −79%).
 - **Thin option markets** (decided 2026-10-09): keep the 10%-of-mid spread rule, but when nothing
   in the band passes it, show the best strikes with spreads up to 40% of mid, flagged "wide market:
   limit order near the mid" (`strikes.wide_spread_fallback`). CEG, FNV and RGLD hit this routinely.
@@ -78,6 +85,18 @@ changes, update this list in the same change.
   half its sleeve (puts on IBIT from $25k; GLD/XLE from ~$500k, QQQ at $1M; no cheap gold substitute: IAU's
   options are too thin); picks and the
   LEAP sleeve start at $150k. No extra rotation tilt (the cycle sleeves + monthly rebalance already rotate).
+- **Scale in and out with options** (Jordan, 2026-10-25): the core's ladder levels are worked primarily by selling
+  puts (buys) and calls (trims) struck at those levels, held to expiry rather than paying debits, plus the dip rule
+  (on a sharp sell-off near a level, close short calls and buy that level with spare cash; keep the puts). Backed
+  by the ladder test (`mode: ladder`). The TQQQ and MSTR 60/40 runs were theory tests only, not part of the build.
+- **Level trades on single stocks** (Jordan, 2026-10-28): besides the rich-premium alerts, single stocks alert on
+  short-dated (2–9 DTE) puts struck just above a nearby swing low, as a way to be assigned at a level Jordan would
+  place a limit buy at (keeping the premium if it holds; a limit just above the low is the alternative), and calls
+  just below a nearby swing high or, in price discovery, well above a price stretched over its 21-day EMA (trims).
+  `level_trades` in rules.yaml, LEVEL_PUT / LEVEL_CALL alerts (default priority, once per level per 5 days). Core
+  ETFs stay on the portfolio ladder. Pushback given: weeklies pay more per day only because they carry more gap
+  risk per day; the put does worst when the level holds and the stock bounces; swing lows get undercut; no
+  backtest of the level edge yet (next test in docs/STRATEGY.md). Never through an earnings report.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 - **The rulebook is a starting hypothesis, not a constraint** (Jordan, 2026-10-11): the goal is to
@@ -413,6 +432,47 @@ backtest changes the picture: edit it in the same change and add a line to its c
     Real records, total return: XYLD 8.0% vs SPY 14.0% (2013→), QYLD 8.5% vs QQQ 18.9% (2014→). Holds on the S&P
     500 as "similar return, much lower volatility", not as "outperforms everywhere"; on the Nasdaq-100 calls cost
     4–5%/yr (model) to ~10%/yr (QYLD).
+  - TQQQ instead of QQQ for the wheel (Jordan 2026-10-25, `tqqq_*`, `qqq_*_2010`; TQQQ priced like a stock at
+    1.0–1.3x HV, from its 2010-02-11 listing). Puts always + up-spike calls: TQQQ 22.0–28.5% / −58 to −68% max DD
+    (Sharpe 0.68–0.81) vs QQQ 12.4% / −29% (0.78); holds: TQQQ 35.3% / −82%, QQQ 18.1% / −36% (0.84); TQQQ 33% +
+    T-bills 67% (≈ QQQ's dollar exposure) 15.5% / −37%, i.e. below QQQ held (decay + financing). 2021→: TQQQ wheel
+    14–23% / −46 to −53% vs QQQ wheel 12.1% / −17%. Real chains 2026-10-24: TQQQ iv30 71 vs HV 55 (1.29x), QQQ 24 vs
+    19 (1.31x): TQQQ's premium is ~3x QQQ's because its risk is ~3x; no extra edge per unit of volatility. Synthetic
+    3x QQQ (daily 3x, borrow at T-bills, 0.95% fee) from the 2000 peak: −99.98%, still 0.40x of that peak today,
+    while QQQ recovered in 2015 (2000 −92%, 2001 −89%, 2002 −86%, 2008 −88%, 2018 −19% on a flat QQQ, 2022 −79%).
+    Leveraged ETFs don't have to come back; the 2010→ window is the best Nasdaq run on record. Not adopted.
+  - MSTR wheel held near 60% shares / 40% cash (Jordan 2026-10-25, `mstr_6040_*`, `mode: target` with a flat
+    alloc: puts on the shortfall, calls on the excess, regime deltas, 45 DTE, 50% / 21 DTE; IV 1.0–1.3x HV). From
+    2020-09: options 22.9–28.3% / −60% max DD (premium collected 9–12%/yr of the account, ~46% in shares on
+    average) vs the same 60/40 rebalanced with stock 39.4% / −68% vs 60% held 41.3% / −70% vs 100% held 45.0% /
+    −89%. From 2021: options 24.1–29.6% vs stock 26.8% vs held 28.0%. So the options' net contribution is −13 to
+    −18%/yr through the 2020–21 run (calls get exercised, puts don't fill in rallies) and −4 to +2%/yr since; they
+    trim the drawdown ~8–10 pts. Pure premium (30Δ puts never assigned, losers closed at 21 DTE): 6–14%/yr at ~25%
+    deployed, −1% to 31% fully deployed, depending on IV vs later realized vol. Real chains 2026-10-24, iv30 / HV60:
+    MSTR 72 / 84 (0.85x), COIN 0.94, HOOD 1.02, PLTR 0.92, MU 0.84, SPCX 0.72, TSLA 1.00, IBIT 0.99, NVDA 1.20:
+    the high-vol names are not currently rich.
+  - Ladder: limit orders vs options at the same levels (Jordan 2026-10-25, `mode: ladder`, `*_lad_*`). 60% base,
+    buy rungs every 10% down (MSTR, to 100% at −70% of the 1000-day high; QQQ every 5%, to 100% at −40%), each lot
+    trimmed one rung up; scale-outs off the 3-year low (MSTR +100/200/400/800%, QQQ +30/60/100%) re-bought 25% /
+    15% lower. Limit = fill on touch; options = 45-day put/call struck at the level, held to expiry, no debits.
+    MSTR from 2020-09: limit 36.1% / −77.5% (2022 −62%); options 36.3–41.0% / −62 to −69% (2022 −41 to −48%);
+    puts on the next 3 rungs 39.7–45.0% / −62 to −71%; + dip rule (first day of a down-spike within 5% of the next
+    rung: close all short calls, buy that rung in stock, keep the puts) 46.8–54.4% / −55 to −67%; 60% held 41.3% /
+    −70%. From 2021: limit 17.3% / −58%, options 16.9–21.6% / −32 to −44%, 3 rungs 18.9–24.7%, dip 24.1–29.1% /
+    −37 to −50%, 60% held 28.0%. QQQ 2007→: limit 10.0% / −44%, options 9.7% / −40%, dip 10.4%; 2021→ 10.0 / 10.4 /
+    11.5% (QQQ held 15%). So against the limit orders Jordan would place anyway, the options are at least as good
+    and smoother (they fill fewer rungs in fast crashes: ~3 vs ~11 fills/yr on MSTR); the gain is larger at richer
+    IV. My earlier "options lag the targets" compared them with instant stock rebalancing, not limit orders. The
+    dip rule's edge is one 6-year MSTR path of mean-reverting chop; treat it as plausible, not proven. Premium
+    column = gross credits (the dip rule closes and re-sells calls, so it reads 34–44%/yr).
+  - SPX puts only in taxable (Jordan 2026-10-25, `spx_*`; SPY priced off VIX as the proxy, 16Δ, a new put every
+    session up to the cap, close 50% / 21 DTE, never assigned). After-tax = T-bill interest at 40.8% + option P&L at
+    the 60/40 rate 30.6% each year (top bracket incl. NIIT; losses offset). 2007→ pre-tax | after-tax / max DD:
+    cash-secured 5.2% | 3.4% / −19% (77% of the account deployed); naked on margin, BP 25→50% by VIX 8.1% | 5.6% /
+    −45% (2008 −29%); 30% smaller 7.2% | 4.9% / −33%; 25Δ put-write held to expiry 7.2% | 4.9% / −25%. SPY held
+    (total return) 10.8% pre-tax, 9.3% after tax if sold at the end, 10.4% if never sold. 2021→: 8.0 | 5.2,
+    14.0 | 9.4 (−17%), 10.7 | 7.1 vs SPY 14.5 | 12.0. The 60/40 treatment narrows the gap but a puts-only SPX book
+    still trails holding the index after tax, because the index's gains are deferred and long-term.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
@@ -424,6 +484,11 @@ backtest changes the picture: edit it in the same change and add a line to its c
     funded partly with a personal loan; no public record before 2024, no verified returns; his
     full rules are in his pinned X "Options Comprehensive Mega Thread".
   Still to add: IVR 70. Real option history is paid.
+- Taxable trading sleeve with 60/40 (Section 1256) instruments (Jordan asked 2026-10-25; the wheel itself stays in
+  the IRA per the decision above). CBOE quotes 2026-10-23, 10–30Δ puts 30–60 DTE: XSP 0.9% median spread, $76k per
+  contract (SPY 1.7%, $76k); SPX 1.4%, $762k; RUT 3.4%, $278k; NDX 8.2%, $2.9M; XND 92% (untradeable); MRUT none.
+  Nasdaq, gold, crude and bitcoin need CME futures options (/MNQ /NQ, /MGC /GC, /MCL /CL, /MBT), not on CBOE's feed:
+  check liquidity on Schwab. Index options are cash-settled (no assignment into shares).
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
 - Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
@@ -460,6 +525,8 @@ vol_wheel/
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
   target.py                target-allocation scaling by drawdown, via options or stock (`mode: target`)
   multi.py                 multi-asset core at fixed weights, rebalanced with options or stock (`mode: multi`)
+  ladder.py                scale-in/out ladder via limit orders or options at the same levels (`mode: ladder`)
+  levels.py                level trades: short-dated puts/calls at swing lows/highs or stretched price discovery
   sleeve.py                long-call convexity sleeve: premium-sized calls/debit spreads with delta exits (`mode: sleeve`)
 data/iv_history/{SYM}.csv  date,iv30 (vol points),price — appended once per market date (post-close only)
 data/alert_state.json      alert dedup state (signals only, no account data), written by the workflow
@@ -527,6 +594,13 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
 - Body: price/change, regime, IVR (+source), top-scored strike with expiry, delta, mid, annualized,
   the value reason, and CSP eligibility at `alerts.sizing_tier` ($500k).
 - `alerts.daily_digest`: one low-priority post-close message listing WATCH names, once per day.
+- LEVEL_PUT / LEVEL_CALL (`levels.py`, config `level_trades`; single stocks = universe minus `earnings.etfs`):
+  shortest expiry of 2–9 DTE; level = nearest swing low below / swing high above (lowest/highest of 10 bars each
+  side, 120 days) within 1.5 one-week expected moves; strikes from the level to 5% inside it, 10–50Δ, spread ≤ 15%
+  of mid, OI ≥ 50, premium ≥ 0.2%; no swing high above = price discovery (calls ≥ 1 expected move above a price 2+
+  weekly moves over its 21-day EMA). Skipped when the expiry spans earnings. Dedup per level: the same level
+  re-alerts only after `realert_days` (5). Card: a 📍 line and a "Level trades" section. With 5-bar swings 11 of 13
+  names fired on 2026-10-28; 10-bar swings fired 5 (HOOD's level then read $83.68).
 
 ## Portfolio layer (`portfolio.py`, config `portfolio:` and `picks:`)
 
@@ -747,6 +821,11 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
 - `put_wing_delta` (wheel `always`/`spike` variants): sell a put credit spread instead of a cash-secured put
   (the IRA's defined-risk substitute for margin): long put at that delta, collateral = width, `entry_pct` =
   max loss per trade, in-the-money at expiry = cash-settled at the width it lost (no assignment, no rolls).
+- `mode: ladder` (`vol_wheel/ladder.py`, defaults in `backtest.ladder`): `base_pct` shares, `buy_rungs` [[drawdown %,
+  % of equity]] trimmed one rung up, `scale_out` [[gain % off the 3-year low, % sold]] re-bought `rebuy_pct` lower;
+  `exec: limit` fills on a touch of the day's range, `exec: options` strikes puts/calls at the levels (held to expiry
+  unless `take_profit_pct`), `put_rungs_ahead`, `dip_buy` (+ `dip_near_pct`, `dip_rungs`). The frame now carries
+  open/high/low.
 - `mode: blend` (`run_blend`): fixed `weights` of other variants' daily equity curves plus `tbills`,
   rebalanced monthly (`rebalance: M|Q|Y`) at no cost (separate sleeves of one account); `tilt` {k,
   max_mult} scales each part's weight by its underlying's drawdown at each rebalance. Components run

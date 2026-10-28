@@ -211,6 +211,9 @@ def signal_frame(hist: pd.DataFrame, rules: dict, vol_index: pd.Series | None = 
     c = hist["close"].astype(float)
     f = pd.DataFrame(index=c.index)
     f["close"] = c
+    for col in ("open", "high", "low"):          # intraday range for limit-order fills (mode: ladder)
+        if col in hist:
+            f[col] = hist[col].astype(float)
     w = th.get("spike_hv_window", 20)
     hv20 = signals.hv(c, w)
     hv60 = signals.hv(c, bt.get("stock_iv_hv_long", 60))
@@ -1365,6 +1368,11 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             sym = v["symbols"][0]
             slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
             return Target({**v, "index": sym in meta["index_syms"]}, fr[sym], rates, rules, vs, end_, slope).run().result()
+        if v["mode"] == "ladder":
+            from .ladder import Ladder
+            sym = v["symbols"][0]
+            slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
+            return Ladder({**v, "index": sym in meta["index_syms"]}, fr[sym], rates, rules, vs, end_, slope).run().result()
         if v["mode"] == "multi":
             from .multi import Multi
             slopes = {s: bt["skew_slope"]["index" if s in meta["vol_index_syms"] else "stock"] for s in v["symbols"]}
@@ -1421,7 +1429,7 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             else:
                 v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
                 uses_stock_iv = any(s not in meta["vol_index_syms"] for s in v["symbols"])
-                no_options = v["mode"] == "hold" or (v["mode"] in ("target", "multi") and v.get("exec") == "stock")
+                no_options = v["mode"] == "hold" or (v["mode"] in ("target", "multi", "ladder") and v.get("exec") in ("stock", "limit"))
                 run_mults = (mults if (uses_stock_iv and not no_options) else [base_mult])
             for m in run_mults:
                 key = v["name"] if m == base_mult else f"{v['name']}@{m:g}"

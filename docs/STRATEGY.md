@@ -5,7 +5,7 @@ backtests come in; each change is dated in the log at the bottom. Percentages ar
 (IRA + taxable together); no balances or positions belong here (public repo). Evidence lives in CLAUDE.md
 ("Open strategy items") and `docs/backtest/report.md`; source notes in the private research folder.
 
-Last updated: 2026-10-11.
+Last updated: 2026-10-28.
 
 ## The one-paragraph version
 
@@ -19,7 +19,7 @@ rule-bound satellites (an MSTR/IBIT long-call sleeve and stock picks) for upside
 
 | Sleeve | Weight | What it holds | Rules | Where |
 |---|---|---|---|---|
-| **Core** | 65% | QQQ / GLD / IBIT / XLE by risk profile (dashboard; default by size): max growth 20/15/60/10, growth 25/15/50/10, balanced 30/20/40/10, moderate 35/25/30/10, steady 35/35/20/10 | Held, no trend exit (Jordan: buy dips, don't sell them). Scale out as each name's bull run matures: aggressive caps by its gain from the 3-year low (QQQ/GLD/XLE 85% at +30% → 35% at +150%; IBIT 80% at +100% → 30% at +1000%), so the account is light going into the next bear; trades in stock (options lag the targets) | IRA |
+| **Core** | 65% | QQQ / GLD / IBIT / XLE by risk profile (dashboard; default by size): max growth 20/15/60/10, growth 25/15/50/10, balanced 30/20/40/10, moderate 35/25/30/10, steady 35/35/20/10 | Held, no trend exit (Jordan: buy dips, don't sell them). Scale out as each name's bull run matures: aggressive caps by its gain from the 3-year low (QQQ/GLD/XLE 85% at +30% → 35% at +150%; IBIT 80% at +100% → 30% at +1000%), so the account is light going into the next bear; work each step with a resting limit order or a put/call struck at that step's price (equal or better in the 2026-10-25 ladder test; options lag only when chasing a moving target) | IRA |
 | **Reserve** | 20% | SGOV | Pyramid fund: each core name has its own range, from its base weight at the high to fully invested near its historical worst drawdown (QQQ −80%, GLD −45%, IBIT −80%, XLE −75%); add at each step by stock or 16Δ cash-secured puts on IVR ≥ 50 down-spikes; trim back to base as new highs return | IRA |
 | **Convexity sleeve** | ≤ 5% at risk | MSTR (or IBIT) long calls | ~15–25Δ, ~15 months out, 1–2% of the account per position, sell half at +100%, rest out at 60Δ or 90 DTE, re-enter as a roll; no entry filter | IRA (or taxable for > 1-year holds) |
 | **Stock picks** | ≤ 10% | 5–10 names | See "Stock picker" below | Taxable (long-term holds) or IRA |
@@ -61,6 +61,9 @@ Built 2026-10-11: items 1 (core pyramid panel + ADD/TRIM alerts), 4's alerts pen
    on MSTR they added ~3.5%/yr and cut the drawdown 18 pts; on QQQ they don't matter.
 4. Convexity sleeve signals: entry / half-off / 60Δ / 90-DTE alerts.
 5. Stock-picks watchlist with entry/exit alerts (below).
+6. Built 2026-10-28: level trades on single stocks (LEVEL PUT / LEVEL CALL): short-dated puts just above a nearby
+   swing low, calls just below a swing high or far above a stretched price, with the limit-order alternative.
+   Untested; treat as a way to buy/trim at levels you chose, not as premium edge.
 
 ## Small accounts
 
@@ -91,6 +94,9 @@ LEAP sleeve start at $150k. Not IBIT-only: the rotation between the four assets 
   it early).
 - Leverage, personal loans, concentration (every Soliel blow-up), and calendar-timed exits (the cycle
   thesis sets readiness; the trend signal triggers).
+- Wheeling TQQQ (or any daily-reset leveraged ETF) instead of QQQ: ~3x the premium for ~3x the risk (same IV/HV
+  ratio), Sharpe no better, −58 to −68% drawdowns from 2010; a 3x QQQ from the 2000 peak lost 99.98% and never
+  recovered. Bitcoin already supplies the core's volatility, with its own return instead of a decay mechanic.
 - EARNINGS_PLAY: no support from tastylive's earnings study or our data; keep earnings mode (avoid).
 
 ## Stock picker (proposed design, not built)
@@ -124,11 +130,19 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
    the scanner's chains.
 3. Reserve put entries: core + 16Δ put entries on dips vs buying at the next rebalance.
 4. Stock-picker exit rules on a list of momentum names (with a hindsight caveat).
+6. Level trades: short-dated puts just above a 10-bar swing low (when within 1.5 weekly moves) vs a limit at the
+   low vs 45-DTE puts, on the single-stock universe, several start dates.
 5. Done 2026-10-11: Jordi Visser ingest → draft watchlist. Next: scanner support for `picks:` (states,
    RS rank, trailing stop, half-off alerts) and a momentum-vs-rubble entry test on a name list.
 
 ## Change log
 
+- 2026-10-28: level-trade alerts for single stocks (Jordan): weekly puts just above a nearby swing low / calls at
+  resistance or in stretched price discovery, as a way to buy or trim at technical levels. Not backtested yet.
+- 2026-10-25: ladder test: puts/calls struck at the levels you'd place limit orders at match or beat the limit orders
+  (MSTR 39–45% vs 36%, smaller drawdowns; QQQ about equal), so options are a fine way to work a scale-in/out ladder.
+  The earlier "execute with stock" compared options with instant rebalancing.
+- 2026-10-25: TQQQ wheel tested and rejected (same edge per unit of volatility, unrecoverable in a 2000-style bear).
 - 2026-10-11 (later): weights become risk profiles chosen on the dashboard (one step more bitcoin per size); small-account instrument rules; rotation tilt tested, not adopted.
 - 2026-10-11 (later): aggressive caps live; core weights by account size ($25k 50% BTC → $1M 10%).
 - 2026-10-11 (later): core scales out as bull runs mature (cycle plan); trades in stock, not via assignment.
