@@ -1,7 +1,7 @@
 {
  "AMZN": {
   "fetched": "2026-10-27",
-  "implied_move": 0.0887484374548923,
+  "implied_move": 0.08877922304140545,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -41,7 +41,7 @@
  },
  "HOOD": {
   "fetched": "2026-10-27",
-  "implied_move": 0.09442896360914618,
+  "implied_move": 0.09305123896223545,
   "next": {
    "date": "2026-10-27",
    "estimated": true,

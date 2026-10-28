@@ -123,7 +123,7 @@
    "seen": "2026-10-27"
   },
   "QQQ": {
-   "action": "WATCH",
+   "action": "NEUTRAL",
    "alerts": {
     "SELL_CALL": {
      "active": false,
