@@ -32,7 +32,11 @@ skips itself or harmlessly repeats a scan (alerts are deduplicated).
    - **Execution schedule:** choose **Custom** (user-defined), then select:
      - **Days of week:** Monday–Friday
      - **Hours:** 10, 11, 12, 13, 14, 15
-     - **Minutes:** 0 and 30
+     - **Minutes:** 0, 15, 30, 45
+     - Plus one at the open: clone this job as `vol-wheel open` with **Hour 9, Minute 45** only.
+       Why 9:45 and not 9:30: CBOE's quotes are delayed ~15 minutes, so a 9:30 scan still sees the
+       pre-open book, and option spreads are widest in the first minutes. 9:45 ET (6:45 PT) is the
+       first scan with real opening quotes.
      - **Days of month / Months:** every
    - If a **Time zone** field shows here, set it to **America/New_York**.
 4. Switch to the **Advanced** tab:
@@ -71,7 +75,29 @@ and change only:
 
 Test run (204), save.
 
-## Part D — check it worked
+## Part D — the extended-hours watch (pre-market and after hours)
+
+Options only trade 09:30–16:00 ET, but shares trade before and after (limit orders). This job checks
+each name's extended-hours price against the regular close and alerts on a big move (≥ 3% and ≥ 2σ)
+with context: earnings and the implied move, the market moving with it, a swing low crossed. It is
+price-only (about 20 small quotes, ~30 s) and writes `docs/data/extended.json` for the dashboard's
+"After hours" / "Pre-market" panel; it never touches the option scan or the IV history.
+
+Clone `vol-wheel intraday` again and change:
+
+- **Title:** `vol-wheel extended`
+- **Execution schedule → Custom:** Monday–Friday, **Hours 8, 9, 16**, **Minutes 0, 15, 30, 45**
+  (the scan only works 08:30–09:30 and 16:00–17:00 ET, `extended_hours.windows`; the 8:00, 8:15,
+  9:30 and 9:45 runs exit straight away)
+- **Request body:**
+  ```
+  {"ref":"main","inputs":{"mode":"extended","alerts":"true"}}
+  ```
+
+Test run (204), save. Expect an "AFTER HOURS −8.0% · GOOG"-style alert at most once per name per
+session, again only if the move deepens by another 3 points.
+
+## Part E — check it worked
 
 - GitHub → `vol-wheel` → **Actions**: each half hour a `scan` run appears with the event
   **workflow_dispatch**, finishing in about a minute.

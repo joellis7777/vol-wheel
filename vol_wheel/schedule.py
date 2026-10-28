@@ -40,6 +40,8 @@ def resolve_mode(requested: str, schedule: str | None, now_utc: datetime | None,
 
     if requested == "close":
         return {"mode": "close", "slot": None, "et": et_s, "reason": "forced close"}
+    if requested == "extended":
+        return {"mode": "extended", "slot": None, "et": et_s, "reason": "forced extended-hours watch"}
     if requested == "intraday":
         return {"mode": "intraday", "slot": nearest_slot(), "et": et_s, "reason": "forced intraday"}
 

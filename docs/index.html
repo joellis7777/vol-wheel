@@ -124,6 +124,9 @@ details.notes ul { margin: 6px 0 2px; padding-left: 18px; }
 .variant em { font-style: normal; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--faint); }
 section.hedge { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--watch); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; }
 section.hedge h2 { font-size: 15px; margin: 0 0 4px; }
+section.hedge.ext { border-left-color: var(--accent, var(--watch)); }
+section.ext .xrow { padding: 6px 0; border-top: 1px solid var(--border); font-size: 13px; }
+section.ext .xrow:first-of-type { border-top: 0; }
 .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 8px; margin-top: 10px; }
 .m { min-width: 0; }
 .m .k { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; }
@@ -208,6 +211,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
   <details class="notes" id="notes" hidden><summary>Data quality</summary><ul></ul></details>
   <div class="summary" id="summary"></div>
   <div class="filters" id="filters" role="toolbar" aria-label="Filter by action"></div>
+  <section class="hedge ext" id="ext" hidden></section>
   <section class="panel port" id="portfolio" hidden></section>
   <section class="hedge" id="hedge" hidden></section>
   <main class="cards" id="cards"></main>
@@ -240,6 +244,38 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     document.documentElement.setAttribute("data-theme", next);
     store("vw-theme", next);
   });
+
+  // Pre-market / after-hours watch (extended.json): shown while fresh; never blocks the main view.
+  fetch("data/extended.json", { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (x) { state.ext = x; renderExt(); })
+    .catch(function () {});
+
+  function renderExt() {
+    var x = state.ext, el = $("ext");
+    if (!el) return;
+    var age = x ? (Date.now() - Date.parse(x.generated_at)) / 36e5 : 99;
+    if (!x || x.phase === "regular" || age > 18) { el.hidden = true; return; }
+    var rows = (x.rows || []).filter(function (r) { return Math.abs(r.move_pct) >= (x.show_min_pct || 1.5); });
+    var when = x.phase === "pre" ? "Pre-market" : "After hours";
+    var mm = x.market_move_pct;
+    var head = "<h2>" + when + " · " + esc(x.et) + ' ET</h2><div class="legend">Move vs the regular close. ' +
+      esc(x.market_symbol) + " " + (mm == null ? "–" : (mm >= 0 ? "+" : "") + num(mm, 1) + "%") +
+      ". Options reopen 09:30 ET; shares trade now with a limit order.</div>";
+    if (!rows.length) { el.innerHTML = head + '<div class="xrow">No name has moved ' + num(x.show_min_pct, 1) + "% or more.</div>"; el.hidden = false; return; }
+    el.innerHTML = head + rows.map(function (r) {
+      var cls = r.move_pct >= 0 ? "up" : "down";
+      var bits = [];
+      if (r.earnings) bits.push("earnings" + (r.implied_move_pct ? " · implied ±" + num(r.implied_move_pct, 1) + "% (" + num(r.move_vs_implied, 1) + "×)" : ""));
+      else if (r.kind === "market") bits.push("market-wide");
+      if (r.crossed) bits.push("through the " + esc(r.crossed.kind) + " " + money(r.crossed.level, 2));
+      else if (r.dir === "down" && r.swing_low) bits.push("swing low " + money(r.swing_low, 2));
+      return '<div class="xrow"><b>' + esc(r.symbol) + "</b> " + money(r.last, 2) + ' <span class="' + cls + '">' +
+        (r.move_pct >= 0 ? "+" : "") + num(r.move_pct, 1) + "%</span>" + (r.z != null ? " <small>" + num(Math.abs(r.z), 1) + "σ</small>" : "") +
+        (bits.length ? " · " + bits.join(" · ") : "") + (r.alert ? '<div class="legend">' + esc(r.guide) + "</div>" : "") + "</div>";
+    }).join("");
+    el.hidden = false;
+  }
 
   fetch("data/latest.json", { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
@@ -430,6 +466,7 @@ footer { text-align: center; color: var(--faint); font-size: 12.5px; margin-top:
     var open = !!state.open[t.symbol];
     var ch = t.change_pct;
     var chHtml = ch == null ? "" : ' <small class="' + (ch >= 0 ? "up" : "down") + '">' + (ch >= 0 ? "+" : "") + num(ch, 1) + "%</small>";
+    if (t.ext) chHtml += '<br><small>ext ' + money(t.ext.price, 2) + ' <span class="' + (t.ext.change_pct >= 0 ? "up" : "down") + '">' + (t.ext.change_pct >= 0 ? "+" : "") + num(t.ext.change_pct, 1) + "%</span></small>";
     var sp = t.spike || {};
     var spike = sp.dir ? (sp.dir === "down" ? "▼ " : "▲ ") + num(sp.size, 1) + "σ" : "–";
     var spikeCls = sp.is_spike ? (sp.dir === "down" ? "down" : "up") : "";

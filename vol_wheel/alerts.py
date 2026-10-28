@@ -29,6 +29,7 @@ import argparse
 import copy
 import json
 import logging
+import math
 import os
 import sys
 from datetime import date
@@ -527,6 +528,75 @@ def digest(result: dict, state: dict, today: str, rules: dict) -> dict | None:
 
 
 # ---------------------------------------------------------------- sending
+
+def extended_message(r: dict, res: dict, rules: dict) -> dict:
+    ac = rules["alerts"]
+    when = {"pre": "pre-market", "post": "after hours"}.get(res.get("phase"), "extended hours")
+    arrow = "▼" if r["dir"] == "down" else "▲"
+    lines = [f"{arrow} {r['symbol']} {_money(r['last'])} {r['move_pct']:+.1f}% {when} vs the {_money(r['ref_close'])} close"
+             + (f" ({abs(r['z']):.1f}σ)" if r.get("z") is not None and math.isfinite(r["z"]) else "")]
+    rep = r.get("earnings")
+    if rep:
+        im = r.get("implied_move_pct")
+        lines.append(f"Earnings {rep['date']}" + (f" · implied ±{im:.1f}%, move {r['move_vs_implied']:.1f}× that" if im else ""))
+    mm = res.get("market_move_pct")
+    if mm is not None:
+        lines.append(f"{res.get('market_symbol', 'SPY')} {mm:+.1f}% {when}" + (" · market-wide" if r["kind"] == "market" else ""))
+    if r.get("crossed"):
+        lines.append(f"Through the {r['crossed']['kind']} at {_money(r['crossed']['level'])}")
+    elif r["dir"] == "down" and r.get("swing_low"):
+        lines.append(f"Next swing low {_money(r['swing_low'])} ({(r['last'] / r['swing_low'] - 1) * 100:+.1f}% away)")
+    lines.append(r["guide"])
+    lines.append("Options reopen 09:30 ET (quotes lag ~15 min). Shares can trade now with a limit order; "
+                 "extended-hours spreads are wide.")
+    trig = "EXT_MOVE"
+    return {"title": f"{when.upper()} {r['move_pct']:+.1f}% · {r['symbol']}", "body": "\n".join(lines),
+            "priority": ac.get("priority", {}).get("extended", "high"), "tags": [ac.get("tags", {}).get(trig, "bell")],
+            "click": ac.get("dashboard_url", ""), "symbol": r["symbol"], "trigger": trig}
+
+
+def evaluate_extended(res: dict, state: dict, rules: dict) -> list[dict]:
+    """One alert per name and extended session (after a close through the next open), again only if the
+    move grows by `realert_step_pct`. State: state["extended"][sym] = {session, dir, move}."""
+    if "EXT_MOVE" not in (rules.get("alerts") or {}).get("triggers", []):
+        return []
+    step = rules["extended_hours"].get("realert_step_pct", 3)
+    st = state.setdefault("extended", {})
+    msgs = []
+    for r in res.get("rows", []):
+        if not r.get("alert"):
+            continue
+        rec = st.get(r["symbol"]) or {}
+        if rec.get("session") == res["session_date"] and rec.get("dir") == r["dir"] \
+                and abs(r["move_pct"]) < abs(rec.get("move", 0)) + step:
+            continue
+        m = extended_message(r, res, rules)
+        m["xapply"] = (r["symbol"], {"session": res["session_date"], "dir": r["dir"], "move": round(r["move_pct"], 2)})
+        msgs.append(m)
+    return msgs
+
+
+def process_extended(res: dict, rules: dict, state_path: Path | None = None, topic: str | None = None,
+                     sender=None) -> dict:
+    sender = sender or send
+    ac = rules.get("alerts") or {}
+    if not ac.get("enabled", True):
+        return {"status": "disabled"}
+    topic = topic if topic is not None else os.environ.get("NTFY_TOPIC", "").strip()
+    if not topic:
+        return {"status": "skipped (NTFY_TOPIC not set)"}
+    state = load_state(state_path)
+    sent, failed = [], []
+    for m in evaluate_extended(res, state, rules):
+        if sender(m, topic, ac.get("ntfy_server", "https://ntfy.sh")):
+            sent.append(m["title"])
+            sym, rec = m["xapply"]
+            state.setdefault("extended", {})[sym] = rec
+        else:
+            failed.append(m["title"])
+    save_state(state, state_path)
+    return {"status": "ok", "sent": sent, "failed": failed}
+
 
 def send(msg: dict, topic: str, server: str = "https://ntfy.sh", timeout: float = 15) -> bool:
     """POST to {server}/{topic}. Title/priority/tags/click go as query params, which ntfy reads

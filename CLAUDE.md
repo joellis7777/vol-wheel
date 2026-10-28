@@ -473,6 +473,15 @@ backtest changes the picture: edit it in the same change and add a line to its c
     (total return) 10.8% pre-tax, 9.3% after tax if sold at the end, 10.4% if never sold. 2021→: 8.0 | 5.2,
     14.0 | 9.4 (−17%), 10.7 | 7.1 vs SPY 14.5 | 12.0. The 60/40 treatment narrows the gap but a puts-only SPX book
     still trails holding the index after tax, because the index's gains are deferred and long-term.
+  - Buying gap-downs at the open (Jordan 2026-10-28, research script outside the repo; yfinance split-adjusted daily
+    OHLC + report dates, 50 liquid US stocks incl. the scanner's single names, 2010→; gap = open vs prior close ≤ −2σ
+    of HV20 and ≤ −3%; returns from the open, excess = minus the stock's own average open→close+n). Earnings gaps
+    (n=538): day −0.4% excess (43% up), 5 days −0.8%, 20 days −1.5% (t −3.1), worse for ≥ 5σ or 5–10% gaps, same sign
+    in 2010–15, 2016–20 and 2021–26: post-earnings drift, the dump tends to continue. Market-wide gaps (SPY also ≤ −1%,
+    n=398): day +0.6%, 20 days +3.5% excess (65% up), but a handful of clustered episodes (25% of non-earnings events
+    are 2020). Stock-specific non-earnings gaps (n=260): nothing (+0.7% over 20 days, t 0.6). So: don't buy earnings
+    dumps at the open or sell puts into them expecting a bounce; market-wide panics are the dips that pay (the core
+    pyramid and dip rule). Caveat: today's mostly-winning names (survivorship), open-auction fills assumed.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
@@ -525,6 +534,7 @@ vol_wheel/
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
   target.py                target-allocation scaling by drawdown, via options or stock (`mode: target`)
   multi.py                 multi-asset core at fixed weights, rebalanced with options or stock (`mode: multi`)
+  extended.py              pre-market / after-hours price watch (quotes endpoint) -> docs/data/extended.json, EXT_MOVE
   ladder.py                scale-in/out ladder via limit orders or options at the same levels (`mode: ladder`)
   levels.py                level trades: short-dated puts/calls at swing lows/highs or stretched price discovery
   sleeve.py                long-call convexity sleeve: premium-sized calls/debit spreads with delta exits (`mode: sleeve`)
@@ -571,6 +581,22 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
   the workflow_dispatch API (`mode: intraday`) every 15 min 10:00–15:45 ET (Jordan's setting,
   live since 2026-10-09; runs take ~45 s) and at 16:40 ET (`mode: close`); setup in
   `docs/SCHEDULE.md`. The GitHub crons stay as a backup.
+- **Open and extended hours** (Jordan, 2026-10-28): the first intraday scan should be 09:45 ET (a 9:30
+  scan sees the pre-open book through CBOE's ~15-min delay). `--mode extended` (cron-job.org job
+  "vol-wheel extended", every 15 min in the hour before the open and the hour after the close,
+  08:30–09:30 and 16:00–17:00 ET, `extended_hours.windows`, Jordan; `docs/SCHEDULE.md` Part D) is a
+  price-only watch: CBOE's quotes endpoint, move vs the regular close, EXT_MOVE alert at ≥ 3% and ≥ 2σ
+  (`extended_hours:`), once per name per session (after a close through the next open) unless it
+  deepens 3 more points. Context: earnings + implied move, SPY's move (market-wide), swing low crossed,
+  and the gap-study guidance line. Writes `docs/data/extended.json` only; exits at once outside the windows.
+  Option bid/asks freeze at the close (stock options; SPY/QQQ-type ETFs at 16:15; only SPX/XSP/VIX trade
+  overnight), so an after-hours alert is a heads-up for the open: standing limit orders, positions in that
+  name, the 09:45 scan; shares are the only thing tradable then.
+- **CBOE's `current_price` includes extended-hours trades** (found 2026-10-28: GOOG $296 after hours vs
+  the $321.89 close). Option quotes stop at 16:00, so outside regular hours `parse_chain` (given `now`)
+  uses `close` as the price and puts the trade in `ext_price` (card `t.ext`, "ext $296.00 −8.0%"). Before
+  this fix the 16:40 post-close scan used after-hours prices for signals, strikes and the IV-history price
+  column (e.g. GOOG 2026-10-27 318.26 vs a 316.83 close); those rows are left as they are.
 - `latest.json` is written compact (~16 KB/version compressed) because intraday runs commit it.
 
 ## Alerts (`alerts.py`, config `alerts:`)
@@ -582,7 +608,8 @@ NTFY_TOPIC=... python -m vol_wheel.alerts --test           # test notification
 - Title/priority/tags/click are sent as query params (ntfy treats them like headers and they carry
   UTF-8 like "·" and "Δ" safely). Click opens the dashboard.
 - Triggers: SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL (Mid regime + IVR ≥ 70 10Δ call add-on),
-  EARNINGS_PLAY (tags date + put/call arrow; no rung re-alerts), HEDGE (result-level, state key
+  EARNINGS_PLAY (tags date + put/call arrow; no rung re-alerts), EXT_MOVE (extended mode only, state
+  `alert_state.json.extended`), HEDGE (result-level, state key
   `_HEDGE`). LEAP alerts list both variants.
   Priority high; default when the previous scan saw WATCH ("Upgraded from WATCH"). Tags:
   chart_with_downwards_trend (puts), chart_with_upwards_trend (calls), seedling (LEAPs).
@@ -632,13 +659,15 @@ Shapes below were verified on the first Actions run (2026-10-03): all 13 tickers
 parsed from CBOE with no fallback needed; history goes back to ~2004 for most names.
 
 - Chains: `https://cdn.cboe.com/api/global/delayed_quotes/options/{SYM}.json`
-  - `timestamp` (ET, fetch time), `data.current_price`, `data.iv30` (vol points, e.g. 15.2),
+  - `timestamp` (fetch time, in UTC though it carries no zone: "20:32:20" at 16:32 ET), `data.current_price`, `data.iv30` (vol points, e.g. 15.2),
     `data.open/high/low/close/prev_day_close`, `data.options[]` with `option` (OCC symbol,
     e.g. `SPY261120P00550000`), `bid`, `ask`, `iv` (decimal), `open_interest`, `delta` (signed
     decimal), `volume`, greeks.
 - Daily OHLC: `https://cdn.cboe.com/api/global/delayed_quotes/charts/historical/{SYM}.json`
   - `{"data": [{"date": "YYYY-MM-DD", "open", "high", "low", "close", "volume"}]}`; values may be
     strings, parsers coerce.
+- Quote only (~0.5 KB): `https://cdn.cboe.com/api/global/delayed_quotes/quotes/{SYM}.json`: `current_price`
+  (includes extended hours), `close` (regular session), `bid`/`ask`, `last_trade_time` (last regular trade).
 - Indexes take a leading underscore: `_VIX`, `_VXN`.
 - Fallback for daily prices: yfinance (`^VIX` for `_VIX`), else Yahoo's chart endpoint via requests.
   Used when CBOE history fails or has fewer than `data.history_min_days` bars.

@@ -93,12 +93,31 @@ def normalize_iv30(v) -> float:
     return v / 100.0 if v > 3 else v
 
 
-def parse_chain(payload: dict, asof: date | None = None) -> dict:
-    """Return {'price', 'iv30', 'asof', 'quote': {...}, 'options': DataFrame}."""
+def regular_hours(now: datetime, tz: str = "America/New_York", open_hm: str = "09:30",
+                  close_hm: str = "16:00") -> bool:
+    """True on a weekday between the open and the close, ET."""
+    et = now.astimezone(ZoneInfo(tz))
+    hm = (et.hour, et.minute)
+    return et.weekday() < 5 and tuple(map(int, open_hm.split(":"))) <= hm < tuple(map(int, close_hm.split(":")))
+
+
+def parse_chain(payload: dict, asof: date | None = None, now: datetime | None = None) -> dict:
+    """Return {'price', 'ext_price', 'iv30', 'asof', 'quote': {...}, 'options': DataFrame}.
+
+    CBOE's current_price includes extended-hours trades, but option quotes stop at the 16:00 close.
+    When `now` is outside regular hours, 'price' is the regular-session close (what the option quotes
+    were priced off) and the extended-hours trade goes to 'ext_price' (NaN otherwise).
+    """
     d = payload.get("data", payload) if isinstance(payload, dict) else {}
     price = _num(d.get("current_price"))
     if not np.isfinite(price):
         price = _num(d.get("close") or d.get("last_trade_price"))
+    ext_price = float("nan")
+    reg_close = _num(d.get("close"))
+    if now is not None and not regular_hours(now) and np.isfinite(reg_close) and reg_close > 0:
+        if np.isfinite(price) and abs(price / reg_close - 1) > 1e-9:
+            ext_price = price
+        price = reg_close
     ts = payload.get("timestamp") if isinstance(payload, dict) else None
     asof_date = asof
     if asof_date is None:
@@ -132,7 +151,7 @@ def parse_chain(payload: dict, asof: date | None = None) -> dict:
         df["mid"] = []
         df["dte"] = []
     quote = {k: _num(d.get(k)) for k in ("open", "high", "low", "close", "prev_day_close")}
-    return {"price": price, "iv30": normalize_iv30(d.get("iv30")), "asof": asof_date,
+    return {"price": price, "ext_price": ext_price, "iv30": normalize_iv30(d.get("iv30")), "asof": asof_date,
             "quote": quote, "options": df}
 
 
@@ -226,7 +245,8 @@ def session_date(now_utc: datetime | None = None, tz: str = "America/New_York", 
 
 def fetch_chain(sym: str, cfg: dict, asof: date | None = None) -> dict:
     url = cfg["cboe_chain_url"].format(sym=sym)
-    return parse_chain(get_json(url, cfg.get("timeout_s", 30), cfg.get("retries", 3)), asof=asof or session_date())
+    return parse_chain(get_json(url, cfg.get("timeout_s", 30), cfg.get("retries", 3)), asof=asof or session_date(),
+                       now=datetime.now(timezone.utc))
 
 
 def fetch_history(sym: str, cfg: dict) -> tuple[pd.DataFrame, str, list[str]]:

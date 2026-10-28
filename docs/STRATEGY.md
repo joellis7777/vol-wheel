@@ -137,6 +137,9 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-10-28 (later): extended-hours watch (EXT_MOVE alerts pre-market and after hours, with the gap
+  study's guidance) and first intraday scan moved to 09:45 ET; post-close option math now uses the regular
+  close, not CBOE's after-hours price.
 - 2026-10-28: level-trade alerts for single stocks (Jordan): weekly puts just above a nearby swing low / calls at
   resistance or in stretched price discovery, as a way to buy or trim at technical levels. Not backtested yet.
 - 2026-10-25: ladder test: puts/calls struck at the levels you'd place limit orders at match or beat the limit orders

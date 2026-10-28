@@ -229,6 +229,7 @@ sizing:
 data:
   cboe_chain_url: https://cdn.cboe.com/api/global/delayed_quotes/options/{sym}.json
   cboe_history_url: https://cdn.cboe.com/api/global/delayed_quotes/charts/historical/{sym}.json
+  cboe_quote_url: https://cdn.cboe.com/api/global/delayed_quotes/quotes/{sym}.json   # ~0.5 KB; current_price includes extended hours
   timeout_s: 30
   retries: 3
   history_min_days: 220     # fall back to yfinance if CBOE gives fewer daily bars than this
@@ -241,6 +242,22 @@ schedule:
   slot_window_after_min: 55     # ... to 55 min after it (GitHub cron can start late)
   market_open: "09:30"
   market_close: "16:00"
+
+# Extended-hours watch (Jordan, 2026-10-28): price-only scans before the open and after the close, when options
+# don't trade but shares do (limit orders). Alerts on a big move vs the regular close, with context: earnings,
+# market-wide or stock-specific, levels crossed, and the 2026-10-28 gap study (earnings gap-downs bought at the open
+# lagged ~1.5% over 20 days; market-wide gap-downs gained ~3.5%; stock-specific ones: no edge).
+extended_hours:
+  enabled: true
+  windows: {pre: ["08:30", "09:30"], post: ["16:00", "17:00"]}   # ET (Jordan): the hour before the open and after
+                            # the close; runs outside these exit at once (quotes lag ~15 min, so the post window
+                            # sees trades from ~15:45 to ~16:45)
+  min_move_pct: 3           # |move vs the regular close| (the gap study's threshold)
+  min_z: 2                  # and at least 2 daily sigmas (HV20)
+  realert_step_pct: 3       # same session: alert again only if the move grows by this much more
+  market_symbol: SPY
+  market_move_pct: 1        # SPY moving this much the same way = market-wide
+  show_min_pct: 1.5         # dashboard lists names moving at least this much
 
 # Level trades (Jordan, 2026-10-28): short-dated puts just above a nearby swing low, as a way to buy at a level you'd
 # put a limit order at anyway (keep the premium if it holds, get assigned if not), and calls to trim just below a
@@ -273,11 +290,11 @@ alerts:
   enabled: true
   ntfy_server: https://ntfy.sh  # topic comes from the NTFY_TOPIC repo secret, never from here
   dashboard_url: https://joellis7777.github.io/vol-wheel/
-  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, LEVEL_PUT, LEVEL_CALL, HEDGE, CORE_ADD, CORE_TRIM, PICK_ENTRY, PICK_EXIT, BTC_WARNING]
+  triggers: [SELL_PUT, SELL_CALL, LEAP_BUY, PAIR_CALL, EARNINGS_PLAY, LEVEL_PUT, LEVEL_CALL, EXT_MOVE, HEDGE, CORE_ADD, CORE_TRIM, PICK_ENTRY, PICK_EXIT, BTC_WARNING]
   sizing_tier: 500000           # CSP eligibility in the message is shown for this account size
   max_rungs: 3                  # re-alert when price reaches rung 2 and 3 (1 and 2 expected moves past the last alerted strike)
   daily_digest: true            # one low-priority post-close message listing WATCH names
-  priority: {trigger: high, upgrade_from_watch: default, digest: low, hedge: default, level: default}
+  priority: {trigger: high, upgrade_from_watch: default, digest: low, hedge: default, level: default, extended: high}
   tags:
     SELL_PUT: chart_with_downwards_trend
     SELL_CALL: chart_with_upwards_trend
@@ -286,6 +303,7 @@ alerts:
     EARNINGS_PLAY: date
     LEVEL_PUT: round_pushpin
     LEVEL_CALL: round_pushpin
+    EXT_MOVE: crescent_moon
     HEDGE: shield
     DIGEST: eyes
     CORE_ADD: heavy_plus_sign
