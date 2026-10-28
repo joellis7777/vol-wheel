@@ -52,8 +52,21 @@ def choose_expiry(opts: pd.DataFrame, cfg: dict) -> tuple[date | None, int | Non
         if len(monthly):
             e = (monthly - tgt).abs().idxmin()
             return e, int(exp[e]), "monthly"
+    fb = cfg.get("monthly_fallback_window")
+    if cfg.get("prefer_monthly", True) and fb:
+        # no monthly in the window: a nearby monthly beats a freshly listed weekly with no open interest
+        near = exp[(exp >= fb[0]) & (exp <= fb[1])]
+        monthly = near[[is_monthly(e, exp_set) for e in near.index]]
+        if len(monthly):
+            e = (monthly - tgt).abs().idxmin()
+            return e, int(exp[e]), f"monthly at {int(exp[e])} DTE (none in {lo}-{hi})"
     if len(inwin):
-        e = (inwin - tgt).abs().idxmin()
+        if "oi" in opts.columns:
+            # the weekly with the most open interest; ties go to the one closest to target
+            oi = opts[opts["expiry"].isin(inwin.index)].groupby("expiry")["oi"].sum()
+            e = max(inwin.index, key=lambda x: (oi.get(x, 0), -abs(inwin[x] - tgt)))
+        else:
+            e = (inwin - tgt).abs().idxmin()
         return e, int(exp[e]), "weekly (no monthly in window)"
     pos = exp[exp > 0]
     if len(pos):

@@ -257,4 +257,5 @@ class PMCC:
         out["call_pnl_per_year_pct"] = round(self.call_pnl / yrs / float(eq.mean()) * 100, 2)
         out["stats"] = dict(self.stats)
         out["equity_weekly"] = weekly(eq)
+        out["_eq"] = eq
         return out

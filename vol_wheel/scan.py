@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import alerts, data, earnings, ivhistory, schedule, signals, strikes
+from . import alerts, data, earnings, extended, ivhistory, levels, portfolio, schedule, signals, strikes
 from .config import ROOT, load_rules, universe
 
 log = logging.getLogger("vol_wheel")
@@ -294,6 +294,9 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
     }
     if out["prev_close"]:
         out["change_pct"] = (price / out["prev_close"] - 1) * 100
+    xp = (chain or {}).get("ext_price", float("nan"))
+    if np.isfinite(xp) and xp > 0:   # after-hours / pre-market trade; option math above uses the regular close
+        out["ext"] = {"price": xp, "change_pct": (xp / price - 1) * 100}
     if pre and out["earnings"] and out["earnings"].get("pre_expiry"):
         out["earnings"]["pre_expiry"]["take_profit_pct"] = ec.get("pre_earnings_expiry", {}).get("take_profit_pct", 50)
 
@@ -347,6 +350,9 @@ def scan_ticker(t: dict, rules: dict, gate: dict, index_hists: dict, append: boo
                                            sc, rules["sizing"]["ladder_rungs"], rules["sizing"]["ladder_dte"])
         if sym in rules.get("momentum_names", []):
             out["notes"].append(f"Momentum name: cover at most {rules['momentum_max_call_coverage']}% with calls")
+    if levels.in_scope(sym, rules) and np.isfinite(iv_eff):
+        out["level_trades"] = levels.level_trades(opts, hist, price, iv_eff, rules["level_trades"],
+                                                  nxt.get("date"), nxt.get("timing"))
     lp = rules["leap"]
     variants = lp.get("variants") or {"ira": {"min_dte": lp["min_dte"], "max_dte": lp["max_dte"], "label": "LEAP"}}
     out["leaps"] = {}
@@ -388,6 +394,16 @@ def _add_caveat(s: dict, t: dict) -> None:
     if t.get("ivr_source") == "proxy":
         s["caveat"] = ("IV rank is a realized-vol stand-in until ~60 days of IV history: "
                        "check the chain's IV yourself before acting")
+
+
+def premium_yield(c: dict, kind: str, price: float | None) -> dict:
+    """Premium as % of the capital behind the trade: the strike for a put (cash-secured), the share price for
+    a call (the shares it's written against). Also the option's own IV."""
+    base = c["strike"] if kind == "put" else (price or c["strike"])
+    out = {"yield_pct": round(100 * c["mid"] / base, 2) if base else None}
+    if c.get("iv") is not None:
+        out["opt_iv"] = round(float(c["iv"]), 4)
+    return out
 
 
 def build_suggestion(t: dict, rules: dict) -> dict | None:
@@ -437,6 +453,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "valid_while": (f"IVR ≥ {th['ivr_sell']}, a {th['spike_sigma']}σ {'down' if is_put else 'up'}-spike "
                              f"in the last {th['spike_max_days']} days and IV/HV ≥ {th['min_iv_hv_ratio']}"),
              "manage": manage(bool(pre))}
+        s.update(premium_yield(c, kind, t.get("price")))
         if is_put:
             s["collateral"] = c["strike"] * 100
         if t.get("both_sides") and opt("pair_call"):
@@ -469,6 +486,7 @@ def build_suggestion(t: dict, rules: dict) -> dict | None:
              "valid_while": f"earnings {e.get('date')} 1–21 days out, the 5-day move ≥ 1σ and the strike "
                             f"stays outside {ep.get('mult', 1.5)}× the implied move",
              "manage": manage(False) + "; it sells through the report"}
+        s.update(premium_yield(c, kind, t.get("price")))
         if is_put:
             s["collateral"] = c["strike"] * 100
         _add_caveat(s, t)
@@ -650,6 +668,13 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
             earnings.save_cache(earn_cache, ec)
         except OSError as e:
             notes.append(f"earnings cache not written: {e}")
+    try:
+        port = portfolio.build(rules, lambda sym: data.fetch_history(sym, rules["data"])[0])
+        notes += port.pop("notes", [])
+    except Exception as e:  # noqa: BLE001 - the portfolio layer never fails the scan
+        log.error("portfolio failed: %s\n%s", e, traceback.format_exc())
+        port = None
+        notes.append(f"portfolio layer failed: {str(e)[:120]}")
     hedge = hedge_card(rules, results, index_hists, spy_regime)
     for r in results:
         r.pop("hedge_puts", None)
@@ -658,7 +683,7 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
     return clean({
         "generated_at": started.isoformat(timespec="seconds"),
         "scan_mode": mode, "scan_slot": slot, "scan_et": et, "coverage": cov, "session_date": today.isoformat(),
-        "hedge": hedge, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
+        "hedge": hedge, "portfolio": port, "earnings_cfg": {k: ec.get(k) for k in ("play_delta_min", "play_delta_max", "play_move_mult",
                                                                   "play_size_frac")},
         "scan_date": today.isoformat(),
         "bull_gate": gate, "spy_regime": spy_regime, "notes": notes,
@@ -671,14 +696,41 @@ def run(rules: dict, symbols: list[str] | None = None, append: bool = True, mode
     })
 
 
+def run_extended(rules: dict, syms: list[str] | None, out: Path, alerts_on: bool = True) -> int:
+    """Pre-market / after-hours price watch: writes extended.json and sends EXT_MOVE alerts."""
+    if not (rules.get("extended_hours") or {}).get("enabled"):
+        log.info("extended_hours disabled")
+        return 0
+    now = datetime.now(timezone.utc)
+    if not extended.in_window(now, rules["extended_hours"], rules.get("schedule", {}).get("timezone", "America/New_York")):
+        log.info("outside the extended-hours windows %s: skipped", rules["extended_hours"].get("windows"))
+        return 0
+    res = clean(extended.run(rules, now=now, symbols=syms))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w") as f:
+        json.dump(res, f, separators=(",", ":"), allow_nan=False)
+    log.info("wrote %s (%s, %s ET): %d names", out, res["phase"], res["et"], len(res["rows"]))
+    for r in res["rows"]:
+        log.info("  %-5s %+6.1f%% %s %s%s", r["symbol"], r["move_pct"], r["kind"], r["dir"], " ALERT" if r["alert"] else "")
+    for nn in res["notes"]:
+        log.info("note: %s", nn)
+    if alerts_on:
+        try:
+            log.info("alerts: %s", alerts.process_extended(res, rules))
+        except Exception as e:  # noqa: BLE001 - alerting must never fail the scan
+            log.error("alerts failed: %s\n%s", e, traceback.format_exc())
+    return 0 if res["rows"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--rules", default=None)
     ap.add_argument("--out", default=str(ROOT / "docs" / "data" / "latest.json"))
     ap.add_argument("--symbols", default=None, help="comma-separated subset")
     ap.add_argument("--no-append", action="store_true", help="don't write IV history")
-    ap.add_argument("--mode", default="auto", choices=["auto", "close", "intraday"],
-                    help="close appends IV history; intraday only updates latest.json and alerts")
+    ap.add_argument("--mode", default="auto", choices=["auto", "close", "intraday", "extended"],
+                    help="close appends IV history; intraday only updates latest.json and alerts; "
+                         "extended = pre-market / after-hours price watch (docs/data/extended.json)")
     ap.add_argument("--schedule", default="", help="cron string of the scheduled run (github.event.schedule)")
     ap.add_argument("--no-alerts", action="store_true", help="don't send ntfy alerts")
     a = ap.parse_args(argv)
@@ -689,6 +741,8 @@ def main(argv: list[str] | None = None) -> int:
     log.info("mode %s (%s, %s ET)", m["mode"], m["reason"], m["et"])
     if m["mode"] == "skip":
         return 0
+    if m["mode"] == "extended":
+        return run_extended(rules, syms, Path(a.out).parent / "extended.json", alerts_on=not a.no_alerts)
     result = run(rules, syms, append=(m["mode"] == "close" and not a.no_append), mode=m["mode"], slot=m["slot"], et=m["et"])
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     with open(a.out, "w") as f:

@@ -1,6 +1,8 @@
 """Target-allocation scaling (Jordan, 2026-10-12): hold more shares the further price is below its
 high, more cash near highs, and move toward that target either by trading the stock or with laddered
-options. One underlying.
+options. One underlying. Optional `alloc_gain` [[gain % from the lowest close of the last
+`gain_lookback_days` (756), max share %]] caps the target as a bull run matures (scale out into strength;
+the call side of the options execution does the selling).
 
 Target share % of the account = linear interpolation of `alloc` ([[drawdown % from the high, share
 %], ...]) at today's drawdown from the running high. Execution:
@@ -44,12 +46,16 @@ class Target:
         high = close.rolling(lb, min_periods=1).max() if lb else close.cummax()
         f = frame.copy()
         f["dd_pct"] = (1 - close / high) * 100
+        # bull maturity: gain from the lowest close of the last `gain_lookback_days` (scale-out cap)
+        glb = int(self.cfg.get("gain_lookback_days", 756))
+        f["gain_pct"] = (close / close.rolling(glb, min_periods=20).min() - 1) * 100
         sma = close.rolling(self.cfg.get("trend_sma", 200)).mean()
         f["downtrend"] = (close < sma) & (sma.diff(20) < 0)
         f = f.reindex(self.cal)
         f["close"] = f["close"].ffill()
         f["iv"] = f["iv"].ffill()
         f["dd_pct"] = f["dd_pct"].ffill().fillna(0)
+        f["gain_pct"] = f["gain_pct"].ffill().fillna(0)
         f["downtrend"] = f["downtrend"].astype("boolean").ffill().fillna(False).astype(bool)
         self.rows = f.to_dict("records")
         self.slope = slope
@@ -143,6 +149,9 @@ class Target:
             self._manage(S, d, iv, r)
             E = self.cash + self.shares * S - self._opt_value(S, d, iv, r)
             frac = target_fraction(row["dd_pct"], self.cfg["alloc"])
+            if self.cfg.get("alloc_gain"):
+                # scale out as the bull matures: cap = interpolation of [[gain % from the multi-year low, max %]]
+                frac = min(frac, target_fraction(row["gain_pct"], self.cfg["alloc_gain"]))
             if self.cfg.get("trend_cap_pct") is not None and row["downtrend"]:
                 # below a falling 200-day: don't scale in past the cap (a drawdown level isn't a low)
                 frac = min(frac, self.cfg["trend_cap_pct"] / 100)
@@ -208,4 +217,5 @@ class Target:
         m = pd.Series(self.in_shares, index=self.cal).groupby([self.cal.year, self.cal.month]).mean()
         out["shares_monthly"] = {f"{y}-{mo:02d}": round(float(x) * 100) for (y, mo), x in m.items()}
         out["equity_weekly"] = weekly(eq)
+        out["_eq"] = eq
         return out

@@ -29,6 +29,7 @@ import argparse
 import copy
 import json
 import logging
+import math
 import os
 import sys
 from datetime import date
@@ -42,10 +43,13 @@ log = logging.getLogger("vol_wheel.alerts")
 
 STATE_PATH = ROOT / "data" / "alert_state.json"
 TITLES = {"SELL_PUT": "SELL PUT", "SELL_CALL": "SELL COVERED CALL", "LEAP_BUY": "LEAP BUY",
-          "PAIR_CALL": "ADD 10Δ CALL", "EARNINGS_PLAY": "EARNINGS PLAY", "HEDGE": "HEDGE"}
+          "PAIR_CALL": "ADD 10Δ CALL", "EARNINGS_PLAY": "EARNINGS PLAY", "LEVEL_PUT": "LEVEL PUT",
+          "LEVEL_CALL": "LEVEL CALL", "HEDGE": "HEDGE"}
 # Direction a rung moves: puts and LEAP adds step down, calls step up; the add-on call, earnings
-# plays (one per report) and the hedge don't ladder.
-RUNG_DIR = {"SELL_PUT": -1, "SELL_CALL": 1, "LEAP_BUY": -1, "PAIR_CALL": 0, "EARNINGS_PLAY": 0, "HEDGE": 0}
+# plays (one per report), level trades (one per level, see evaluate()) and the hedge don't ladder.
+RUNG_DIR = {"SELL_PUT": -1, "SELL_CALL": 1, "LEAP_BUY": -1, "PAIR_CALL": 0, "EARNINGS_PLAY": 0,
+            "LEVEL_PUT": 0, "LEVEL_CALL": 0, "HEDGE": 0}
+LEVEL_SIDE = {"LEVEL_PUT": "put", "LEVEL_CALL": "call"}
 HEDGE_KEY = "_HEDGE"
 
 
@@ -112,10 +116,13 @@ def header_line(t: dict) -> str:
     return f"{_money(t.get('price'))}{chs} · {t.get('regime', '–')} regime · {ivr_s}"
 
 
-def option_line(c: dict, kind: str) -> list[str]:
+def option_line(c: dict, kind: str, price: float | None = None) -> list[str]:
+    base = c["strike"] if kind.lower().startswith("put") else (price or c["strike"])
+    yld = f" · {100 * c['mid'] / base:.1f}% of {'strike' if kind.lower().startswith('put') else 'price'}" if base else ""
+    iv = f" · IV {100 * c['iv']:.0f}%" if c.get("iv") is not None else ""
     return [
         f"{kind} {_strike(c['strike'])} · {_expiry(c.get('expiry'), c.get('dte'))} · "
-        f"{abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])} · {c['annualized'] * 100:.0f}% ann",
+        f"{abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])}{yld} · {c['annualized'] * 100:.0f}% ann{iv}",
         c.get("reason", ""),
     ]
 
@@ -124,6 +131,9 @@ def top_candidate(t: dict, trigger: str) -> dict | None:
     if trigger == "EARNINGS_PLAY":
         ep = t.get("earnings_play") or {}
         c = (ep.get("calls" if ep.get("side") == "C" else "puts") or {}).get("candidates") or []
+        return c[0] if c else None
+    if trigger in LEVEL_SIDE:
+        c = ((t.get("level_trades") or {}).get(LEVEL_SIDE[trigger]) or {}).get("candidates") or []
         return c[0] if c else None
     key = {"SELL_PUT": "puts", "SELL_CALL": "calls", "PAIR_CALL": "pair_call"}.get(trigger)
     if not key:
@@ -137,8 +147,51 @@ def leap_line(lp: dict) -> str:
             f"{lp['delta'] * 100:.0f}Δ · mid {_money(lp['mid'])} · extrinsic {lp['extrinsic_pct']:.1f}%")
 
 
+def level_message(t: dict, trigger: str, rules: dict) -> dict:
+    """LEVEL PUT / LEVEL CALL: a short-dated option at a technical level, with the limit-order alternative."""
+    ac = rules["alerts"]
+    sym = t["symbol"]
+    lt = t.get("level_trades") or {}
+    lv = lt.get(LEVEL_SIDE[trigger]) or {}
+    cands = lv.get("candidates") or []
+    put = trigger == "LEVEL_PUT"
+    lines = []
+    if cands:
+        c = cands[0]
+        alt = (f" · or a limit {'buy' if put else 'sell'} at {_money(lv['limit'])}" if lv.get("limit") else "")
+        lines.append(f"→ Sell {sym} {_expiry(c['expiry'], c['dte'])} {_strike(c['strike'])} {'put' if put else 'call'} "
+                     f"@ ~{_money(c['mid'])} ({abs(c['delta']) * 100:.0f}Δ){alt}")
+    lines.append(header_line(t))
+    em = lt.get("em_week")
+    if lv.get("mode") == "discovery":
+        lines.append(f"Price discovery: {lv['stretch_em']:.1f} weekly moves (±{_money(em)}) above the "
+                     f"{lv['ema_days']}-day EMA ({_money(lv['ema'])}); strikes ≥ {_money(lv['strike_min'])}")
+    else:
+        word = "below" if put else "above"
+        lines.append(f"{lv['kind'].capitalize()} {_money(lv['level'])}: {abs(lv['dist_pct']):.1f}% {word} · "
+                     f"{lv['dist_em']:.1f} weekly moves (±{_money(em)})")
+    for c in cands:
+        base = "strike" if put else "price"
+        lines.append(f"{_strike(c['strike'])} · {abs(c['delta']) * 100:.0f}Δ · mid {_money(c['mid'])} · "
+                     f"{c['yield_pct']:.2f}% of {base} · IV {c['iv'] * 100:.0f}% · {c['spread_pct']:.0f}% spread")
+    if put:
+        lines.append("Aim: get assigned at a level you'd buy; keep the premium if it holds. Single stock: "
+                     "size it inside the bucket cap.")
+    else:
+        cover = "Covered only: trims shares you'd sell at this level"
+        if sym in rules.get("momentum_names", []):
+            cover += f" (cover ≤ {rules.get('momentum_max_call_coverage', 50)}%)"
+        lines.append(cover)
+    lines.append("Technical level, not a premium signal: check that IV isn't cheap (card's IV/HV)")
+    return {"title": f"{TITLES[trigger]} · {sym}", "body": "\n".join(x for x in lines if x),
+            "priority": ac["priority"].get("level", "default"),
+            "tags": [ac["tags"].get(trigger, "round_pushpin")], "click": ac["dashboard_url"]}
+
+
 def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bool = False,
                   rec: dict | None = None) -> dict:
+    if trigger in LEVEL_SIDE:
+        return level_message(t, trigger, rules)
     ac = rules["alerts"]
     sym = t["symbol"]
     title = f"{TITLES[trigger]} · {sym}" + (f" · rung {rung}" if rung > 1 else "")
@@ -172,7 +225,7 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         if trigger == "PAIR_CALL":
             lines.append("Mid regime + IVR ≥ 70: a 10Δ covered call may sit alongside the put")
         if c:
-            lines += option_line(c, "Call")
+            lines += option_line(c, "Call", t.get("price"))
         else:
             lines.append("No call passes the filters today; see the dashboard")
         cover = "Covered only: against 100 shares or a LEAP"
@@ -202,7 +255,7 @@ def build_message(t: dict, trigger: str, rules: dict, rung: int = 1, upgrade: bo
         if play.get("ret") is not None:
             lines.append(f"5-day {play['ret'] * 100:+.1f}% ({play['z']:+.1f}σ) → sell a {side_word}")
         if c:
-            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put")
+            lines += option_line(c, "Call" if ep.get("side") == "C" else "Put", t.get("price"))
             lines.append(f"Outside {ep.get('mult', 1.5)}× the implied move · "
                          f"{ep.get('band', [10, 15])[0]}–{ep.get('band', [10, 15])[1]}Δ")
             half = es * ep.get("size_frac", 0.5)
@@ -263,14 +316,32 @@ def triggers_for(t: dict, rules: dict) -> list[str]:
         out.append(t["action"])
     if t.get("both_sides") and "PAIR_CALL" in allowed:
         out.append("PAIR_CALL")
+    lt = t.get("level_trades") or {}
+    for trig, side in LEVEL_SIDE.items():
+        if trig in allowed and (lt.get(side) or {}).get("active"):
+            out.append(trig)
     return out
 
 
 def trigger_record(t: dict, trigger: str, today: str, rung: int) -> dict:
     c = top_candidate(t, trigger)
     strike = c["strike"] if c else t.get("price")
-    return {"date": today, "strike": strike, "price": t.get("price"), "em": t.get("em45"),
-            "rung": rung, "active": True}
+    rec = {"date": today, "strike": strike, "price": t.get("price"), "em": t.get("em45"),
+           "rung": rung, "active": True}
+    if trigger in LEVEL_SIDE:
+        rec["level"] = ((t.get("level_trades") or {}).get(LEVEL_SIDE[trigger]) or {}).get("level")
+    return rec
+
+
+def level_recent(rec: dict, t: dict, trigger: str, today: str, days: int) -> bool:
+    """Same level alerted within `days` days (swing lows stay near for days; don't repeat)."""
+    lv = ((t.get("level_trades") or {}).get(LEVEL_SIDE[trigger]) or {}).get("level")
+    if lv is None or rec.get("level") is None or abs(rec["level"] - lv) > 1e-6:
+        return False
+    try:
+        return (date.fromisoformat(today) - date.fromisoformat(rec["date"])).days < days
+    except (KeyError, ValueError):
+        return False
 
 
 def rung_reached(rec: dict, price: float | None, trigger: str) -> bool:
@@ -304,6 +375,12 @@ def evaluate(result: dict, state: dict, today: str, rules: dict) -> tuple[list[d
         current = triggers_for(t, rules)
         for trig in current:
             rec = recs.get(trig)
+            if trig in LEVEL_SIDE and rec is not None and level_recent(
+                    rec, t, trig, today, rules.get("level_trades", {}).get("realert_days", 5)):
+                rec["active"] = True
+                continue
+            if trig in LEVEL_SIDE and rec is not None and rec.get("active") and rec.get("date") != today:
+                rec["active"] = False  # a new level (or the window passed) alerts again
             if rec is None or (not rec.get("active") and rec.get("date") != today):
                 upgrade = prev_action == "WATCH" and trig != "PAIR_CALL"
                 msg = build_message(t, trig, rules, 1, upgrade)
@@ -338,6 +415,97 @@ def evaluate(result: dict, state: dict, today: str, rules: dict) -> tuple[list[d
     return out, state
 
 
+# ---------------------------------------------------------------- portfolio layer
+
+PORT_TRIGGERS = ("CORE_ADD", "CORE_TRIM", "PICK_ENTRY", "PICK_EXIT", "BTC_WARNING")
+
+
+def _pmsg(rules: dict, trig: str, title: str, body: str, priority: str, papply: tuple) -> dict:
+    ac = rules["alerts"]
+    return {"title": title, "body": body, "priority": priority, "tags": [ac.get("tags", {}).get(trig, "bell")],
+            "click": ac.get("dashboard_url", ""), "symbol": papply[1], "trigger": trig, "papply": papply}
+
+
+def evaluate_portfolio(result: dict, state: dict, today: str, rules: dict) -> list[dict]:
+    """Alerts for the portfolio layer (core pyramid steps, pick status changes, bitcoin trend state).
+    The first sighting of a name is recorded silently (state["portfolio"]), so only changes alert.
+    Returns messages carrying `papply` = (section, key, value), written to state after a send."""
+    port = result.get("portfolio") or {}
+    allowed = rules["alerts"].get("triggers", [])
+    ps = state.setdefault("portfolio", {})
+    core_s, pick_s = ps.setdefault("core", {}), ps.setdefault("picks", {})
+    out: list[dict] = []
+    for r in port.get("core") or []:
+        if r.get("error"):
+            continue
+        sym, step, gstep = r["symbol"], r["step"], r.get("gain_step", 0)
+        rec = core_s.get(sym)
+        if rec is None:
+            core_s[sym] = {"step": step, "gstep": gstep, "date": today}
+            continue
+        rec.setdefault("gstep", gstep)
+        nxt = r.get("next")
+        nxt_txt = (f"Next add at {_money(nxt['price'])} (−{nxt['dd_pct']:.0f}%) → {nxt['target_pct']:.0f}% of the sleeve."
+                   if nxt else "Fully invested: the deepest step is reached.")
+        where = (f"{sym} {_money(r['price'])} is {r['dd_pct']:.0f}% below its high ({_money(r['high'])}, "
+                 f"{r['high_date']}" + (f", measured on {r['ref_symbol']}" if r["ref_symbol"] != sym else "") + ").")
+        tgt = (f"Target: {r['target_pct']:.0f}% of the {sym} sleeve = {r['account_pct']:.1f}% of the account "
+               f"(sleeve {r['sleeve_pct']:.1f}%).")
+        if gstep > rec["gstep"] and step <= rec["step"] and "CORE_TRIM" in allowed:
+            nt = r.get("next_trim")
+            out.append(_pmsg(rules, "CORE_TRIM", f"SCALE OUT · {sym} · +{r['gain_pct']:.0f}% off the 3-year low",
+                             "\n".join([where, f"Bull maturity cap now {r['scale_cap_pct']:.0f}% of the sleeve. " + tgt,
+                                         "Trim the excess: sell shares, or covered calls on the excess that you let be "
+                                         "assigned.", (f"Next scale-out at {_money(nt['price'])} (+{nt['gain_pct']:.0f}%) → "
+                                                       f"{nt['cap_pct']:.0f}%." if nt else "")]),
+                             "default", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step > rec["step"] and "CORE_ADD" in allowed:
+            out.append(_pmsg(rules, "CORE_ADD", f"ADD · {sym} · step {step}/{r['steps']}",
+                             "\n".join([where, tgt, "Add with shares, or a 16Δ cash-secured put on a down-spike "
+                                         "(IVR ≥ 50). No trend exit: keep holding.", nxt_txt]),
+                             "high", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step < rec["step"] and "CORE_TRIM" in allowed:
+            out.append(_pmsg(rules, "CORE_TRIM", f"TRIM · {sym} · back to step {step}/{r['steps']}",
+                             "\n".join([where, tgt, "Recovered above a pyramid step: trim the sleeve back toward "
+                                         "this target (or sell a covered call on the excess on an up-spike).", nxt_txt]),
+                             "default", ("core", sym, {"step": step, "gstep": gstep, "date": today})))
+        elif step != rec["step"] or gstep != rec["gstep"]:
+            core_s[sym] = {"step": step, "gstep": gstep, "date": today}
+    for r in port.get("picks") or []:
+        sym, stt = r["symbol"], r.get("status")
+        if stt in (None, "NO_DATA"):
+            continue
+        prev = pick_s.get(sym)
+        if prev is None:
+            pick_s[sym] = stt
+            continue
+        if stt == prev:
+            continue
+        head = f"{sym} {_money(r.get('price'))} · {r.get('theme') or ''} · source: {r.get('source') or '?'}"
+        if stt == "ENTRY_OK" and "PICK_ENTRY" in allowed:
+            pr = port.get("picks_rules") or {}
+            out.append(_pmsg(rules, "PICK_ENTRY", f"PICK ENTRY · {sym}",
+                             "\n".join([head, f"Eligible: {r.get('why')}.", f"Thesis: {r.get('thesis') or '–'}",
+                                         f"Size {pr.get('per_name_pct', 1.5)}% of the account; enter on a pullback "
+                                         f"(down-spike put or shares). Stop if held: {_money(r.get('stop_price'))}."]),
+                             "default", ("picks", sym, stt)))
+        elif stt == "EXIT_IF_HELD" and "PICK_EXIT" in allowed:
+            out.append(_pmsg(rules, "PICK_EXIT", f"PICK EXIT · {sym}",
+                             "\n".join([head, f"Exit if held: {r.get('why')}."]), "high", ("picks", sym, stt)))
+        else:
+            pick_s[sym] = stt
+    w = port.get("btc_warning")
+    if w and w.get("state") is not None:
+        prev = ps.get("btc")
+        if prev is None:
+            ps["btc"] = w["state"]
+        elif w["state"] != prev and "BTC_WARNING" in allowed:
+            out.append(_pmsg(rules, "BTC_WARNING", f"BTC · {w['label']}",
+                             f"Bitcoin {_money(w['price'])} vs its 200-day {_money(w['sma200'])} (since {w['since']}). "
+                             + w.get("note", ""), "low", ("btc", None, w["state"])))
+    return out
+
+
 def digest(result: dict, state: dict, today: str, rules: dict) -> dict | None:
     """Low-priority post-close list of WATCH names (IVR ≥ 50, no spike), once per day."""
     if not rules["alerts"].get("daily_digest") or state.get("digest_date") == today:
@@ -360,6 +528,75 @@ def digest(result: dict, state: dict, today: str, rules: dict) -> dict | None:
 
 
 # ---------------------------------------------------------------- sending
+
+def extended_message(r: dict, res: dict, rules: dict) -> dict:
+    ac = rules["alerts"]
+    when = {"pre": "pre-market", "post": "after hours"}.get(res.get("phase"), "extended hours")
+    arrow = "▼" if r["dir"] == "down" else "▲"
+    lines = [f"{arrow} {r['symbol']} {_money(r['last'])} {r['move_pct']:+.1f}% {when} vs the {_money(r['ref_close'])} close"
+             + (f" ({abs(r['z']):.1f}σ)" if r.get("z") is not None and math.isfinite(r["z"]) else "")]
+    rep = r.get("earnings")
+    if rep:
+        im = r.get("implied_move_pct")
+        lines.append(f"Earnings {rep['date']}" + (f" · implied ±{im:.1f}%, move {r['move_vs_implied']:.1f}× that" if im else ""))
+    mm = res.get("market_move_pct")
+    if mm is not None:
+        lines.append(f"{res.get('market_symbol', 'SPY')} {mm:+.1f}% {when}" + (" · market-wide" if r["kind"] == "market" else ""))
+    if r.get("crossed"):
+        lines.append(f"Through the {r['crossed']['kind']} at {_money(r['crossed']['level'])}")
+    elif r["dir"] == "down" and r.get("swing_low"):
+        lines.append(f"Next swing low {_money(r['swing_low'])} ({(r['last'] / r['swing_low'] - 1) * 100:+.1f}% away)")
+    lines.append(r["guide"])
+    lines.append("Options reopen 09:30 ET (quotes lag ~15 min). Shares can trade now with a limit order; "
+                 "extended-hours spreads are wide.")
+    trig = "EXT_MOVE"
+    return {"title": f"{when.upper()} {r['move_pct']:+.1f}% · {r['symbol']}", "body": "\n".join(lines),
+            "priority": ac.get("priority", {}).get("extended", "high"), "tags": [ac.get("tags", {}).get(trig, "bell")],
+            "click": ac.get("dashboard_url", ""), "symbol": r["symbol"], "trigger": trig}
+
+
+def evaluate_extended(res: dict, state: dict, rules: dict) -> list[dict]:
+    """One alert per name and extended session (after a close through the next open), again only if the
+    move grows by `realert_step_pct`. State: state["extended"][sym] = {session, dir, move}."""
+    if "EXT_MOVE" not in (rules.get("alerts") or {}).get("triggers", []):
+        return []
+    step = rules["extended_hours"].get("realert_step_pct", 3)
+    st = state.setdefault("extended", {})
+    msgs = []
+    for r in res.get("rows", []):
+        if not r.get("alert"):
+            continue
+        rec = st.get(r["symbol"]) or {}
+        if rec.get("session") == res["session_date"] and rec.get("dir") == r["dir"] \
+                and abs(r["move_pct"]) < abs(rec.get("move", 0)) + step:
+            continue
+        m = extended_message(r, res, rules)
+        m["xapply"] = (r["symbol"], {"session": res["session_date"], "dir": r["dir"], "move": round(r["move_pct"], 2)})
+        msgs.append(m)
+    return msgs
+
+
+def process_extended(res: dict, rules: dict, state_path: Path | None = None, topic: str | None = None,
+                     sender=None) -> dict:
+    sender = sender or send
+    ac = rules.get("alerts") or {}
+    if not ac.get("enabled", True):
+        return {"status": "disabled"}
+    topic = topic if topic is not None else os.environ.get("NTFY_TOPIC", "").strip()
+    if not topic:
+        return {"status": "skipped (NTFY_TOPIC not set)"}
+    state = load_state(state_path)
+    sent, failed = [], []
+    for m in evaluate_extended(res, state, rules):
+        if sender(m, topic, ac.get("ntfy_server", "https://ntfy.sh")):
+            sent.append(m["title"])
+            sym, rec = m["xapply"]
+            state.setdefault("extended", {})[sym] = rec
+        else:
+            failed.append(m["title"])
+    save_state(state, state_path)
+    return {"status": "ok", "sent": sent, "failed": failed}
+
 
 def send(msg: dict, topic: str, server: str = "https://ntfy.sh", timeout: float = 15) -> bool:
     """POST to {server}/{topic}. Title/priority/tags/click go as query params, which ntfy reads
@@ -390,6 +627,7 @@ def process(result: dict, mode: str, rules: dict, state_path: Path | None = None
     today = result.get("scan_date") or date.today().isoformat()
     state = load_state(state_path)
     msgs, state = evaluate(result, state, today, rules)
+    msgs += evaluate_portfolio(result, state, today, rules)
     if mode == "close":
         dg = digest(result, state, today, rules)
         if dg:
@@ -401,6 +639,12 @@ def process(result: dict, mode: str, rules: dict, state_path: Path | None = None
             if m.get("apply"):
                 sym, trig, rec = m["apply"]
                 state["tickers"][sym]["alerts"][trig] = rec
+            if m.get("papply"):
+                sec, key, val = m["papply"]
+                if sec == "btc":
+                    state["portfolio"]["btc"] = val
+                else:
+                    state["portfolio"][sec][key] = val
             if m["trigger"] == "DIGEST":
                 state["digest_date"] = today
         else:
