@@ -1,5 +1,17 @@
 {
  "digest_date": "2026-10-28",
+ "extended": {
+  "GOOG": {
+   "dir": "down",
+   "move": -9.75,
+   "session": "2026-10-28"
+  },
+  "MRVL": {
+   "dir": "down",
+   "move": -8.23,
+   "session": "2026-10-28"
+  }
+ },
  "portfolio": {
   "btc": 1.0,
   "core": {
