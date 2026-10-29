@@ -1,16 +1,16 @@
 {
  "AMZN": {
-  "fetched": "2026-10-28",
+  "fetched": "2026-10-29",
   "implied_move": 0.0964311720049413,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
-   "source": "nasdaq",
-   "timing": "amc"
+   "source": "yfinance",
+   "timing": null
   }
  },
  "ASST": {
-  "fetched": "2026-10-28",
+  "fetched": "2026-10-29",
   "implied_move": 0.1382929962016676,
   "next": {
    "date": "2026-11-09",
@@ -20,7 +20,7 @@
   }
  },
  "BMNR": {
-  "fetched": "2026-10-28",
+  "fetched": "2026-10-29",
   "next": {
    "date": "2026-11-20",
    "estimated": true,
@@ -29,8 +29,8 @@
   }
  },
  "CEG": {
-  "fetched": "2026-10-28",
-  "implied_move": 0.08181402297995354,
+  "fetched": "2026-10-29",
+  "implied_move": 0.07747486158801563,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -39,8 +39,8 @@
   }
  },
  "FNV": {
-  "fetched": "2026-10-28",
-  "implied_move": 0.031149905592076792,
+  "fetched": "2026-10-29",
+  "implied_move": 0.04715797009876076,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -50,13 +50,14 @@
  },
  "GOOG": {
   "fetched": "2026-10-28",
-  "implied_move": 0.07281220656358063,
-  "next": {
+  "last": {
    "date": "2026-10-28",
    "estimated": true,
+   "implied_move": 0.07281220656358063,
    "source": "yfinance",
    "timing": null
-  }
+  },
+  "next": null
  },
  "HOOD": {
   "fetched": "2026-10-27",
@@ -70,8 +71,8 @@
   "next": null
  },
  "MRVL": {
-  "fetched": "2026-10-28",
-  "implied_move": 0.11624826892215319,
+  "fetched": "2026-10-29",
+  "implied_move": 0.09739627009578668,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -80,18 +81,18 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-28",
+  "fetched": "2026-10-29",
   "implied_move": 0.05788266366905256,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
-   "source": "nasdaq",
-   "timing": "amc"
+   "source": "yfinance",
+   "timing": null
   }
  },
  "NVDA": {
-  "fetched": "2026-10-28",
-  "implied_move": 0.07759202332810203,
+  "fetched": "2026-10-29",
+  "implied_move": 0.09452007773954915,
   "next": {
    "date": "2026-11-18",
    "estimated": true,
