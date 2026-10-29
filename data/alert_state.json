@@ -75,7 +75,7 @@
    "action": "NO_SHORT",
    "alerts": {
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-10-29",
      "em": 5.4751,
      "level": 20.55,
@@ -97,6 +97,15 @@
      "price": 261.44,
      "rung": 1,
      "strike": 275.0
+    },
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-10-29",
+     "em": 42.0239,
+     "level": 247.2,
+     "price": 264.2,
+     "rung": 1,
+     "strike": 252.5
     }
    },
    "seen": "2026-10-29"
