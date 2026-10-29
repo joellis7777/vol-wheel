@@ -88,7 +88,17 @@
   },
   "CEG": {
    "action": "WATCH",
-   "alerts": {},
+   "alerts": {
+    "LEVEL_CALL": {
+     "active": true,
+     "date": "2026-10-29",
+     "em": 40.8507,
+     "level": 282.77,
+     "price": 261.44,
+     "rung": 1,
+     "strike": 275.0
+    }
+   },
    "seen": "2026-10-29"
   },
   "FNV": {
