@@ -1,6 +1,11 @@
 {
  "digest_date": "2026-10-28",
  "extended": {
+  "AMZN": {
+   "dir": "down",
+   "move": -6.27,
+   "session": "2026-10-29"
+  },
   "GOOG": {
    "dir": "down",
    "move": -9.75,
