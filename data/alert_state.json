@@ -75,7 +75,7 @@
    "action": "NO_SHORT",
    "alerts": {
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-10-29",
      "em": 5.4751,
      "level": 20.55,
