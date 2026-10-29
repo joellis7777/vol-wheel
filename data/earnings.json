@@ -9,9 +9,28 @@
    "timing": "amc"
   }
  },
+ "ASST": {
+  "fetched": "2026-10-28",
+  "implied_move": 0.1382929962016676,
+  "next": {
+   "date": "2026-11-09",
+   "estimated": true,
+   "source": "nasdaq",
+   "timing": null
+  }
+ },
+ "BMNR": {
+  "fetched": "2026-10-28",
+  "next": {
+   "date": "2026-11-20",
+   "estimated": true,
+   "source": "yfinance",
+   "timing": null
+  }
+ },
  "CEG": {
   "fetched": "2026-10-28",
-  "implied_move": 0.07827979122535851,
+  "implied_move": 0.08181402297995354,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -31,7 +50,7 @@
  },
  "GOOG": {
   "fetched": "2026-10-28",
-  "implied_move": 0.05954787618152256,
+  "implied_move": 0.07281220656358063,
   "next": {
    "date": "2026-10-28",
    "estimated": true,
@@ -52,7 +71,7 @@
  },
  "MRVL": {
   "fetched": "2026-10-28",
-  "implied_move": 0.11481156219901915,
+  "implied_move": 0.11624826892215319,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -101,6 +120,7 @@
   },
   "next": null
  },
+ "SPCX": {},
  "TSLA": {
   "fetched": "2026-10-21",
   "last": {

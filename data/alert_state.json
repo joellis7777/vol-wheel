@@ -1,5 +1,44 @@
 {
  "digest_date": "2026-10-28",
+ "portfolio": {
+  "btc": 1.0,
+  "core": {
+   "GLD": {
+    "date": "2026-10-28",
+    "gstep": 3,
+    "step": 1
+   },
+   "IBIT": {
+    "date": "2026-10-28",
+    "gstep": 0,
+    "step": 1
+   },
+   "QQQ": {
+    "date": "2026-10-28",
+    "gstep": 3,
+    "step": 0
+   },
+   "XLE": {
+    "date": "2026-10-28",
+    "gstep": 2,
+    "step": 0
+   }
+  },
+  "picks": {
+   "COIN": "EXIT_IF_HELD",
+   "ETHA": "EXIT_IF_HELD",
+   "GOOGL": "WAIT",
+   "HOOD": "EXIT_IF_HELD",
+   "LITE": "ENTRY_OK",
+   "LLY": "ENTRY_OK",
+   "MRVL": "ENTRY_OK",
+   "MU": "ENTRY_OK",
+   "NVDA": "WAIT",
+   "PLTR": "WAIT",
+   "SLV": "EXIT_IF_HELD",
+   "TSLA": "WAIT"
+  }
+ },
  "tickers": {
   "AMZN": {
    "action": "WATCH",
@@ -13,6 +52,16 @@
      "strike": 210.0
     }
    },
+   "seen": "2026-10-28"
+  },
+  "ASST": {
+   "action": "NEUTRAL",
+   "alerts": {},
+   "seen": "2026-10-28"
+  },
+  "BMNR": {
+   "action": "NO_SHORT",
+   "alerts": {},
    "seen": "2026-10-28"
   },
   "CEG": {
@@ -40,7 +89,7 @@
    "seen": "2026-10-28"
   },
   "GOOG": {
-   "action": "WATCH",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -71,6 +120,15 @@
      "price": 96.385,
      "rung": 1,
      "strike": 96.385
+    },
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-10-28",
+     "em": 17.8144,
+     "level": 83.68,
+     "price": 91.43,
+     "rung": 1,
+     "strike": 87.0
     }
    },
    "seen": "2026-10-28"
@@ -83,6 +141,15 @@
   "MRVL": {
    "action": "NEUTRAL",
    "alerts": {
+    "LEVEL_CALL": {
+     "active": true,
+     "date": "2026-10-28",
+     "em": 56.5108,
+     "level": 254.6,
+     "price": 251.65,
+     "rung": 1,
+     "strike": 252.5
+    },
     "SELL_PUT": {
      "active": false,
      "date": "2026-10-22",
@@ -118,6 +185,15 @@
      "price": 214.83,
      "rung": 1,
      "strike": 214.83
+    },
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-10-28",
+     "em": 23.1093,
+     "level": 208.93,
+     "price": 215.38,
+     "rung": 1,
+     "strike": 215.0
     }
    },
    "seen": "2026-10-28"
@@ -159,6 +235,30 @@
      "price": 14.29,
      "rung": 1,
      "strike": 12.0
+    },
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-10-28",
+     "em": 2.5732,
+     "level": 15.65,
+     "price": 17.14,
+     "rung": 1,
+     "strike": 16.0
+    }
+   },
+   "seen": "2026-10-28"
+  },
+  "SPCX": {
+   "action": "WATCH",
+   "alerts": {
+    "LEVEL_CALL": {
+     "active": true,
+     "date": "2026-10-28",
+     "em": 24.8502,
+     "level": 149.8,
+     "price": 145.23,
+     "rung": 1,
+     "strike": 146.0
     }
    },
    "seen": "2026-10-28"
@@ -178,6 +278,15 @@
      "price": 364.38,
      "rung": 1,
      "strike": 315.0
+    },
+    "LEVEL_CALL": {
+     "active": true,
+     "date": "2026-10-28",
+     "em": 52.4137,
+     "level": 432.86,
+     "price": 404.22,
+     "rung": 1,
+     "strike": 412.5
     }
    },
    "seen": "2026-10-28"
