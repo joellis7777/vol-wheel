@@ -73,7 +73,17 @@
   },
   "BMNR": {
    "action": "NO_SHORT",
-   "alerts": {},
+   "alerts": {
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-10-29",
+     "em": 5.4751,
+     "level": 20.55,
+     "price": 21.34,
+     "rung": 1,
+     "strike": 21.0
+    }
+   },
    "seen": "2026-10-29"
   },
   "CEG": {
@@ -142,7 +152,7 @@
      "strike": 96.385
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-10-28",
      "em": 17.8144,
      "level": 83.68,
@@ -169,6 +179,15 @@
      "price": 251.65,
      "rung": 1,
      "strike": 252.5
+    },
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-10-29",
+     "em": 53.0074,
+     "level": 200.62,
+     "price": 222.05,
+     "rung": 1,
+     "strike": 210.0
     },
     "SELL_PUT": {
      "active": false,
@@ -256,8 +275,17 @@
      "rung": 1,
      "strike": 12.0
     },
-    "LEVEL_PUT": {
+    "LEVEL_CALL": {
      "active": true,
+     "date": "2026-10-29",
+     "em": 2.6203,
+     "level": 18.8,
+     "price": 17.32,
+     "rung": 1,
+     "strike": 18.0
+    },
+    "LEVEL_PUT": {
+     "active": false,
      "date": "2026-10-28",
      "em": 2.5732,
      "level": 15.65,
@@ -309,7 +337,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-10-28",
      "em": 52.4137,
      "level": 432.86,
