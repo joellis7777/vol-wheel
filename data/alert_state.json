@@ -192,7 +192,7 @@
    "seen": "2026-10-30"
   },
   "HOOD": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
