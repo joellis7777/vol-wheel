@@ -140,10 +140,10 @@
    "seen": "2026-10-30"
   },
   "GLD": {
-   "action": "LEAP_BUY",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-26",
      "em": 26.8831,
      "price": 366.6111,
@@ -389,7 +389,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-10-28",
      "em": 52.4137,
      "level": 432.86,
@@ -398,7 +398,7 @@
      "strike": 412.5
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-10-30",
      "em": 51.8007,
      "level": 368.6,
