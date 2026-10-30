@@ -11,6 +11,11 @@
    "move": -9.75,
    "session": "2026-10-28"
   },
+  "HOOD": {
+   "dir": "down",
+   "move": -6.44,
+   "session": "2026-10-29"
+  },
   "IBIT": {
    "dir": "down",
    "move": -3.43,
