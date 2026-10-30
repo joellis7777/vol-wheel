@@ -1,7 +1,7 @@
 {
  "AMZN": {
   "fetched": "2026-10-29",
-  "implied_move": 0.09807046713097511,
+  "implied_move": 0.09809689128332283,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
@@ -11,7 +11,7 @@
  },
  "ASST": {
   "fetched": "2026-10-29",
-  "implied_move": 0.05361889736463099,
+  "implied_move": 0.10442336772019657,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -21,7 +21,7 @@
  },
  "BMNR": {
   "fetched": "2026-10-29",
-  "implied_move": 0.1206620648194665,
+  "implied_move": 0.1193127721283642,
   "next": {
    "date": "2026-11-20",
    "estimated": true,
@@ -83,7 +83,7 @@
  },
  "MSTR": {
   "fetched": "2026-10-29",
-  "implied_move": 0.04571044415121097,
+  "implied_move": 0.04538434336100059,
   "next": {
    "date": "2026-10-29",
    "estimated": true,
