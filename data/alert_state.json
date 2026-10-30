@@ -123,7 +123,7 @@
      "strike": 275.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-10-29",
      "em": 42.0239,
      "level": 247.2,
@@ -253,7 +253,7 @@
    "seen": "2026-10-30"
   },
   "MSTR": {
-   "action": "WATCH",
+   "action": "NEUTRAL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -398,7 +398,7 @@
      "strike": 412.5
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-10-30",
      "em": 51.8007,
      "level": 368.6,
