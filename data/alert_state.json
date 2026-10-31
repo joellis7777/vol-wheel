@@ -298,7 +298,7 @@
    "seen": "2026-10-30"
   },
   "QQQ": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "SELL_CALL": {
      "active": false,
@@ -309,12 +309,12 @@
      "strike": 763.0
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-10-22",
-     "em": 61.5679,
-     "price": 702.45,
+     "active": true,
+     "date": "2026-10-30",
+     "em": 58.6916,
+     "price": 690.49,
      "rung": 1,
-     "strike": 702.45
+     "strike": 675.0
     }
    },
    "seen": "2026-10-30"
