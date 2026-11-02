@@ -31,8 +31,8 @@
   "btc": 1.0,
   "core": {
    "GLD": {
-    "date": "2026-10-28",
-    "gstep": 3,
+    "date": "2026-11-02",
+    "gstep": 2,
     "step": 1
    },
    "IBIT": {
@@ -41,8 +41,8 @@
     "step": 1
    },
    "QQQ": {
-    "date": "2026-10-28",
-    "gstep": 3,
+    "date": "2026-11-02",
+    "gstep": 2,
     "step": 0
    },
    "XLE": {
@@ -79,7 +79,7 @@
      "strike": 210.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-10-30",
      "em": 26.128,
      "level": 226.16,
@@ -88,18 +88,18 @@
      "strike": 230.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "ASST": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "BMNR": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-30",
      "em": 4.859,
      "price": 20.14,
@@ -116,7 +116,7 @@
      "strike": 21.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "CEG": {
    "action": "WATCH",
@@ -140,15 +140,15 @@
      "strike": 252.5
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "FNV": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "GLD": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -159,7 +159,7 @@
      "strike": 357.21
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "GOOG": {
    "action": "SELL_PUT",
@@ -189,7 +189,7 @@
      "strike": 284.06
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "HOOD": {
    "action": "NO_SHORT",
@@ -204,15 +204,15 @@
     },
     "LEVEL_PUT": {
      "active": true,
-     "date": "2026-10-28",
-     "em": 17.8144,
+     "date": "2026-11-02",
+     "em": 17.9071,
      "level": 83.68,
-     "price": 91.43,
+     "price": 84.92,
      "rung": 1,
-     "strike": 87.0
+     "strike": 84.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "IBIT": {
    "action": "LEAP_BUY",
@@ -226,7 +226,7 @@
      "strike": 43.61
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "MRVL": {
    "action": "WATCH",
@@ -258,7 +258,7 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "MSTR": {
    "action": "WATCH",
@@ -272,7 +272,7 @@
      "strike": 151.26
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "NVDA": {
    "action": "NO_SHORT",
@@ -295,7 +295,7 @@
      "strike": 207.5
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "QQQ": {
    "action": "SELL_PUT",
@@ -317,7 +317,7 @@
      "strike": 675.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -345,7 +345,7 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-10-28",
      "em": 2.5732,
      "level": 15.65,
@@ -354,10 +354,10 @@
      "strike": 16.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "SPCX": {
-   "action": "WATCH",
+   "action": "NEUTRAL",
    "alerts": {
     "LEVEL_CALL": {
      "active": false,
@@ -378,12 +378,12 @@
      "strike": 142.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "SPY": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   },
   "TSLA": {
    "action": "NO_SHORT",
@@ -398,15 +398,15 @@
     },
     "LEVEL_CALL": {
      "active": true,
-     "date": "2026-10-28",
-     "em": 52.4137,
+     "date": "2026-11-02",
+     "em": 59.408,
      "level": 432.86,
-     "price": 404.22,
+     "price": 404.79,
      "rung": 1,
      "strike": 412.5
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-10-30",
      "em": 51.8007,
      "level": 368.6,
@@ -415,7 +415,7 @@
      "strike": 385.0
     }
    },
-   "seen": "2026-10-30"
+   "seen": "2026-11-02"
   }
  }
 }
