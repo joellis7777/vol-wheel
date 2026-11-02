@@ -284,8 +284,16 @@
    "seen": "2026-11-02"
   },
   "NVDA": {
-   "action": "NO_SHORT",
+   "action": "EARNINGS_PLAY",
    "alerts": {
+    "EARNINGS_PLAY": {
+     "active": true,
+     "date": "2026-11-02",
+     "em": 23.6255,
+     "price": 205.9601,
+     "rung": 1,
+     "strike": 174.0
+    },
     "LEAP_BUY": {
      "active": false,
      "date": "2026-10-16",
@@ -345,7 +353,7 @@
      "strike": 12.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-10-29",
      "em": 2.6203,
      "level": 18.8,
@@ -354,7 +362,7 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-02",
      "em": 2.6703,
      "level": 15.65,
