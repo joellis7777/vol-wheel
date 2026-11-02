@@ -140,7 +140,7 @@
      "strike": 275.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-10-29",
      "em": 42.0239,
      "level": 247.2,
@@ -152,7 +152,7 @@
    "seen": "2026-11-02"
   },
   "FNV": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {},
    "seen": "2026-11-02"
   },
@@ -295,7 +295,7 @@
      "strike": 214.83
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-10-30",
      "em": 22.9562,
      "level": 207.25,
