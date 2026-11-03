@@ -22,7 +22,7 @@
  },
  "BMNR": {
   "fetched": "2026-11-03",
-  "implied_move": 0.0746985448502154,
+  "implied_move": 0.03289031906294947,
   "next": {
    "date": "2026-11-20",
    "estimated": true,
@@ -32,7 +32,7 @@
  },
  "CEG": {
   "fetched": "2026-11-03",
-  "implied_move": 0.07688724016757972,
+  "implied_move": 0.08022383784457533,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -74,7 +74,7 @@
  },
  "MRVL": {
   "fetched": "2026-11-03",
-  "implied_move": 0.14838340901344058,
+  "implied_move": 0.1441360626008437,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -95,7 +95,7 @@
  },
  "NVDA": {
   "fetched": "2026-11-03",
-  "implied_move": 0.06680079771486605,
+  "implied_move": 0.06900968961148836,
   "next": {
    "date": "2026-11-17",
    "estimated": true,
