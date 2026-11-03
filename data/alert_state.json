@@ -284,10 +284,10 @@
    "seen": "2026-11-03"
   },
   "NVDA": {
-   "action": "EARNINGS_PLAY",
+   "action": "NEUTRAL",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-03",
      "em": 29.1808,
      "price": 207.585,
@@ -374,7 +374,7 @@
    "seen": "2026-11-03"
   },
   "SPCX": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
      "active": true,
