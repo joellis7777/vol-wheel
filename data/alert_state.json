@@ -284,15 +284,15 @@
    "seen": "2026-11-03"
   },
   "NVDA": {
-   "action": "NEUTRAL",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-11-02",
-     "em": 23.6255,
-     "price": 205.9601,
+     "active": true,
+     "date": "2026-11-03",
+     "em": 29.1808,
+     "price": 207.585,
      "rung": 1,
-     "strike": 174.0
+     "strike": 175.0
     },
     "LEAP_BUY": {
      "active": false,
