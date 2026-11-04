@@ -25,6 +25,11 @@
    "dir": "down",
    "move": -12.08,
    "session": "2026-10-28"
+  },
+  "TSLA": {
+   "dir": "down",
+   "move": -5.33,
+   "session": "2026-11-03"
   }
  },
  "portfolio": {
