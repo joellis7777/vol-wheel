@@ -6,9 +6,19 @@
    "move": -6.27,
    "session": "2026-10-29"
   },
+  "CEG": {
+   "dir": "down",
+   "move": -6.04,
+   "session": "2026-11-03"
+  },
   "FNV": {
    "dir": "up",
    "move": 13.63,
+   "session": "2026-11-03"
+  },
+  "GLD": {
+   "dir": "up",
+   "move": 3.16,
    "session": "2026-11-03"
   },
   "GOOG": {
