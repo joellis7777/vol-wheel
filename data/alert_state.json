@@ -136,11 +136,11 @@
      "strike": 15.0
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-10-29",
-     "em": 5.4751,
+     "active": true,
+     "date": "2026-11-04",
+     "em": 5.7679,
      "level": 20.55,
-     "price": 21.34,
+     "price": 21.345,
      "rung": 1,
      "strike": 21.0
     }
@@ -253,10 +253,10 @@
    "seen": "2026-11-04"
   },
   "IBIT": {
-   "action": "LEAP_BUY",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
-     "active": true,
+     "active": false,
      "date": "2026-10-30",
      "em": 5.8975,
      "price": 43.61,
@@ -279,13 +279,13 @@
      "strike": 252.5
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-10-30",
-     "em": 48.3131,
+     "active": true,
+     "date": "2026-11-04",
+     "em": 34.7807,
      "level": 162.9,
-     "price": 190.885,
+     "price": 165.395,
      "rung": 1,
-     "strike": 170.0
+     "strike": 165.0
     },
     "SELL_PUT": {
      "active": false,
@@ -299,7 +299,7 @@
    "seen": "2026-11-04"
   },
   "MSTR": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -313,10 +313,10 @@
    "seen": "2026-11-04"
   },
   "NVDA": {
-   "action": "EARNINGS_PLAY",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-03",
      "em": 29.1808,
      "price": 207.585,
@@ -332,7 +332,7 @@
      "strike": 214.83
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 27.9341,
      "level": 190.01,
@@ -382,16 +382,16 @@
      "strike": 12.0
     },
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-10-29",
-     "em": 2.6203,
+     "active": true,
+     "date": "2026-11-04",
+     "em": 2.8114,
      "level": 18.8,
-     "price": 17.32,
+     "price": 17.72,
      "rung": 1,
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-02",
      "em": 2.6703,
      "level": 15.65,
@@ -406,7 +406,7 @@
    "action": "NEUTRAL",
    "alerts": {
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-02",
      "em": 26.9804,
      "level": 149.8,
@@ -443,7 +443,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 58.738,
      "level": 384.04,
