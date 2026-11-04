@@ -172,10 +172,10 @@
    "seen": "2026-11-04"
   },
   "FNV": {
-   "action": "EARNINGS_PLAY",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 30.0481,
      "price": 225.99,
@@ -279,7 +279,7 @@
      "strike": 252.5
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 34.7807,
      "level": 162.9,
@@ -332,7 +332,7 @@
      "strike": 214.83
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-04",
      "em": 27.9341,
      "level": 190.01,
@@ -432,7 +432,7 @@
    "seen": "2026-11-04"
   },
   "TSLA": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
