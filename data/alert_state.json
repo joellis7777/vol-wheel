@@ -108,7 +108,7 @@
      "strike": 277.5
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-02",
      "em": 28.3315,
      "level": 244.3,
@@ -253,10 +253,10 @@
    "seen": "2026-11-05"
   },
   "IBIT": {
-   "action": "LEAP_BUY",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-05",
      "em": 5.7867,
      "price": 44.6,
@@ -452,7 +452,7 @@
      "strike": 382.5
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-05",
      "em": 60.5558,
      "level": 349.33,
