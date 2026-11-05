@@ -230,7 +230,7 @@
    "seen": "2026-11-05"
   },
   "HOOD": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -253,15 +253,15 @@
    "seen": "2026-11-05"
   },
   "IBIT": {
-   "action": "NO_SHORT",
+   "action": "LEAP_BUY",
    "alerts": {
     "LEAP_BUY": {
-     "active": false,
-     "date": "2026-10-30",
-     "em": 5.8975,
-     "price": 43.61,
+     "active": true,
+     "date": "2026-11-05",
+     "em": 5.7867,
+     "price": 44.6,
      "rung": 1,
-     "strike": 43.61
+     "strike": 44.6
     }
    },
    "seen": "2026-11-05"
@@ -313,15 +313,15 @@
    "seen": "2026-11-05"
   },
   "NVDA": {
-   "action": "NEUTRAL",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-11-04",
-     "em": 28.4189,
-     "price": 204.73,
+     "active": true,
+     "date": "2026-11-05",
+     "em": 28.9143,
+     "price": 192.3678,
      "rung": 1,
-     "strike": 174.0
+     "strike": 158.0
     },
     "LEAP_BUY": {
      "active": false,
@@ -391,7 +391,7 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-02",
      "em": 2.6703,
      "level": 15.65,
@@ -432,7 +432,7 @@
    "seen": "2026-11-05"
   },
   "TSLA": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -453,12 +453,20 @@
     },
     "LEVEL_PUT": {
      "active": true,
-     "date": "2026-11-04",
-     "em": 58.738,
-     "level": 368.6,
-     "price": 381.27,
+     "date": "2026-11-05",
+     "em": 60.5558,
+     "level": 349.33,
+     "price": 354.2715,
      "rung": 1,
-     "strike": 380.0
+     "strike": 352.5
+    },
+    "SELL_PUT": {
+     "active": true,
+     "date": "2026-11-05",
+     "em": 60.5558,
+     "price": 354.2715,
+     "rung": 1,
+     "strike": 315.0
     }
    },
    "seen": "2026-11-05"
