@@ -100,12 +100,12 @@
     },
     "LEVEL_CALL": {
      "active": true,
-     "date": "2026-11-04",
-     "em": 28.5229,
-     "level": 267.56,
-     "price": 266.68,
+     "date": "2026-11-05",
+     "em": 28.0515,
+     "level": 287.2,
+     "price": 272.7947,
      "rung": 1,
-     "strike": 267.5
+     "strike": 277.5
     },
     "LEVEL_PUT": {
      "active": false,
@@ -117,12 +117,12 @@
      "strike": 250.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "ASST": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "BMNR": {
    "action": "NO_SHORT",
@@ -136,7 +136,7 @@
      "strike": 15.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 5.7679,
      "level": 20.55,
@@ -145,7 +145,7 @@
      "strike": 21.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "CEG": {
    "action": "WATCH",
@@ -169,7 +169,7 @@
      "strike": 252.5
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "FNV": {
    "action": "WATCH",
@@ -183,7 +183,7 @@
      "strike": 225.99
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "GLD": {
    "action": "WATCH",
@@ -197,7 +197,7 @@
      "strike": 357.21
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "GOOG": {
    "action": "WATCH",
@@ -227,7 +227,7 @@
      "strike": 284.06
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "HOOD": {
    "action": "NO_SHORT",
@@ -241,7 +241,7 @@
      "strike": 96.385
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-02",
      "em": 17.9071,
      "level": 83.68,
@@ -250,7 +250,7 @@
      "strike": 84.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "IBIT": {
    "action": "NO_SHORT",
@@ -264,7 +264,7 @@
      "strike": 43.61
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "MRVL": {
    "action": "WATCH",
@@ -296,7 +296,7 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "MSTR": {
    "action": "WATCH",
@@ -310,13 +310,13 @@
      "strike": 151.26
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "NVDA": {
-   "action": "EARNINGS_PLAY",
+   "action": "NEUTRAL",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 28.4189,
      "price": 204.73,
@@ -332,7 +332,7 @@
      "strike": 214.83
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 27.9341,
      "level": 190.01,
@@ -341,7 +341,7 @@
      "strike": 197.5
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "QQQ": {
    "action": "NEUTRAL",
@@ -363,7 +363,7 @@
      "strike": 675.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -382,7 +382,7 @@
      "strike": 12.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 2.8114,
      "level": 18.8,
@@ -400,13 +400,13 @@
      "strike": 16.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "SPCX": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-02",
      "em": 26.9804,
      "level": 149.8,
@@ -424,12 +424,12 @@
      "strike": 142.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "SPY": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {},
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   },
   "TSLA": {
    "action": "NEUTRAL",
@@ -443,7 +443,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-04",
      "em": 58.738,
      "level": 384.04,
@@ -461,7 +461,7 @@
      "strike": 380.0
     }
    },
-   "seen": "2026-11-04"
+   "seen": "2026-11-05"
   }
  }
 }
