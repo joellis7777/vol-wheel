@@ -12,7 +12,7 @@
  },
  "ASST": {
   "fetched": "2026-11-04",
-  "implied_move": 0.11194441960292095,
+  "implied_move": 0.05851630752683682,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -42,7 +42,7 @@
  },
  "FNV": {
   "fetched": "2026-11-04",
-  "implied_move": 0.034608352102130625,
+  "implied_move": 0.035415465791390224,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
