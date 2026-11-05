@@ -125,10 +125,10 @@
    "seen": "2026-11-05"
   },
   "BMNR": {
-   "action": "NEUTRAL",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
+     "active": true,
      "date": "2026-11-05",
      "em": 5.6681,
      "price": 18.94,
@@ -451,7 +451,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 58.738,
      "level": 384.04,
