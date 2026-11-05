@@ -125,15 +125,15 @@
    "seen": "2026-11-05"
   },
   "BMNR": {
-   "action": "NEUTRAL",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-10-30",
-     "em": 4.859,
-     "price": 20.14,
+     "active": true,
+     "date": "2026-11-05",
+     "em": 5.6681,
+     "price": 18.94,
      "rung": 1,
-     "strike": 15.0
+     "strike": 18.94
     },
     "LEVEL_PUT": {
      "active": false,
@@ -253,7 +253,7 @@
    "seen": "2026-11-05"
   },
   "IBIT": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -391,19 +391,19 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-11-02",
-     "em": 2.6703,
-     "level": 15.65,
-     "price": 17.115,
+     "active": true,
+     "date": "2026-11-05",
+     "em": 3.081,
+     "level": 14.88,
+     "price": 15.645,
      "rung": 1,
-     "strike": 16.0
+     "strike": 15.5
     }
    },
    "seen": "2026-11-05"
   },
   "SPCX": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "LEVEL_CALL": {
      "active": false,
@@ -422,6 +422,14 @@
      "price": 142.22,
      "rung": 1,
      "strike": 142.0
+    },
+    "SELL_PUT": {
+     "active": true,
+     "date": "2026-11-05",
+     "em": 28.3944,
+     "price": 121.99,
+     "rung": 1,
+     "strike": 100.0
     }
    },
    "seen": "2026-11-05"
@@ -443,7 +451,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-04",
      "em": 58.738,
      "level": 384.04,
