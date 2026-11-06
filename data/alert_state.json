@@ -148,7 +148,7 @@
    "seen": "2026-11-06"
   },
   "CEG": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
      "active": false,
