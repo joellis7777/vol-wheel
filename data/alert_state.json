@@ -172,15 +172,15 @@
    "seen": "2026-11-05"
   },
   "FNV": {
-   "action": "WATCH",
+   "action": "EARNINGS_PLAY",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": false,
-     "date": "2026-11-04",
-     "em": 30.0481,
-     "price": 225.99,
+     "active": true,
+     "date": "2026-11-05",
+     "em": 35.8453,
+     "price": 250.69,
      "rung": 1,
-     "strike": 225.99
+     "strike": 250.69
     }
    },
    "seen": "2026-11-05"
@@ -344,7 +344,7 @@
    "seen": "2026-11-05"
   },
   "QQQ": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "SELL_CALL": {
      "active": false,
@@ -355,12 +355,12 @@
      "strike": 763.0
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-10-30",
-     "em": 58.6916,
-     "price": 690.49,
+     "active": true,
+     "date": "2026-11-05",
+     "em": 75.4558,
+     "price": 647.05,
      "rung": 1,
-     "strike": 675.0
+     "strike": 595.0
     }
    },
    "seen": "2026-11-05"
@@ -403,7 +403,7 @@
    "seen": "2026-11-05"
   },
   "SPCX": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
      "active": false,
@@ -424,7 +424,7 @@
      "strike": 142.0
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-05",
      "em": 28.3944,
      "price": 121.99,
