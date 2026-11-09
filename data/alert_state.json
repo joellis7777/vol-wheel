@@ -104,7 +104,7 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-09",
      "em": 31.279,
      "level": 287.2,
@@ -235,7 +235,7 @@
    "seen": "2026-11-09"
   },
   "HOOD": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -258,7 +258,7 @@
    "seen": "2026-11-09"
   },
   "IBIT": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
