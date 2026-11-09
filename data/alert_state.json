@@ -105,15 +105,15 @@
     },
     "LEVEL_CALL": {
      "active": true,
-     "date": "2026-11-06",
-     "em": 32.95,
-     "level": 265.34,
-     "price": 260.99,
+     "date": "2026-11-09",
+     "em": 31.279,
+     "level": 287.2,
+     "price": 271.04,
      "rung": 1,
-     "strike": 262.5
+     "strike": 275.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-02",
      "em": 28.3315,
      "level": 244.3,
@@ -122,12 +122,12 @@
      "strike": 250.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "ASST": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "BMNR": {
    "action": "WATCH",
@@ -150,7 +150,7 @@
      "strike": 21.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "CEG": {
    "action": "WATCH",
@@ -174,13 +174,13 @@
      "strike": 252.5
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "FNV": {
-   "action": "EARNINGS_PLAY",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-05",
      "em": 35.8453,
      "price": 250.69,
@@ -188,7 +188,7 @@
      "strike": 250.69
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "GLD": {
    "action": "WATCH",
@@ -202,7 +202,7 @@
      "strike": 357.21
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "GOOG": {
    "action": "WATCH",
@@ -232,7 +232,7 @@
      "strike": 284.06
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "HOOD": {
    "action": "NEUTRAL",
@@ -255,7 +255,7 @@
      "strike": 84.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "IBIT": {
    "action": "NEUTRAL",
@@ -269,7 +269,7 @@
      "strike": 44.6
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "MRVL": {
    "action": "WATCH",
@@ -301,7 +301,7 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "MSTR": {
    "action": "WATCH",
@@ -315,7 +315,7 @@
      "strike": 151.26
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "NVDA": {
    "action": "EARNINGS_PLAY",
@@ -346,7 +346,7 @@
      "strike": 197.5
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "QQQ": {
    "action": "SELL_PUT",
@@ -368,7 +368,7 @@
      "strike": 595.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -405,17 +405,17 @@
      "strike": 16.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "SPCX": {
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
      "active": true,
-     "date": "2026-11-02",
-     "em": 26.9804,
+     "date": "2026-11-09",
+     "em": 28.8295,
      "level": 149.8,
-     "price": 141.44,
+     "price": 135.6013,
      "rung": 1,
      "strike": 143.0
     },
@@ -437,7 +437,7 @@
      "strike": 100.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "SPY": {
    "action": "SELL_PUT",
@@ -451,10 +451,10 @@
      "strike": 735.17
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   },
   "TSLA": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -466,12 +466,12 @@
     },
     "LEVEL_CALL": {
      "active": true,
-     "date": "2026-11-04",
-     "em": 58.738,
+     "date": "2026-11-09",
+     "em": 65.3158,
      "level": 384.04,
-     "price": 381.27,
+     "price": 361.21,
      "rung": 1,
-     "strike": 382.5
+     "strike": 365.0
     },
     "LEVEL_PUT": {
      "active": true,
@@ -483,7 +483,7 @@
      "strike": 352.5
     },
     "PAIR_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-05",
      "em": 62.8048,
      "price": 348.06,
@@ -491,7 +491,7 @@
      "strike": 435.0
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-05",
      "em": 60.5558,
      "price": 354.2715,
@@ -499,7 +499,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-11-06"
+   "seen": "2026-11-09"
   }
  }
 }

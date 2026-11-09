@@ -21,8 +21,8 @@
   }
  },
  "BMNR": {
-  "fetched": "2026-11-06",
-  "implied_move": 0.06822445148787869,
+  "fetched": "2026-11-09",
+  "implied_move": 0.12282664505640514,
   "next": {
    "date": "2026-11-20",
    "estimated": true,
@@ -31,18 +31,25 @@
   }
  },
  "CEG": {
-  "fetched": "2026-11-06",
-  "implied_move": 0.05462010079594238,
+  "fetched": "2026-11-09",
+  "implied_move": 0.036598711653776046,
+  "last": {
+   "date": "2026-11-09",
+   "estimated": true,
+   "implied_move": 0.05462010079594238,
+   "source": "nasdaq",
+   "timing": "bmo"
+  },
   "next": {
    "date": "2026-11-09",
    "estimated": true,
-   "source": "nasdaq",
-   "timing": "bmo"
+   "source": "yfinance",
+   "timing": null
   }
  },
  "FNV": {
-  "fetched": "2026-11-06",
-  "implied_move": 0.04093088595006873,
+  "fetched": "2026-11-09",
+  "implied_move": 0.04766412680774111,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -73,13 +80,13 @@
   "next": null
  },
  "MRVL": {
-  "fetched": "2026-11-06",
-  "implied_move": 0.15985466344357158,
+  "fetched": "2026-11-09",
+  "implied_move": 0.14319949272341245,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
    "source": "nasdaq",
-   "timing": null
+   "timing": "amc"
   }
  },
  "MSTR": {
@@ -94,8 +101,8 @@
   "next": null
  },
  "NVDA": {
-  "fetched": "2026-11-06",
-  "implied_move": 0.10622053150450067,
+  "fetched": "2026-11-09",
+  "implied_move": 0.1217583351032827,
   "next": {
    "date": "2026-11-17",
    "estimated": true,
@@ -114,7 +121,7 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-11-06",
+  "fetched": "2026-11-09",
   "last": {
    "date": "2026-10-27",
    "estimated": true,
@@ -131,7 +138,7 @@
  },
  "SPCX": {},
  "TSLA": {
-  "fetched": "2026-11-06",
+  "fetched": "2026-11-09",
   "last": {
    "date": "2026-10-21",
    "estimated": true,
