@@ -258,7 +258,7 @@
    "seen": "2026-11-09"
   },
   "IBIT": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -440,10 +440,10 @@
    "seen": "2026-11-09"
   },
   "SPY": {
-   "action": "SELL_PUT",
+   "action": "SELL_CALL",
    "alerts": {
     "SELL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-09",
      "em": 42.5589,
      "price": 751.63,
@@ -451,7 +451,7 @@
      "strike": 800.0
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-09",
      "em": 43.3585,
      "price": 749.485,
