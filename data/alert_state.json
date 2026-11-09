@@ -235,7 +235,7 @@
    "seen": "2026-11-09"
   },
   "HOOD": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -440,10 +440,18 @@
    "seen": "2026-11-09"
   },
   "SPY": {
-   "action": "SELL_PUT",
+   "action": "SELL_CALL",
    "alerts": {
-    "SELL_PUT": {
+    "SELL_CALL": {
      "active": true,
+     "date": "2026-11-09",
+     "em": 42.5589,
+     "price": 751.63,
+     "rung": 1,
+     "strike": 800.0
+    },
+    "SELL_PUT": {
+     "active": false,
      "date": "2026-11-06",
      "em": null,
      "price": 735.17,
