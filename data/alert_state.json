@@ -349,7 +349,7 @@
    "seen": "2026-11-09"
   },
   "QQQ": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "SELL_CALL": {
      "active": false,
@@ -360,7 +360,7 @@
      "strike": 763.0
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-05",
      "em": 75.4558,
      "price": 647.05,
@@ -420,13 +420,13 @@
      "strike": 143.0
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-11-03",
-     "em": 27.8403,
+     "active": true,
+     "date": "2026-11-09",
+     "em": 29.967,
      "level": 140.66,
-     "price": 142.22,
+     "price": 141.105,
      "rung": 1,
-     "strike": 142.0
+     "strike": 141.0
     },
     "SELL_PUT": {
      "active": false,
@@ -454,7 +454,7 @@
    "seen": "2026-11-09"
   },
   "TSLA": {
-   "action": "WATCH",
+   "action": "SELL_CALL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -475,12 +475,12 @@
     },
     "LEVEL_PUT": {
      "active": true,
-     "date": "2026-11-05",
-     "em": 60.5558,
-     "level": 349.33,
-     "price": 354.2715,
+     "date": "2026-11-09",
+     "em": 64.4014,
+     "level": 368.6,
+     "price": 376.005,
      "rung": 1,
-     "strike": 352.5
+     "strike": 375.0
     },
     "PAIR_CALL": {
      "active": false,
@@ -489,6 +489,14 @@
      "price": 348.06,
      "rung": 1,
      "strike": 435.0
+    },
+    "SELL_CALL": {
+     "active": true,
+     "date": "2026-11-09",
+     "em": 64.4014,
+     "price": 376.005,
+     "rung": 1,
+     "strike": 420.0
     },
     "SELL_PUT": {
      "active": false,
