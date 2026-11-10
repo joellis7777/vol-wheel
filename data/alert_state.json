@@ -104,7 +104,7 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-09",
      "em": 31.279,
      "level": 287.2,
@@ -122,12 +122,12 @@
      "strike": 250.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "ASST": {
    "action": "WATCH",
    "alerts": {},
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "BMNR": {
    "action": "WATCH",
@@ -150,7 +150,7 @@
      "strike": 21.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "CEG": {
    "action": "WATCH",
@@ -174,7 +174,7 @@
      "strike": 252.5
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "FNV": {
    "action": "WATCH",
@@ -188,7 +188,7 @@
      "strike": 250.69
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "GLD": {
    "action": "WATCH",
@@ -202,7 +202,7 @@
      "strike": 357.21
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "GOOG": {
    "action": "WATCH",
@@ -232,7 +232,7 @@
      "strike": 284.06
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "HOOD": {
    "action": "NEUTRAL",
@@ -255,7 +255,7 @@
      "strike": 84.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "IBIT": {
    "action": "NO_SHORT",
@@ -269,7 +269,7 @@
      "strike": 44.6
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "MRVL": {
    "action": "WATCH",
@@ -301,7 +301,7 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "MSTR": {
    "action": "WATCH",
@@ -315,7 +315,7 @@
      "strike": 151.26
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "NVDA": {
    "action": "EARNINGS_PLAY",
@@ -346,7 +346,7 @@
      "strike": 197.5
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "QQQ": {
    "action": "WATCH",
@@ -368,7 +368,7 @@
      "strike": 595.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -405,7 +405,7 @@
      "strike": 16.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "SPCX": {
    "action": "WATCH",
@@ -420,7 +420,7 @@
      "strike": 143.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-09",
      "em": 29.967,
      "level": 140.66,
@@ -437,7 +437,7 @@
      "strike": 100.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "SPY": {
    "action": "NEUTRAL",
@@ -459,10 +459,10 @@
      "strike": 716.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   },
   "TSLA": {
-   "action": "SELL_CALL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -499,7 +499,7 @@
      "strike": 435.0
     },
     "SELL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-09",
      "em": 64.4014,
      "price": 376.005,
@@ -515,7 +515,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-11-09"
+   "seen": "2026-11-10"
   }
  }
 }
