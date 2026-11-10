@@ -156,13 +156,13 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-10-29",
-     "em": 40.8507,
+     "active": true,
+     "date": "2026-11-10",
+     "em": 46.3327,
      "level": 282.77,
-     "price": 261.44,
+     "price": 271.62,
      "rung": 1,
-     "strike": 275.0
+     "strike": 277.5
     },
     "LEVEL_PUT": {
      "active": false,
