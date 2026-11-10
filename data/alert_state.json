@@ -156,7 +156,7 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-10",
      "em": 46.3327,
      "level": 282.77,
@@ -258,7 +258,7 @@
    "seen": "2026-11-10"
   },
   "IBIT": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
