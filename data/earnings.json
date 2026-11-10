@@ -12,7 +12,7 @@
  },
  "ASST": {
   "fetched": "2026-11-09",
-  "implied_move": 0.07398750621774558,
+  "implied_move": 0.05451652709066672,
   "next": {
    "date": "2026-11-09",
    "estimated": true,
@@ -22,7 +22,7 @@
  },
  "BMNR": {
   "fetched": "2026-11-09",
-  "implied_move": 0.09998054482959527,
+  "implied_move": 0.10043287693320464,
   "next": {
    "date": "2026-11-20",
    "estimated": true,
@@ -49,7 +49,7 @@
  },
  "FNV": {
   "fetched": "2026-11-09",
-  "implied_move": 0.03993993892252499,
+  "implied_move": 0.0414320966029224,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
