@@ -268,7 +268,7 @@
    "seen": "2026-11-11"
   },
   "IBIT": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
