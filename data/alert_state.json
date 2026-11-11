@@ -318,10 +318,10 @@
    "seen": "2026-11-11"
   },
   "NVDA": {
-   "action": "EARNINGS_PLAY",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
-     "active": true,
+     "active": false,
      "date": "2026-11-11",
      "em": 27.9701,
      "price": 171.23,
