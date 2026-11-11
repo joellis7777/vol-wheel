@@ -44,7 +44,7 @@
  },
  "FNV": {
   "fetched": "2026-11-11",
-  "implied_move": 0.027349453659257675,
+  "implied_move": 0.02528621330231661,
   "next": {
    "date": "2026-11-11",
    "estimated": true,
@@ -76,7 +76,7 @@
  },
  "MRVL": {
   "fetched": "2026-11-11",
-  "implied_move": 0.12005194509273051,
+  "implied_move": 0.1127861147093599,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -97,7 +97,7 @@
  },
  "NVDA": {
   "fetched": "2026-11-11",
-  "implied_move": 0.09865526587532727,
+  "implied_move": 0.09591024442832669,
   "next": {
    "date": "2026-11-17",
    "estimated": true,
