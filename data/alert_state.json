@@ -166,7 +166,7 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-10",
      "em": 46.3327,
      "level": 282.77,
