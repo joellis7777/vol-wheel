@@ -322,7 +322,7 @@
    "seen": "2026-11-13"
   },
   "MSTR": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
