@@ -104,13 +104,13 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-11-12",
-     "em": 30.5775,
-     "level": 287.2,
-     "price": 271.6055,
+     "active": true,
+     "date": "2026-11-13",
+     "em": 30.5547,
+     "level": 267.56,
+     "price": 265.945,
      "rung": 1,
-     "strike": 275.0
+     "strike": 267.5
     },
     "LEVEL_PUT": {
      "active": false,
@@ -268,7 +268,7 @@
    "seen": "2026-11-13"
   },
   "IBIT": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
