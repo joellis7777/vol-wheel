@@ -104,7 +104,7 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-13",
      "em": 30.5547,
      "level": 267.56,
@@ -268,7 +268,7 @@
    "seen": "2026-11-13"
   },
   "IBIT": {
-   "action": "WATCH",
+   "action": "NEUTRAL",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
