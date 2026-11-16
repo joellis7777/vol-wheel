@@ -166,13 +166,13 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-11-10",
-     "em": 46.3327,
+     "active": true,
+     "date": "2026-11-16",
+     "em": 43.8996,
      "level": 282.77,
-     "price": 271.62,
+     "price": 275.57,
      "rung": 1,
-     "strike": 277.5
+     "strike": 280.0
     },
     "LEVEL_PUT": {
      "active": false,
@@ -428,13 +428,13 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-11-12",
-     "em": 2.7033,
-     "level": 14.88,
-     "price": 15.64,
+     "active": true,
+     "date": "2026-11-16",
+     "em": 2.7242,
+     "level": 13.86,
+     "price": 14.83,
      "rung": 1,
-     "strike": 15.5
+     "strike": 14.5
     }
    },
    "seen": "2026-11-16"
