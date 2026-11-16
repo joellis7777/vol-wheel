@@ -104,7 +104,7 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-16",
      "em": 31.3743,
      "level": 265.34,
@@ -166,7 +166,7 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-16",
      "em": 43.8996,
      "level": 282.77,
