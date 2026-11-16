@@ -104,7 +104,7 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-13",
      "em": 30.5547,
      "level": 267.56,
@@ -122,7 +122,7 @@
      "strike": 250.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "ASST": {
    "action": "WATCH",
@@ -137,10 +137,10 @@
      "strike": 22.5
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "BMNR": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -160,7 +160,7 @@
      "strike": 21.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "CEG": {
    "action": "WATCH",
@@ -184,7 +184,7 @@
      "strike": 252.5
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "FNV": {
    "action": "WATCH",
@@ -198,7 +198,7 @@
      "strike": 250.69
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "GLD": {
    "action": "WATCH",
@@ -212,7 +212,7 @@
      "strike": 357.21
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "GOOG": {
    "action": "WATCH",
@@ -242,7 +242,7 @@
      "strike": 284.06
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "HOOD": {
    "action": "NEUTRAL",
@@ -265,10 +265,10 @@
      "strike": 84.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "IBIT": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -279,15 +279,15 @@
      "strike": 44.6
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-11-13",
-     "em": 5.5686,
-     "price": 38.575,
+     "active": true,
+     "date": "2026-11-16",
+     "em": 5.6314,
+     "price": 36.4872,
      "rung": 1,
-     "strike": 35.0
+     "strike": 36.4872
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "MRVL": {
    "action": "WATCH",
@@ -319,10 +319,10 @@
      "strike": 200.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "MSTR": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -331,9 +331,18 @@
      "price": 151.26,
      "rung": 1,
      "strike": 151.26
+    },
+    "LEVEL_PUT": {
+     "active": true,
+     "date": "2026-11-16",
+     "em": 28.9398,
+     "level": 89.21,
+     "price": 103.955,
+     "rung": 1,
+     "strike": 90.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "NVDA": {
    "action": "EARNINGS_PLAY",
@@ -364,7 +373,7 @@
      "strike": 197.5
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "QQQ": {
    "action": "WATCH",
@@ -386,7 +395,7 @@
      "strike": 595.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "RGLD": {
    "action": "NO_SHORT",
@@ -396,7 +405,7 @@
   "SLV": {
    "action": "NEUTRAL",
    "alerts": {},
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "SOFI": {
    "action": "WATCH",
@@ -419,7 +428,7 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-12",
      "em": 2.7033,
      "level": 14.88,
@@ -428,13 +437,13 @@
      "strike": 15.5
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "SPCX": {
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-09",
      "em": 28.8295,
      "level": 149.8,
@@ -460,7 +469,7 @@
      "strike": 100.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "SPY": {
    "action": "NEUTRAL",
@@ -482,7 +491,7 @@
      "strike": 716.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   },
   "TSLA": {
    "action": "WATCH",
@@ -496,22 +505,22 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-11-12",
-     "em": 63.8055,
-     "level": 432.86,
-     "price": 397.65,
+     "active": true,
+     "date": "2026-11-16",
+     "em": 64.0514,
+     "level": 414.23,
+     "price": 388.96,
      "rung": 1,
-     "strike": 412.5
+     "strike": 400.0
     },
     "LEVEL_PUT": {
      "active": true,
-     "date": "2026-11-09",
-     "em": 64.4014,
+     "date": "2026-11-16",
+     "em": 64.0514,
      "level": 368.6,
-     "price": 376.005,
+     "price": 388.96,
      "rung": 1,
-     "strike": 375.0
+     "strike": 385.0
     },
     "PAIR_CALL": {
      "active": false,
@@ -538,7 +547,7 @@
      "strike": 315.0
     }
    },
-   "seen": "2026-11-13"
+   "seen": "2026-11-16"
   }
  }
 }
