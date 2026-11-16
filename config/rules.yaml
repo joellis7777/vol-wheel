@@ -69,7 +69,7 @@ universe:
   Platform:   {cap: 15, core: [GOOG],    opportunistic: [AMZN]}
   High-beta:  {cap: 15, core: [TSLA],    opportunistic: [HOOD, SOFI]}
   Power:      {cap: 10, core: [CEG],     opportunistic: []}
-  Hard asset: {cap: 10, core: [GLD],     opportunistic: [FNV]}   # gold royalty, added 2026-10-09 (RGLD removed same day: illiquid)
+  Hard asset: {cap: 10, core: [GLD],     opportunistic: [FNV, SLV]}   # FNV gold royalty 2026-10-09 (RGLD removed same day: illiquid); SLV 2026-11-03 (Jordan)
   Space:      {cap: 5,  core: [],        opportunistic: [SPCX]}  # added 2026-10-22 (listed 2026-06-12; liquid options, IV ~53%)
 
 total_deployed_cap: 80       # % of account across all buckets
@@ -314,7 +314,7 @@ alerts:
 
 earnings:
   # Single stocks only; these have no earnings.
-  etfs: [SPY, QQQ, IBIT, GLD]
+  etfs: [SPY, QQQ, IBIT, GLD, SLV]
   nasdaq_url: https://api.nasdaq.com/api/analyst/{sym}/earnings-date
   cache_path: data/earnings.json
   iv_window_days: 30        # earnings within this many days inflate iv30 -> strip the implied move
@@ -427,6 +427,14 @@ backtest:
                eq_qg_2007_trend_falling, tasty_csp, tasty_csp_ivr30, tasty_spreads, tasty_spreads_ivr30,
                tasty_wheel, blend_tom, blend_tom_csp, blend_core_income, blend_core_csp, blend_core_wheel,
                eq_qgb_combo, blend_core_income_btc, blend_core_csp_btc]
+  futures:                  # defaults for mode: futures variants (vol_wheel/futures.py): index futures in an IRA
+    contract: {mult: 5, per_share: 10}   # MES: $5 x SPX, SPX ~ 10 x SPY (MNQ: {mult: 2, per_share: 41} on QQQ)
+    div_yield_pct: 1.8      # the future's price gives up the dividend; cash earns T-bills
+    margin: {base_pct: 3.0, per_vol_pct: 0.08, init_ratio: 1.1, ira_mult: 1.25, stress: 1.0}   # maint % = base + per_vol x VIX
+    margin_earns: false     # cash held as futures margin earns nothing; the rest earns T-bills
+    cost_per_contract: 4.0  # $2.25 commission + exchange/NFA fees + half a tick, per contract traded
+    roll_cost_per_contract: 6.0   # quarterly calendar roll
+    band_pct: 10            # fractional sizing: trade when off target by this % of equity (whole contracts: 1 contract)
   sleeve:                   # defaults for mode: sleeve variants (vol_wheel/sleeve.py): long-call convexity sleeve
     debit_pct: 5            # each position costs this % of equity (premium-sized: a total loss costs 5%)
     entry_delta: 40         # Soliel 2026: ~40-delta, not deep OTM
@@ -1229,3 +1237,41 @@ backtest:
        symbols: [SPY, QQQ, IWM, GLD, TLT, XLE], mode: always, put_delta: 16, margin_frac: 0.2, entry_pct: 2.1,
        entry_every_days: 5, min_ivr: 0, calls: none, decide_itm: close, take_profit_pct: 50,
        vix_caps: [[0, 17.5], [20, 24.5], [30, 35]], caps: {total: 35, per_name: 8.4, Index: 16.8}}
+    # Index futures in an IRA (Jordan 2026-10-28): Schwab IRAs can hold futures (125% of initial margin) but can't sell
+    # naked options on them, so leverage there means long MES/MNQ notional above equity. Dip ladders vs trend-gated
+    # leverage vs constant, with IRA margin and forced cuts; $100k whole-contract versions for the lumpiness.
+    - {name: mes_1x, label: "MES 1.0x (≈ SPY with dividends)", symbols: [SPY], mode: futures, lev: 1.0}
+    - {name: mes_125, label: "MES 1.25x constant", symbols: [SPY], mode: futures, lev: 1.25}
+    - {name: mes_15, label: "MES 1.5x constant", symbols: [SPY], mode: futures, lev: 1.5}
+    - {name: mes_2, label: "MES 2.0x constant", symbols: [SPY], mode: futures, lev: 2.0}
+    - {name: mes_3, label: "MES 3.0x constant", symbols: [SPY], mode: futures, lev: 3.0}
+    - {name: mes_lad_safe, label: "MES dip ladder 0.6x → 1.0x at −20% → 1.5x at −40%", symbols: [SPY], mode: futures,
+       alloc: [[0, 0.6], [-20, 1.0], [-40, 1.5]]}
+    - {name: mes_lad_cash, label: "MES dip ladder 0.6x → 1.0x at −30% (never leveraged)", symbols: [SPY], mode: futures,
+       alloc: [[0, 0.6], [-30, 1.0]]}
+    - {name: mes_lad_2x, label: "MES dip ladder 1.0x → 1.5x at −20% → 2.0x at −40%", symbols: [SPY], mode: futures,
+       alloc: [[0, 1.0], [-20, 1.5], [-40, 2.0]]}
+    - {name: mes_tr_15, label: "MES 1.5x, 1.0x below a falling 200-day", symbols: [SPY], mode: futures, lev: 1.5,
+       trend: {sma: 200, slope_days: 20, lev_down: 1.0}}
+    - {name: mes_tr_15_05, label: "MES 1.5x, 0.5x below a falling 200-day", symbols: [SPY], mode: futures, lev: 1.5,
+       trend: {sma: 200, slope_days: 20, lev_down: 0.5}}
+    - {name: mes_tr_2, label: "MES 2.0x, 1.0x below a falling 200-day", symbols: [SPY], mode: futures, lev: 2.0,
+       trend: {sma: 200, slope_days: 20, lev_down: 1.0}}
+    - {name: mes_tr_lad, label: "MES dip ladder 1.0x → 1.5x at −20% while trending, 1.0x below a falling 200-day",
+       symbols: [SPY], mode: futures, alloc: [[0, 1.0], [-20, 1.5]], trend: {sma: 200, slope_days: 20, lev_down: 1.0}}
+    - {name: mes_15_stress, label: "MES 1.5x constant · margins 2x the model", symbols: [SPY], mode: futures, lev: 1.5,
+       margin: {base_pct: 3.0, per_vol_pct: 0.08, init_ratio: 1.1, ira_mult: 1.25, stress: 2.0}}
+    - {name: mes_3_stress, label: "MES 3.0x constant · margins 2x the model", symbols: [SPY], mode: futures, lev: 3.0,
+       margin: {base_pct: 3.0, per_vol_pct: 0.08, init_ratio: 1.1, ira_mult: 1.25, stress: 2.0}}
+    - {name: mes_15_100k, label: "MES 1.5x · $100k, whole contracts", symbols: [SPY], mode: futures, lev: 1.5,
+       account: 100000, whole_contracts: true}
+    - {name: mes_tr_15_100k, label: "MES 1.5x / 1.0x below a falling 200-day · $100k, whole contracts", symbols: [SPY],
+       mode: futures, lev: 1.5, trend: {sma: 200, slope_days: 20, lev_down: 1.0}, account: 100000, whole_contracts: true}
+    - {name: mes_1x_100k, label: "MES 1.0x · $100k, whole contracts", symbols: [SPY], mode: futures, lev: 1.0,
+       account: 100000, whole_contracts: true}
+    - {name: mnq_1x, label: "MNQ 1.0x (≈ QQQ with dividends)", symbols: [QQQ], mode: futures, lev: 1.0,
+       contract: {mult: 2, per_share: 41}, div_yield_pct: 0.7}
+    - {name: mnq_15, label: "MNQ 1.5x constant", symbols: [QQQ], mode: futures, lev: 1.5,
+       contract: {mult: 2, per_share: 41}, div_yield_pct: 0.7}
+    - {name: mnq_tr_15, label: "MNQ 1.5x, 1.0x below a falling 200-day", symbols: [QQQ], mode: futures, lev: 1.5,
+       trend: {sma: 200, slope_days: 20, lev_down: 1.0}, contract: {mult: 2, per_share: 41}, div_yield_pct: 0.7}

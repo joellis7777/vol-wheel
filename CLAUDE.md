@@ -56,7 +56,11 @@ changes, update this list in the same change.
   November (ASST ~Nov 9, BMNR ~Nov 20, estimated), so earnings mode pauses them until then. IVR is a proxy until ~60
   days of IV history (≈ late Jan 2027). Together with MSTR and IBIT this makes the Crypto bucket four
   highly correlated names under one cap (daily correlation since 2025-10: BMNR–IBIT 0.84, BMNR–ETHA 0.88,
-  ASST–IBIT 0.68; annualized vol ASST 121%, BMNR 90%, MSTR 80%, IBIT 45%; max drawdown ASST −87%, BMNR −79%).
+  ASST–IBIT 0.68; annualized vol ASST 121%, BMNR 90%, MSTR 80%, IBIT 45%; max drawdown ASST −87%, BMNR −79%). SLV added
+  2026-11-03 (Jordan) as an opportunistic name in the Hard asset bucket beside GLD and FNV (shared 10% cap), listed
+  with the ETFs that have no earnings. CBOE 2026-11-03: Dec 25–30Δ puts 1.4–2.7% spreads, OI 1,700–7,400, iv30 42%
+  vs GLD 23%; a $42 put secures $4,200 (GLD ~$34k), so SLV fits small accounts. Silver is not part of the core (see
+  the SLV/GLD finding under open items).
 - **Thin option markets** (decided 2026-10-09): keep the 10%-of-mid spread rule, but when nothing
   in the band passes it, show the best strikes with spreads up to 40% of mid, flagged "wide market:
   limit order near the mid" (`strikes.wide_spread_fallback`). CEG, FNV and RGLD hit this routinely.
@@ -97,6 +101,10 @@ changes, update this list in the same change.
   ETFs stay on the portfolio ladder. Pushback given: weeklies pay more per day only because they carry more gap
   risk per day; the put does worst when the level holds and the stock bounces; swing lows get undercut; no
   backtest of the level edge yet (next test in docs/STRATEGY.md). Never through an earnings report.
+- **No futures in the IRA** (Jordan, 2026-10-28): Schwab's IRA allows futures but no naked short options, so the only
+  IRA leverage would be long MES/MNQ above 1x; the backtest showed it scales risk without improving Sharpe. The core
+  and wheel stay on QQQ (and the ETFs). Futures (MES/MNQ, 60/40 tax) are to be revisited for a future taxable trading
+  sleeve; `mode: futures` stays in the backtester for that.
 - **Working style:** Jordan wants to discuss strategy *and* build in the same session. Engage on the
   trading logic (push back, flag rulebook conflicts, suggest tests) — don't just implement.
 - **The rulebook is a starting hypothesis, not a constraint** (Jordan, 2026-10-11): the goal is to
@@ -482,6 +490,41 @@ backtest changes the picture: edit it in the same change and add a line to its c
     are 2020). Stock-specific non-earnings gaps (n=260): nothing (+0.7% over 20 days, t 0.6). So: don't buy earnings
     dumps at the open or sell puts into them expecting a bounce; market-wide panics are the dips that pay (the core
     pyramid and dip rule). Caveat: today's mostly-winning names (survivorship), open-auction fills assumed.
+  - Silver vs gold (2026-11-03, research script outside the repo; GLD/SLV 2006-05→ and GC/SI futures 2000→, monthly
+    rebalanced metal sleeve, price only). Correlation 0.78–0.80, beta of silver on gold ~1.5 (gold-up months silver
+    +6.7% vs +4.5%, gold-down months −5.6% vs −3.3%: more downside than upside capture). GLD 8.7% / −46% vs SLV 5.9% /
+    −76% (futures 2000→ 10.6% vs 9.2%): higher beta, lower return. Every silver mix had a lower Sharpe than gold alone
+    (75/25 8.5% / −52%; 50/50 7.9% / −58%). Jordan's tilt (more silver at gold's lows, more gold at highs): by drawdown
+    10% → 50% silver at −30% 7.7% / −53%; by gain off the 3-year low 7.6% / −53%: worse than GLD alone, because silver
+    falls further in the same dip (2011–15 SLV −72% vs GLD −45%); same lesson as levering into dips. Gold/silver
+    ratio tilt (10 → 50% silver by its 3-year percentile) 8.7% / −53% (futures 11.3% vs 10.6%; 2016→ 13.3% vs 12.2%):
+    the only tilt near break-even, at higher drawdown. G/S ratio 79 on 2026-11-03 (2000→ range 32–126, median 69).
+    Not adopted for the core; SLV is scanned as a wheel name.
+  - 1-DTE SPY/QQQ puts (Jordan asked 2026-11-08; research script outside the repo; a cash-secured put sold every close,
+    settled at the next close, option P&L only, T-bills on the collateral not included). Next-day SPY moves vs
+    implied: since 2023 realized sd 0.94% vs VIX1D 0.90% (ATM 1-day IV ≈ realized: no premium at the money). Real
+    chain 2026-11-06 (Monday expiry): put IV rises ~17–20% of ATM per sd OTM (SPY 16Δ 21.3 vs ATM 17.8, 1.19 mid =
+    16bp of strike; 10Δ 9.8bp; 5Δ 4.8bp; spreads $0.02–0.03), so any edge is in the skew. With actual VIX1D from
+    2023-05 and skew 0.2/sd: 16Δ +8.3%/yr, 10Δ +7.2%/yr, max DD −7 to −8%; skew 0.1: +0.7–2.1%; flat: −3 to −4.5%. 2007→
+    on VIX x 0.79 (VIX1D's median ratio), skew 0.2: +0.3–1.8%/yr with −36 to −44% max DD (2008-10-15 −7%, 2020-03-12
+    −7% of the account in a day); skew 0.1: −5 to −6%/yr. QQQ worse than SPY at every setting. So the trade lives on
+    the wing's skew, wins ~87–90% of days, and gives a year's edge back in one gap. Not adopted.
+  - Index futures leverage in the IRA (2026-10-28, `mode: futures`, `mes_*` / `mnq_*`; long MES/MNQ notional vs equity,
+    T-bills on cash not held as margin, futures carry = T-bill rate minus dividends, IRA margin 125% of a VIX-scaled
+    initial, forced cuts). 2007→ CAGR / max DD / Sharpe: MES 1.0x 10.5% / −56% / 0.53 (SPY price-only 8.8%); 1.25x
+    12.3% / −65%; 1.5x 13.9% / −72% (worst 12m −64%); 2x 16.5% / −84%; 3x 15.6% / −96% (4 forced cuts, Oct 2008 and
+    Mar 2020): Sharpe is flat (0.53) at every level, leverage only scales risk, and past ~2x volatility drag eats
+    the return. Margin was never the binding risk up to 2x even at double the modelled margins; the drawdown
+    itself is. Dip ladders: 0.6 → 1.0 at −20% → 1.5 at −40% 9.5% / −63% (Sharpe 0.46); 1.0 → 2.0 at −40% 12.4% / −77%:
+    worse than constant leverage at the same average exposure (levering into a falling market deepens the fall).
+    Trend-gated (1.5x, back to lev_down below a falling 200-day, monthly): lev_down 1.0 13.8% / −58% (Sharpe 0.57;
+    2008 −24% vs −41% at constant 1.5x); lev_down 0.5 13.2% / −49% (0.58, 2008 −6%); 2x/1.0 16.6% / −63%. MNQ: 1.0x
+    15.6% / −54% (0.70); 1.5x 21.4% / −71%; trend 1.5x/1.0 21.7% / −61% (0.74). 2021→: MES 1.5x 20.7% / −36%, trend
+    19.7% / −30% vs 1.0x 15.2% / −24%. Start-every-January medians 3y | 5y (worst 5y): MES 1.0x 11.1 | 14.2 (−0.8);
+    1.5x 16.3 | 20.1 (−3.7); trend 1.5/1.0 13.9 | 16.5 (+1.0); trend 1.5/0.5 11.7 | 12.8 (+4.8); dip ladder 9.8 |
+    11.0; MNQ trend 1.5/1.0 20.3 | 22.5 (+8.6), beat MES 1.0x in 100% of windows. A $100k account in whole MES
+    contracts matched the fractional runs (13.8% vs 13.9%). So: leverage above 1x in an IRA buys return roughly in
+    proportion to drawdown; the trend gate is the only version that improves the ratio, and only a little.
   - Jordan's "Honeycomb v2" research (Perplexity, June 2026, after Porter Stansberry; 17 names,
     reported 17.0% CAGR / −18% max DD 2010–2026): names were picked partly on 2022 returns and
     2021–26 correlations (hindsight), TPL alone is +682 of +1,084 points, monthly data understates
@@ -498,6 +541,11 @@ backtest changes the picture: edit it in the same change and add a line to its c
   contract (SPY 1.7%, $76k); SPX 1.4%, $762k; RUT 3.4%, $278k; NDX 8.2%, $2.9M; XND 92% (untradeable); MRUT none.
   Nasdaq, gold, crude and bitcoin need CME futures options (/MNQ /NQ, /MGC /GC, /MCL /CL, /MBT), not on CBOE's feed:
   check liquidity on Schwab. Index options are cash-settled (no assignment into shares).
+- Futures in the Schwab IRA (Schwab futures FAQ, read 2026-10-28): Traditional / Roth / Rollover / SEP IRAs qualify
+  with NLV ≥ $25k plus margin and option-spreads approval; IRAs are held to 125% of the exchange's initial margin;
+  $2.25 per contract plus exchange fees. **No naked short options in the Schwab IRA, futures options included**
+  (Jordan confirmed 2026-10-28): short MES/MNQ puts there must be spreads, so the IRA can't sell puts with
+  leverage. What it can lever is long MES/MNQ notional above equity (`mode: futures`, results below).
 - Schwab developer app (Phase 3 prerequisite; approval can take days). Gives real-time quotes and
   chains with current IV, not a year of IV history.
 - Keep MSTR? (IBIT already covers bitcoin.)  XSP/SPX puts (taxable, cash-settled, 60/40) are in the
@@ -534,6 +582,7 @@ vol_wheel/
   pmcc.py                  LEAP / poor man's covered call simulation (backtest `mode: pmcc`)
   target.py                target-allocation scaling by drawdown, via options or stock (`mode: target`)
   multi.py                 multi-asset core at fixed weights, rebalanced with options or stock (`mode: multi`)
+  futures.py               index futures exposure in an IRA: leverage, dip ladder or trend gate, IRA margin, forced cuts (`mode: futures`)
   extended.py              pre-market / after-hours price watch (quotes endpoint) -> docs/data/extended.json, EXT_MOVE
   ladder.py                scale-in/out ladder via limit orders or options at the same levels (`mode: ladder`)
   levels.py                level trades: short-dated puts/calls at swing lows/highs or stretched price discovery
@@ -881,6 +930,11 @@ parsed from CBOE with no fallback needed; history goes back to ~2004 for most na
   `collar` {put_otm_pct, dte, roll_days, call, call_otm_pct, regimes, symbols} (puts financed by zero-cost
   calls, legs resized to the holding at each rebalance; longer-dated skew = slope × √(45/DTE),
   `skew_term_days`).
+- `mode: futures` (`vol_wheel/futures.py`, defaults in `backtest.futures`): long index futures at `lev` x equity, a
+  dip ladder `alloc` [[drawdown %, lev]] (daily) or `trend` {sma, slope_days, lev_down} (monthly); `contract` {mult,
+  per_share} (MES {5, 10} on SPY, MNQ {2, 41} on QQQ), `whole_contracts` + `account` for lumpy small accounts;
+  carry = T-bills − `div_yield_pct`; `margin` {base_pct, per_vol_pct (x the vol index), init_ratio, ira_mult, stress};
+  margin cash earns nothing (`margin_earns`); the broker cuts contracts when the requirement exceeds equity.
 - Local runs: `--only name1,name2 --out <scratch dir>` runs a subset without touching docs/backtest.
 - Known biases: today's universe applied to the past, no dividends, no earnings IV, BS prices.
 
