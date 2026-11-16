@@ -94,6 +94,9 @@ LEAP sleeve start at $150k. Not IBIT-only: the rotation between the four assets 
   it early).
 - Leverage, personal loans, concentration (every Soliel blow-up), and calendar-timed exits (the cycle
   thesis sets readiness; the trend signal triggers).
+  In the IRA the only leverage is long MES/MNQ above 1x (no naked options): 1.5x MES 13.9% / −72% vs 1.0x
+  10.5% / −56% from 2007, same Sharpe; laddering leverage into dips was worse (−63% to −77%). If ever used,
+  only trend-gated (1.5x, back to ≤ 1x below a falling 200-day) and on top of a sleeve you can afford to halve.
 - Wheeling TQQQ (or any daily-reset leveraged ETF) instead of QQQ: ~3x the premium for ~3x the risk (same IV/HV
   ratio), Sharpe no better, −58 to −68% drawdowns from 2010; a 3x QQQ from the 2000 peak lost 99.98% and never
   recovered. Bitcoin already supplies the core's volatility, with its own return instead of a decay mechanic.
@@ -137,6 +140,12 @@ people and theses (Jordi Visser, Jordan's research); the system handles entries,
 
 ## Change log
 
+- 2026-11-03: SLV added to the scanner (Hard asset bucket, opportunistic). Silver in the core tested and not adopted:
+  beta ~1.5 to gold with a lower return (2006→ 5.9% vs 8.7%, −76% vs −46%); tilting toward silver at gold's lows
+  lowered return. Gold stays the core metal.
+- 2026-10-28 (futures): Schwab IRAs allow futures but no naked short options, so IRA leverage can only be long
+  MES/MNQ notional. Backtest (`mode: futures`): Sharpe flat at every leverage level, dip ladders worse than
+  constant leverage, a trend gate helps a little. Not adopted; leverage stays on the don't-do list for now.
 - 2026-10-28 (later): extended-hours watch (EXT_MOVE alerts pre-market and after hours, with the gap
   study's guidance) and first intraday scan moved to 09:45 ET; post-close option math now uses the regular
   close, not CBOE's after-hours price.

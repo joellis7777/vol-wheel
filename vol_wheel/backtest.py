@@ -1383,6 +1383,9 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             sym = v["symbols"][0]
             slope = bt["skew_slope"]["index" if sym in meta["vol_index_syms"] else "stock"]
             return Sleeve(v, fr[sym], rates, rules, vs, end_, slope).run().result()
+        if v["mode"] == "futures":
+            from .futures import Futures
+            return Futures(v, fr[v["symbols"][0]], rates, rules, vs, end_).run().result()
         if v["mode"] == "pmcc":
             from .pmcc import PMCC
             sym = v["symbols"][0]
@@ -1429,7 +1432,7 @@ def run(rules: dict, cache: Path | None = None, out_dir: Path | None = None) -> 
             else:
                 v = {**v, "symbols": resolve_symbols(v["symbols"], rules)}
                 uses_stock_iv = any(s not in meta["vol_index_syms"] for s in v["symbols"])
-                no_options = v["mode"] == "hold" or (v["mode"] in ("target", "multi", "ladder") and v.get("exec") in ("stock", "limit"))
+                no_options = v["mode"] in ("hold", "futures") or (v["mode"] in ("target", "multi", "ladder") and v.get("exec") in ("stock", "limit"))
                 run_mults = (mults if (uses_stock_iv and not no_options) else [base_mult])
             for m in run_mults:
                 key = v["name"] if m == base_mult else f"{v['name']}@{m:g}"
@@ -1541,6 +1544,19 @@ def report(res: dict, rules: dict) -> str:
                              f"{s_['payoff_multiple']}x, median {s_['median_multiple']}x, best {s_['best_multiple']}x, "
                              f"net {s_['net_pnl']:+,}, avg {s_['avg_days']} days, in the market "
                              f"{v['in_market_pct']:.0f}% of days; exits: {ex}; best: {top}")
+            lines.append("")
+        fu = [(k, v) for k, v in w["variants"].items() if "futures" in v]
+        if fu:
+            lines += ["Index futures in an IRA (Deployed = average notional / equity; IRA margin = 125% of initial; "
+                      "forced = the broker sold contracts to meet margin):", ""]
+            for k, v in fu:
+                f_ = v["futures"]
+                ev = "; ".join(f"{e['date']} {e['lev_before']}→{e['lev_after']}x (index {e['dd_index_pct']:+.0f}%, vol "
+                               f"{e['vol']:.0f})" if e["type"] == "forced" else f"{e['date']} wiped out"
+                               for e in f_["events"][:4])
+                lines.append(f"- {v['label']}: leverage avg {f_['avg_lev']}x, max {f_['max_lev']}x; forced cuts "
+                             f"{f_['forced_cuts']}{' (' + ev + ')' if ev else ''}; wiped out {f_['wiped'] or 'never'}; "
+                             f"costs {f_['costs_pct_per_year']:.2f}%/yr; worst 12 months {v['worst_12m_pct']:+.1f}%")
             lines.append("")
         pm = [(k, v) for k, v in w["variants"].items() if "call_pnl_per_year_pct" in v]
         if pm:
