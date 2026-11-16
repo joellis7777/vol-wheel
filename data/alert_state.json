@@ -166,7 +166,7 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-16",
      "em": 43.8996,
      "level": 282.77,
@@ -428,7 +428,7 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-16",
      "em": 2.7242,
      "level": 13.86,
