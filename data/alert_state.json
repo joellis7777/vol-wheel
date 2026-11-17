@@ -472,7 +472,7 @@
    "seen": "2026-11-16"
   },
   "SPY": {
-   "action": "NEUTRAL",
+   "action": "WATCH",
    "alerts": {
     "SELL_CALL": {
      "active": false,
