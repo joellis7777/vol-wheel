@@ -523,13 +523,13 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-11-16",
-     "em": 64.0514,
-     "level": 414.23,
-     "price": 388.96,
+     "active": true,
+     "date": "2026-11-17",
+     "em": 65.7203,
+     "level": 384.04,
+     "price": 381.5,
      "rung": 1,
-     "strike": 400.0
+     "strike": 382.5
     },
     "LEVEL_PUT": {
      "active": true,
