@@ -331,7 +331,7 @@
    "seen": "2026-11-18"
   },
   "MSTR": {
-   "action": "NO_SHORT",
+   "action": "NEUTRAL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -523,7 +523,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-18",
      "em": 67.8247,
      "level": 414.23,
