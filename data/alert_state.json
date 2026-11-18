@@ -277,7 +277,7 @@
    "seen": "2026-11-18"
   },
   "IBIT": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -288,7 +288,7 @@
      "strike": 44.6
     },
     "SELL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-18",
      "em": 5.8041,
      "price": 35.71,
@@ -523,7 +523,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-18",
      "em": 67.8247,
      "level": 414.23,
