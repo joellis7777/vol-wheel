@@ -104,7 +104,7 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-18",
      "em": 33.7808,
      "level": 265.34,
@@ -113,7 +113,7 @@
      "strike": 262.5
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-16",
      "em": 31.3743,
      "level": 244.3,
@@ -523,7 +523,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-18",
      "em": 67.8247,
      "level": 414.23,
