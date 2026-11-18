@@ -23,7 +23,7 @@
  },
  "BMNR": {
   "fetched": "2026-11-18",
-  "implied_move": 0.02512395524597171,
+  "implied_move": 0.09808180597544643,
   "next": {
    "date": "2027-01-12",
    "estimated": true,
@@ -77,7 +77,7 @@
  },
  "MRVL": {
   "fetched": "2026-11-18",
-  "implied_move": 0.129571826381281,
+  "implied_move": 0.1303984970439121,
   "next": {
    "date": "2026-12-01",
    "estimated": true,

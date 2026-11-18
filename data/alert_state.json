@@ -104,16 +104,16 @@
      "strike": 210.0
     },
     "LEVEL_CALL": {
-     "active": false,
-     "date": "2026-11-17",
-     "em": 34.1084,
-     "level": 258.08,
-     "price": 256.45,
+     "active": true,
+     "date": "2026-11-18",
+     "em": 33.7808,
+     "level": 265.34,
+     "price": 261.47,
      "rung": 1,
-     "strike": 257.5
+     "strike": 262.5
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-16",
      "em": 31.3743,
      "level": 244.3,
@@ -234,7 +234,7 @@
      "strike": 336.945
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-17",
      "em": 35.0896,
      "level": 272.0,
@@ -277,7 +277,7 @@
    "seen": "2026-11-18"
   },
   "IBIT": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "LEAP_BUY": {
      "active": false,
@@ -288,12 +288,12 @@
      "strike": 44.6
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-11-17",
-     "em": 5.6293,
-     "price": 36.56,
+     "active": true,
+     "date": "2026-11-18",
+     "em": 5.8041,
+     "price": 35.71,
      "rung": 1,
-     "strike": 33.0
+     "strike": 32.0
     }
    },
    "seen": "2026-11-18"
@@ -342,7 +342,7 @@
      "strike": 151.26
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-17",
      "em": 29.626,
      "level": 104.6,
@@ -351,7 +351,7 @@
      "strike": 104.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-16",
      "em": 28.9398,
      "level": 89.21,
@@ -446,7 +446,7 @@
      "strike": 18.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-16",
      "em": 2.7242,
      "level": 13.86,
