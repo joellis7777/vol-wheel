@@ -1,5 +1,5 @@
 {
- "digest_date": "2026-11-17",
+ "digest_date": "2026-11-18",
  "extended": {
   "AMZN": {
    "dir": "down",
@@ -61,9 +61,9 @@
     "step": 1
    },
    "IBIT": {
-    "date": "2026-10-28",
+    "date": "2026-11-18",
     "gstep": 0,
-    "step": 1
+    "step": 2
    },
    "QQQ": {
     "date": "2026-11-02",
@@ -166,7 +166,7 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-16",
      "em": 43.8996,
      "level": 282.77,
