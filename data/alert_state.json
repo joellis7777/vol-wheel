@@ -342,7 +342,7 @@
      "strike": 151.26
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-17",
      "em": 29.626,
      "level": 104.6,
