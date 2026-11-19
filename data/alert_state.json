@@ -63,7 +63,7 @@
    "IBIT": {
     "date": "2026-11-19",
     "gstep": 0,
-    "step": 2
+    "step": 1
    },
    "QQQ": {
     "date": "2026-11-02",
@@ -113,7 +113,7 @@
      "strike": 275.0
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-16",
      "em": 31.3743,
      "level": 244.3,
@@ -470,13 +470,13 @@
      "strike": 143.0
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-11-17",
-     "em": 28.0957,
-     "level": 140.66,
-     "price": 141.21,
+     "active": true,
+     "date": "2026-11-19",
+     "em": 27.4406,
+     "level": 120.39,
+     "price": 136.04,
      "rung": 1,
-     "strike": 141.0
+     "strike": 126.0
     },
     "SELL_PUT": {
      "active": false,
