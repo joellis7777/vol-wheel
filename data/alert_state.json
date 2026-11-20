@@ -1,5 +1,5 @@
 {
- "digest_date": "2026-11-19",
+ "digest_date": "2026-11-20",
  "extended": {
   "AMZN": {
    "dir": "down",
@@ -113,7 +113,7 @@
      "strike": 255.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-16",
      "em": 31.3743,
      "level": 244.3,
@@ -151,7 +151,7 @@
      "strike": 18.94
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-19",
      "em": 4.6639,
      "level": 12.8,
