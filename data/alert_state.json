@@ -421,8 +421,17 @@
    "seen": "2026-10-09"
   },
   "SLV": {
-   "action": "NEUTRAL",
-   "alerts": {},
+   "action": "SELL_PUT",
+   "alerts": {
+    "SELL_PUT": {
+     "active": true,
+     "date": "2026-11-20",
+     "em": 6.9409,
+     "price": 37.005,
+     "rung": 1,
+     "strike": 35.0
+    }
+   },
    "seen": "2026-11-20"
   },
   "SOFI": {
