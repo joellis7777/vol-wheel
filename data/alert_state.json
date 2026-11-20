@@ -151,7 +151,7 @@
      "strike": 18.94
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-19",
      "em": 4.6639,
      "level": 12.8,
@@ -331,7 +331,7 @@
    "seen": "2026-11-20"
   },
   "MSTR": {
-   "action": "NEUTRAL",
+   "action": "NO_SHORT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
