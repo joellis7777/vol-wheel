@@ -363,7 +363,7 @@
    "seen": "2026-11-20"
   },
   "NVDA": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -389,6 +389,14 @@
      "price": 204.16,
      "rung": 1,
      "strike": 197.5
+    },
+    "SELL_PUT": {
+     "active": true,
+     "date": "2026-11-20",
+     "em": 30.3671,
+     "price": 133.1284,
+     "rung": 1,
+     "strike": 125.0
     }
    },
    "seen": "2026-11-20"
@@ -499,7 +507,7 @@
    "seen": "2026-11-20"
   },
   "SPY": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "SELL_CALL": {
      "active": false,
@@ -510,12 +518,12 @@
      "strike": 800.0
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-11-09",
-     "em": 43.3585,
-     "price": 749.485,
+     "active": true,
+     "date": "2026-11-20",
+     "em": 66.1249,
+     "price": 697.625,
      "rung": 1,
-     "strike": 716.0
+     "strike": 670.0
     }
    },
    "seen": "2026-11-20"
