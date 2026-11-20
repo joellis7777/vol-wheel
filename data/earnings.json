@@ -22,7 +22,7 @@
   "next": null
  },
  "BMNR": {
-  "fetched": "2026-11-19",
+  "fetched": "2026-11-20",
   "implied_move": 0.10596242318483257,
   "next": {
    "date": "2027-01-12",
@@ -76,8 +76,8 @@
   "next": null
  },
  "MRVL": {
-  "fetched": "2026-11-19",
-  "implied_move": 0.14621870009789095,
+  "fetched": "2026-11-20",
+  "implied_move": 0.13599824852820616,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -118,7 +118,7 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-11-19",
+  "fetched": "2026-11-20",
   "last": {
    "date": "2026-10-27",
    "estimated": true,
@@ -135,7 +135,7 @@
  },
  "SPCX": {},
  "TSLA": {
-  "fetched": "2026-11-19",
+  "fetched": "2026-11-20",
   "last": {
    "date": "2026-10-21",
    "estimated": true,
