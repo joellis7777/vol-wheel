@@ -140,7 +140,7 @@
    "seen": "2026-11-20"
   },
   "BMNR": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -158,6 +158,14 @@
      "price": 15.55,
      "rung": 1,
      "strike": 13.0
+    },
+    "SELL_PUT": {
+     "active": true,
+     "date": "2026-11-20",
+     "em": 4.5594,
+     "price": 13.38,
+     "rung": 1,
+     "strike": 13.38
     }
    },
    "seen": "2026-11-20"
@@ -429,10 +437,10 @@
    "seen": "2026-10-09"
   },
   "SLV": {
-   "action": "NEUTRAL",
+   "action": "SELL_PUT",
    "alerts": {
     "SELL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-20",
      "em": 6.9409,
      "price": 37.005,
@@ -549,7 +557,7 @@
      "strike": 382.5
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-20",
      "em": 67.068,
      "level": 349.33,
