@@ -407,7 +407,7 @@
      "strike": 151.26
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-23",
      "em": 34.1889,
      "level": 104.6,
@@ -436,7 +436,7 @@
    "seen": "2026-11-23"
   },
   "NVDA": {
-   "action": "WATCH",
+   "action": "SELL_CALL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -462,6 +462,14 @@
      "price": 204.16,
      "rung": 1,
      "strike": 197.5
+    },
+    "SELL_CALL": {
+     "active": true,
+     "date": "2026-11-23",
+     "em": 35.5087,
+     "price": 166.67,
+     "rung": 1,
+     "strike": 210.0
     },
     "SELL_PUT": {
      "active": false,
