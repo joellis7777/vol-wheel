@@ -559,7 +559,7 @@
    "action": "WATCH",
    "alerts": {
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-23",
      "em": 28.1365,
      "level": 149.8,
