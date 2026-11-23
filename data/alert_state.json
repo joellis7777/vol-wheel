@@ -295,7 +295,7 @@
    "seen": "2026-11-23"
   },
   "HOOD": {
-   "action": "SELL_CALL",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -315,7 +315,7 @@
      "strike": 84.0
     },
     "SELL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-23",
      "em": 17.9941,
      "price": 68.98,
