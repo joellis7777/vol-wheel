@@ -176,7 +176,7 @@
      "strike": 18.94
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-19",
      "em": 4.6639,
      "level": 12.8,
@@ -295,7 +295,7 @@
    "seen": "2026-11-23"
   },
   "HOOD": {
-   "action": "WATCH",
+   "action": "SELL_CALL",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -313,6 +313,14 @@
      "price": 84.861,
      "rung": 1,
      "strike": 84.0
+    },
+    "SELL_CALL": {
+     "active": true,
+     "date": "2026-11-23",
+     "em": 17.9941,
+     "price": 68.98,
+     "rung": 1,
+     "strike": 100.0
     },
     "SELL_PUT": {
      "active": false,
@@ -606,21 +614,21 @@
     },
     "LEVEL_CALL": {
      "active": true,
-     "date": "2026-11-19",
-     "em": 63.6817,
-     "level": 384.04,
-     "price": 381.1,
+     "date": "2026-11-23",
+     "em": 70.528,
+     "level": 414.23,
+     "price": 385.75,
      "rung": 1,
-     "strike": 382.5
+     "strike": 395.0
     },
     "LEVEL_PUT": {
-     "active": false,
-     "date": "2026-11-20",
-     "em": 67.068,
-     "level": 349.33,
-     "price": 368.0695,
+     "active": true,
+     "date": "2026-11-23",
+     "em": 70.528,
+     "level": 368.6,
+     "price": 385.75,
      "rung": 1,
-     "strike": 365.0
+     "strike": 385.0
     },
     "PAIR_CALL": {
      "active": false,
