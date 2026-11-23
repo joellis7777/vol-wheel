@@ -6,6 +6,16 @@
    "move": -6.27,
    "session": "2026-10-29"
   },
+  "ASST": {
+   "dir": "up",
+   "move": 18.81,
+   "session": "2026-11-20"
+  },
+  "BMNR": {
+   "dir": "up",
+   "move": 15.87,
+   "session": "2026-11-20"
+  },
   "CEG": {
    "dir": "down",
    "move": -6.04,
@@ -27,24 +37,39 @@
    "session": "2026-10-28"
   },
   "HOOD": {
-   "dir": "down",
-   "move": -6.44,
-   "session": "2026-10-29"
+   "dir": "up",
+   "move": 9.63,
+   "session": "2026-11-20"
   },
   "IBIT": {
-   "dir": "down",
-   "move": -6.81,
-   "session": "2026-11-13"
+   "dir": "up",
+   "move": 8.58,
+   "session": "2026-11-20"
   },
   "MRVL": {
    "dir": "down",
    "move": -12.08,
    "session": "2026-10-28"
   },
+  "MSTR": {
+   "dir": "up",
+   "move": 14.05,
+   "session": "2026-11-20"
+  },
   "NVDA": {
-   "dir": "down",
-   "move": -8.46,
-   "session": "2026-11-11"
+   "dir": "up",
+   "move": 26.18,
+   "session": "2026-11-20"
+  },
+  "QQQ": {
+   "dir": "up",
+   "move": 6.0,
+   "session": "2026-11-20"
+  },
+  "SPY": {
+   "dir": "up",
+   "move": 3.72,
+   "session": "2026-11-20"
   },
   "TSLA": {
    "dir": "down",
