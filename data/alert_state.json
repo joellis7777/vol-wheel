@@ -1,5 +1,5 @@
 {
- "digest_date": "2026-11-23",
+ "digest_date": "2026-11-24",
  "extended": {
   "AMZN": {
    "dir": "down",
@@ -165,7 +165,7 @@
    "seen": "2026-11-24"
   },
   "BMNR": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -185,7 +185,7 @@
      "strike": 13.0
     },
     "PAIR_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-24",
      "em": 4.6652,
      "price": 13.14,
@@ -201,7 +201,7 @@
      "strike": 15.325
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-24",
      "em": 4.6652,
      "price": 13.14,
@@ -637,7 +637,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": false,
+     "active": true,
      "date": "2026-11-24",
      "em": 68.9392,
      "level": 384.04,
