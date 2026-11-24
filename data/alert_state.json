@@ -176,7 +176,7 @@
      "strike": 18.94
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-24",
      "em": 4.7692,
      "level": 12.8,
@@ -510,10 +510,10 @@
    "seen": "2026-10-09"
   },
   "SLV": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-24",
      "em": 6.8983,
      "price": 36.9101,
