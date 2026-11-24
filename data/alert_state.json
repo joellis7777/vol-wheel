@@ -510,13 +510,13 @@
    "seen": "2026-10-09"
   },
   "SLV": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-11-20",
-     "em": 6.9409,
-     "price": 37.005,
+     "active": true,
+     "date": "2026-11-24",
+     "em": 6.8983,
+     "price": 36.9101,
      "rung": 1,
      "strike": 35.0
     }
