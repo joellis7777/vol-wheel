@@ -165,7 +165,7 @@
    "seen": "2026-11-24"
   },
   "BMNR": {
-   "action": "WATCH",
+   "action": "SELL_PUT",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -184,6 +184,14 @@
      "rung": 1,
      "strike": 13.0
     },
+    "PAIR_CALL": {
+     "active": true,
+     "date": "2026-11-24",
+     "em": 4.6652,
+     "price": 13.14,
+     "rung": 1,
+     "strike": 19.0
+    },
     "SELL_CALL": {
      "active": false,
      "date": "2026-11-23",
@@ -193,12 +201,12 @@
      "strike": 15.325
     },
     "SELL_PUT": {
-     "active": false,
-     "date": "2026-11-20",
-     "em": 4.5594,
-     "price": 13.38,
+     "active": true,
+     "date": "2026-11-24",
+     "em": 4.6652,
+     "price": 13.14,
      "rung": 1,
-     "strike": 13.38
+     "strike": 11.0
     }
    },
    "seen": "2026-11-24"
@@ -621,7 +629,7 @@
      "strike": 315.0
     },
     "LEVEL_CALL": {
-     "active": true,
+     "active": false,
      "date": "2026-11-24",
      "em": 68.9392,
      "level": 384.04,
