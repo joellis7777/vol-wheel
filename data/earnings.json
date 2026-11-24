@@ -1,6 +1,6 @@
 {
  "AMZN": {
-  "fetched": "2026-10-29",
+  "fetched": "2026-11-24",
   "last": {
    "date": "2026-10-29",
    "estimated": true,
@@ -8,7 +8,12 @@
    "source": "yfinance",
    "timing": null
   },
-  "next": null
+  "next": {
+   "date": "2027-02-04",
+   "estimated": true,
+   "source": "yfinance",
+   "timing": null
+  }
  },
  "ASST": {
   "fetched": "2026-11-09",
@@ -22,8 +27,8 @@
   "next": null
  },
  "BMNR": {
-  "fetched": "2026-11-23",
-  "implied_move": 0.07821346566012458,
+  "fetched": "2026-11-24",
+  "implied_move": 0.15604787993212563,
   "next": {
    "date": "2027-01-12",
    "estimated": true,
@@ -54,7 +59,7 @@
   "next": null
  },
  "GOOG": {
-  "fetched": "2026-10-28",
+  "fetched": "2026-11-24",
   "last": {
    "date": "2026-10-28",
    "estimated": true,
@@ -62,10 +67,15 @@
    "source": "yfinance",
    "timing": null
   },
-  "next": null
+  "next": {
+   "date": "2027-02-03",
+   "estimated": true,
+   "source": "yfinance",
+   "timing": null
+  }
  },
  "HOOD": {
-  "fetched": "2026-10-27",
+  "fetched": "2026-11-24",
   "last": {
    "date": "2026-10-27",
    "estimated": true,
@@ -73,11 +83,16 @@
    "source": "yfinance",
    "timing": null
   },
-  "next": null
+  "next": {
+   "date": "2027-02-10",
+   "estimated": true,
+   "source": "yfinance",
+   "timing": null
+  }
  },
  "MRVL": {
-  "fetched": "2026-11-23",
-  "implied_move": 0.12581204320439357,
+  "fetched": "2026-11-24",
+  "implied_move": 0.12736354733527125,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -86,7 +101,7 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-10-29",
+  "fetched": "2026-11-24",
   "last": {
    "date": "2026-10-29",
    "estimated": true,
@@ -94,7 +109,12 @@
    "source": "yfinance",
    "timing": null
   },
-  "next": null
+  "next": {
+   "date": "2027-02-04",
+   "estimated": true,
+   "source": "yfinance",
+   "timing": null
+  }
  },
  "NVDA": {
   "fetched": "2026-11-17",
@@ -118,7 +138,7 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-11-23",
+  "fetched": "2026-11-24",
   "last": {
    "date": "2026-10-27",
    "estimated": true,
@@ -133,9 +153,17 @@
    "timing": null
   }
  },
- "SPCX": {},
+ "SPCX": {
+  "fetched": "2026-11-24",
+  "next": {
+   "date": "2027-02-09",
+   "estimated": true,
+   "source": "yfinance",
+   "timing": null
+  }
+ },
  "TSLA": {
-  "fetched": "2026-11-23",
+  "fetched": "2026-11-24",
   "last": {
    "date": "2026-10-21",
    "estimated": true,
