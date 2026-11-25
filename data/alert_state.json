@@ -138,7 +138,7 @@
      "strike": 252.5
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-25",
      "em": 36.1604,
      "level": 229.36,
@@ -176,7 +176,7 @@
      "strike": 18.94
     },
     "LEVEL_PUT": {
-     "active": false,
+     "active": true,
      "date": "2026-11-24",
      "em": 4.7692,
      "level": 12.8,
