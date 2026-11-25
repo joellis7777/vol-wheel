@@ -404,7 +404,7 @@
    "seen": "2026-11-25"
   },
   "MSTR": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -441,7 +441,7 @@
      "strike": 120.0
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-24",
      "em": 27.3824,
      "price": 77.82,
