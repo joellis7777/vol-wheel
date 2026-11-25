@@ -165,7 +165,7 @@
    "seen": "2026-11-25"
   },
   "BMNR": {
-   "action": "SELL_PUT",
+   "action": "WATCH",
    "alerts": {
     "EARNINGS_PLAY": {
      "active": false,
@@ -201,7 +201,7 @@
      "strike": 15.325
     },
     "SELL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-25",
      "em": 4.3852,
      "price": 11.79,
@@ -584,7 +584,7 @@
      "strike": 143.0
     },
     "LEVEL_PUT": {
-     "active": true,
+     "active": false,
      "date": "2026-11-25",
      "em": 30.4619,
      "level": 104.83,
