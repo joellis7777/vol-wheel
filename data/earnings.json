@@ -1,6 +1,6 @@
 {
  "AMZN": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "last": {
    "date": "2026-10-29",
    "estimated": true,
@@ -27,8 +27,8 @@
   "next": null
  },
  "BMNR": {
-  "fetched": "2026-11-25",
-  "implied_move": 0.11921232377782479,
+  "fetched": "2026-11-26",
+  "implied_move": 0.12835752722189891,
   "next": {
    "date": "2027-01-12",
    "estimated": true,
@@ -59,7 +59,7 @@
   "next": null
  },
  "GOOG": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "last": {
    "date": "2026-10-28",
    "estimated": true,
@@ -75,7 +75,7 @@
   }
  },
  "HOOD": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "last": {
    "date": "2026-10-27",
    "estimated": true,
@@ -91,8 +91,8 @@
   }
  },
  "MRVL": {
-  "fetched": "2026-11-25",
-  "implied_move": 0.12834937184281883,
+  "fetched": "2026-11-26",
+  "implied_move": 0.10679101085765604,
   "next": {
    "date": "2026-12-01",
    "estimated": true,
@@ -101,7 +101,7 @@
   }
  },
  "MSTR": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "last": {
    "date": "2026-10-29",
    "estimated": true,
@@ -138,7 +138,7 @@
   }
  },
  "SOFI": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "last": {
    "date": "2026-10-27",
    "estimated": true,
@@ -154,7 +154,7 @@
   }
  },
  "SPCX": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "next": {
    "date": "2027-01-19",
    "estimated": true,
@@ -163,7 +163,7 @@
   }
  },
  "TSLA": {
-  "fetched": "2026-11-25",
+  "fetched": "2026-11-26",
   "last": {
    "date": "2026-10-21",
    "estimated": true,
